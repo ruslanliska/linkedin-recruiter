@@ -1,10 +1,10 @@
-from tkinter import filedialog
-from tkinter import messagebox
-
-import pandas as pd
 import ttkbootstrap as ttk
 from PIL import Image
 from PIL import ImageTk
+
+from src.ui.pages.history import HistoryPage
+from src.ui.pages.home import HomePage
+# Import the page classes
 
 
 class LinkedInAutomationApp(ttk.Window):
@@ -12,9 +12,6 @@ class LinkedInAutomationApp(ttk.Window):
         super().__init__(themename='superhero')  # Choose a theme
         self.title('InMail Automation')
         self.geometry('900x500')
-
-        # self.style is provided by ttk.Window; no need to assign it
-        # self.style = ttk.Style()
 
         self.load_images()
         self.create_styles()
@@ -60,12 +57,12 @@ class LinkedInAutomationApp(ttk.Window):
 
         button_main = ttk.Button(
             self.menu_frame,
-            text=' Main Page',
+            text=' Home',
             command=lambda: self.show_page('main'),
             image=self.main_icon,
             compound='left',
             bootstyle='secondary',
-            style='Custom.TButton',  # Updated style name
+            style='Custom.TButton',
         )
         button_main.pack(pady=(5, 2), fill='x', padx=10)
 
@@ -76,7 +73,7 @@ class LinkedInAutomationApp(ttk.Window):
             image=self.history_icon,
             compound='left',
             bootstyle='secondary',
-            style='Custom.TButton',  # Updated style name
+            style='Custom.TButton',
         )
         button_history.pack(pady=(2, 5), fill='x', padx=10)
 
@@ -88,13 +85,17 @@ class LinkedInAutomationApp(ttk.Window):
         self.page_container.grid_rowconfigure(0, weight=1)
         self.page_container.grid_columnconfigure(0, weight=1)
 
-        main_page = ttk.Frame(self.page_container)
+        # Instantiate pages and store them in self.pages
+        main_page = HomePage(
+            self.page_container,
+            upload_callback=self.on_upload,
+        )
         self.pages['main'] = main_page
-        self.create_main_widgets(main_page)
+        main_page.grid(row=0, column=0, sticky='nsew')
 
-        history_page = ttk.Frame(self.page_container)
+        history_page = HistoryPage(self.page_container)
         self.pages['history'] = history_page
-        self.create_history_widgets(history_page)
+        history_page.grid(row=0, column=0, sticky='nsew')
 
         self.show_page('main')
 
@@ -102,48 +103,6 @@ class LinkedInAutomationApp(ttk.Window):
         page = self.pages[page_name]
         page.tkraise()
 
-    def create_main_widgets(self, frame):
-        frame.grid(row=0, column=0, sticky='nsew')
-
-        # Removed the title label
-
-        # Upload CSV Button
-        button_upload = ttk.Button(
-            frame, text='Upload CSV',
-            command=self.upload_csv,
-            bootstyle='success',
-        )
-        button_upload.pack(pady=10)
-
-        self.label_file = ttk.Label(
-            frame, text='No file selected', foreground='gray',
-        )
-        self.label_file.pack(pady=10)
-
-    def create_history_widgets(self, frame):
-        frame.grid(row=0, column=0, sticky='nsew')
-
-        # Removed the title label
-
-        label_content = ttk.Label(
-            frame, text='This is the history page.',
-        )
-        label_content.pack(pady=10)
-
-    def upload_csv(self):
-        file_path = filedialog.askopenfilename(
-            filetypes=[('CSV files', '*.csv')],
-        )
-        if file_path:
-            self.label_file.config(text=file_path)
-            try:
-                data = pd.read_csv(file_path)
-                if 'LinkedIn URL' in data.columns and 'Email' in data.columns:
-                    messagebox.showinfo('Success', 'CSV file is valid.')
-                else:
-                    messagebox.showwarning(
-                        'Validation Error',
-                        "CSV must contain 'LinkedIn URL' and 'Email' columns.",
-                    )
-            except Exception as e:
-                messagebox.showerror('Error', f"Failed to read CSV: {e}")
+    def on_upload(self, data):
+        # Handle the uploaded data if needed
+        pass
