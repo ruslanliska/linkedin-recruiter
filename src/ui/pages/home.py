@@ -1,8 +1,14 @@
+# main_page.py
+import threading
 from tkinter import filedialog
 from tkinter import messagebox
+from tkinter.scrolledtext import ScrolledText
 
 import pandas as pd
 import ttkbootstrap as ttk
+
+from src.selenium_automation.inmail import run_selenium_automation
+# Import the Selenium automation function
 
 
 class HomePage(ttk.Frame):
@@ -88,14 +94,32 @@ class HomePage(ttk.Frame):
         )
 
         # -----------------------------
+        # Row 3: Email Template Field
+        # -----------------------------
+        label_email_template = ttk.Label(
+            form, text='Email Template:', font=('Helvetica', 12),
+        )
+        label_email_template.grid(
+            row=3, column=0, sticky='ne', padx=5, pady=10,
+        )
+
+        self.email_template_text = ScrolledText(
+            form, wrap='word', width=50, height=10, font=('Helvetica', 12),
+        )
+        self.email_template_text.grid(
+            row=3, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
+        )
+        form.rowconfigure(3, weight=1)  # Allow row 3 to expand vertically
+
+        # -----------------------------
         # Start Button at the Bottom
         # -----------------------------
-        button_start = ttk.Button(
+        self.start_button = ttk.Button(
             form_frame, text='Start Process',
             command=self.start_process,
             bootstyle='primary',
         )
-        button_start.pack(pady=20)
+        self.start_button.pack(pady=20)
 
     def upload_csv(self):
         file_path = filedialog.askopenfilename(
@@ -115,7 +139,8 @@ class HomePage(ttk.Frame):
                 else:
                     messagebox.showwarning(
                         'Validation Error',
-                        "CSV must contain 'LinkedIn URL' and 'Email' columns.",
+                        'CSV must contain',
+                        "'Person Linkedin Url' and 'Email' columns.",
                     )
             except Exception as e:
                 messagebox.showerror('Error', f"Failed to read CSV: {e}")
@@ -129,6 +154,14 @@ class HomePage(ttk.Frame):
 
         num_items = self.num_items_var.get()
         visible_mode = self.visible_mode_var.get()
+        email_template = self.email_template_text.get('1.0', 'end').strip()
+
+        if not email_template:
+            messagebox.showwarning(
+                'No Email Template',
+                'Please enter an email template before starting.',
+            )
+            return
 
         # Process the data based on user inputs
         if num_items == 0 or num_items > len(self.csv_data):
@@ -136,12 +169,44 @@ class HomePage(ttk.Frame):
 
         data_to_process = self.csv_data.head(num_items)
 
-        # Here you can start your processing logic
-        # For example, pass data_to_process and
-        # visible_mode to your automation script
+        # Disable the Start button to prevent multiple clicks
+        self.disable_start_button()
 
-        messagebox.showinfo(
-            'Process Started', f'Started processing {num_items} items in {
-                'visible' if visible_mode else 'invisible'
-            } mode.',
+        # Start the Selenium automation in a new thread
+        threading.Thread(
+            target=self.run_selenium_thread,
+            args=(data_to_process, visible_mode, email_template),
+            daemon=True,
+        ).start()
+
+    def run_selenium_thread(self, data, visible_mode, email_template):
+        # Define a callback function to handle completion or errors
+        def automation_callback(success, message):
+            if success:
+                self.show_info_message('Process Completed', message)
+            else:
+                self.show_error_message('Automation Error', message)
+            # Re-enable the Start button
+            self.enable_start_button()
+
+        # Call the Selenium automation function
+        run_selenium_automation(
+            data=data,
+            visible_mode=visible_mode,
+            email_template=email_template,
+            callback=automation_callback,
         )
+
+    def disable_start_button(self):
+        self.start_button.config(state='disabled')
+
+    def enable_start_button(self):
+        self.start_button.config(state='normal')
+
+    def show_info_message(self, title, message):
+        # Show messagebox from the main thread
+        self.after(0, lambda: messagebox.showinfo(title, message))
+
+    def show_error_message(self, title, message):
+        # Show messagebox from the main thread
+        self.after(0, lambda: messagebox.showerror(title, message))
