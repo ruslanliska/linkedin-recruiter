@@ -1,4 +1,3 @@
-# main_page.py
 import threading
 from tkinter import filedialog
 from tkinter import messagebox
@@ -6,9 +5,7 @@ from tkinter.scrolledtext import ScrolledText
 
 import pandas as pd
 import ttkbootstrap as ttk
-
-from src.selenium_automation.inmail import run_selenium_automation
-# Import the Selenium automation function
+from selenium_automation.inmail import run_selenium_automation
 
 
 class HomePage(ttk.Frame):
@@ -35,18 +32,51 @@ class HomePage(ttk.Frame):
         form.columnconfigure(2, weight=0)
 
         # -----------------------------
-        # Row 0: CSV File Selection
+        # Row 0: LinkedIn Email
         # -----------------------------
-        # Label for CSV File
+        label_email = ttk.Label(
+            form, text='LinkedIn Email:', font=('Helvetica', 12),
+        )
+        label_email.grid(row=0, column=0, sticky='e', padx=5, pady=10)
+
+        self.linkedin_email_var = ttk.StringVar()
+        entry_email = ttk.Entry(
+            form, textvariable=self.linkedin_email_var, width=40,
+        )
+        entry_email.grid(
+            row=0, column=1, sticky='ew',
+            padx=5, pady=10, columnspan=2,
+        )
+
+        # -----------------------------
+        # Row 1: LinkedIn Password
+        # -----------------------------
+        label_password = ttk.Label(
+            form, text='LinkedIn Password:', font=('Helvetica', 12),
+        )
+        label_password.grid(row=1, column=0, sticky='e', padx=5, pady=10)
+
+        self.linkedin_password_var = ttk.StringVar()
+        entry_password = ttk.Entry(
+            form, textvariable=self.linkedin_password_var, width=40, show='*',
+        )
+        entry_password.grid(
+            row=1, column=1, sticky='ew',
+            padx=5, pady=10, columnspan=2,
+        )
+
+        # -----------------------------
+        # Row 2: CSV File Selection
+        # -----------------------------
         label_file = ttk.Label(form, text='CSV File:', font=('Helvetica', 12))
-        label_file.grid(row=0, column=0, sticky='e', padx=5, pady=10)
+        label_file.grid(row=2, column=0, sticky='e', padx=5, pady=10)
 
         # Entry to display selected file path
         self.file_path_var = ttk.StringVar(value='')
         entry_file = ttk.Entry(
             form, textvariable=self.file_path_var, state='readonly', width=40,
         )
-        entry_file.grid(row=0, column=1, sticky='ew', padx=5, pady=10)
+        entry_file.grid(row=2, column=1, sticky='ew', padx=5, pady=10)
 
         # Button to upload CSV
         button_upload = ttk.Button(
@@ -54,33 +84,33 @@ class HomePage(ttk.Frame):
             command=self.upload_csv,
             bootstyle='success-outline',
         )
-        button_upload.grid(row=0, column=2, sticky='w', padx=5, pady=10)
+        button_upload.grid(row=2, column=2, sticky='w', padx=5, pady=10)
 
         # -----------------------------
-        # Row 1: Number of Items to Run
+        # Row 3: Number of Items to Run
         # -----------------------------
         label_num_items = ttk.Label(
             form, text='Number of items to run (0 for all):',
             font=('Helvetica', 12),
         )
-        label_num_items.grid(row=1, column=0, sticky='e', padx=5, pady=10)
+        label_num_items.grid(row=3, column=0, sticky='e', padx=5, pady=10)
 
         self.num_items_var = ttk.IntVar(value=0)
         entry_num_items = ttk.Entry(
             form, textvariable=self.num_items_var, width=10,
         )
         entry_num_items.grid(
-            row=1, column=1, sticky='w',
+            row=3, column=1, sticky='w',
             padx=5, pady=10, columnspan=2,
         )
 
         # -----------------------------
-        # Row 2: Visible Mode Toggle
+        # Row 4: Visible Mode Toggle
         # -----------------------------
         label_visible_mode = ttk.Label(
             form, text='Visible Mode:', font=('Helvetica', 12),
         )
-        label_visible_mode.grid(row=2, column=0, sticky='e', padx=5, pady=10)
+        label_visible_mode.grid(row=4, column=0, sticky='e', padx=5, pady=10)
 
         self.visible_mode_var = ttk.BooleanVar(value=False)
         switch_visible_mode = ttk.Checkbutton(
@@ -90,26 +120,26 @@ class HomePage(ttk.Frame):
             bootstyle='success-round-toggle',
         )
         switch_visible_mode.grid(
-            row=2, column=1, sticky='w', padx=5, pady=10, columnspan=2,
+            row=4, column=1, sticky='w', padx=5, pady=10, columnspan=2,
         )
 
         # -----------------------------
-        # Row 3: Email Template Field
+        # Row 5: Email Template Field
         # -----------------------------
         label_email_template = ttk.Label(
             form, text='Email Template:', font=('Helvetica', 12),
         )
         label_email_template.grid(
-            row=3, column=0, sticky='ne', padx=5, pady=10,
+            row=5, column=0, sticky='ne', padx=5, pady=10,
         )
 
         self.email_template_text = ScrolledText(
             form, wrap='word', width=50, height=10, font=('Helvetica', 12),
         )
         self.email_template_text.grid(
-            row=3, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
+            row=5, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
         )
-        form.rowconfigure(3, weight=1)  # Allow row 3 to expand vertically
+        form.rowconfigure(5, weight=1)  # Allow row 5 to expand vertically
 
         # -----------------------------
         # Start Button at the Bottom
@@ -151,9 +181,18 @@ class HomePage(ttk.Frame):
             )
             return
 
+        linkedin_email = self.linkedin_email_var.get().strip()
+        linkedin_password = self.linkedin_password_var.get().strip()
         num_items = self.num_items_var.get()
         visible_mode = self.visible_mode_var.get()
         email_template = self.email_template_text.get('1.0', 'end').strip()
+
+        if not linkedin_email or not linkedin_password:
+            messagebox.showwarning(
+                'Credentials Missing',
+                'Please enter your LinkedIn email and password.',
+            )
+            return
 
         if not email_template:
             messagebox.showwarning(
@@ -174,11 +213,21 @@ class HomePage(ttk.Frame):
         # Start the Selenium automation in a new thread
         threading.Thread(
             target=self.run_selenium_thread,
-            args=(data_to_process, visible_mode, email_template),
+            args=(
+                linkedin_email, linkedin_password,
+                data_to_process, visible_mode, email_template,
+            ),
             daemon=True,
         ).start()
 
-    def run_selenium_thread(self, data, visible_mode, email_template):
+    def run_selenium_thread(
+        self,
+        linkedin_email,
+        linkedin_password,
+        data,
+        visible_mode,
+        email_template,
+    ):
         # Define a callback function to handle completion or errors
         def automation_callback(success, message):
             if success:
@@ -190,6 +239,8 @@ class HomePage(ttk.Frame):
 
         # Call the Selenium automation function
         run_selenium_automation(
+            linkedin_email=linkedin_email,
+            linkedin_password=linkedin_password,
             data=data,
             visible_mode=visible_mode,
             email_template=email_template,
