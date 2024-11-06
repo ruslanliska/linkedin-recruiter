@@ -5,23 +5,32 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 
-def run_selenium_automation(data, visible_mode, email_template, callback=None):
+def run_selenium_automation(
+    linkedin_email,
+    linkedin_password,
+    data,
+    visible_mode,
+    email_template,
+    callback=None,
+):
     """
     Runs the Selenium automation process.
 
     Parameters:
+    - linkedin_email: str containing the user's LinkedIn email.
+    - linkedin_password: str containing the user's LinkedIn password.
     - data: pandas DataFrame containing the data to process.
     - visible_mode: bool indicating whether to run in visible mode.
     - email_template: str containing the email template.
     - callback: function to call upon completion or error (optional).
     """
-
     try:
         # Set up Selenium WebDriver options
         options = Options()
@@ -54,25 +63,29 @@ def run_selenium_automation(data, visible_mode, email_template, callback=None):
 
         # Implement your login logic here
         # Example:
-        # driver.get('https://www.linkedin.com/login')
-        # time.sleep(2)
-        # driver.find_element(By.ID, 'username').send_keys('your_username')
-        # driver.find_element(By.ID, 'password').send_keys('your_password')
-        # driver.find_element(By.XPATH, '//button[@type="submit"]').click()
-        # time.sleep(2)
+        driver.get('https://www.linkedin.com/login')
+        time.sleep(2)
+        driver.find_element(By.ID, 'username').send_keys(
+            linkedin_email.strip(),
+        )
+        driver.find_element(By.ID, 'password').send_keys(
+            linkedin_password.strip(),
+        )
+        driver.find_element(By.XPATH, '//button[@type="submit"]').click()
+        time.sleep(2)
 
         # Process each item in the data
-        for index, row in data.iterrows():
-            linkedin_url = row['Person Linkedin Url']
-            email = row['Email']
-            # Perform automation steps
-            driver.get(linkedin_url)
-            time.sleep(2)  # Wait for the page to load
+        # for index, row in data.iterrows():
+        #     linkedin_url = row['Person Linkedin Url']
+        #     email = row['Email']
+        #     # Perform automation steps
+        #     driver.get(linkedin_url)
+        #     time.sleep(2)  # Wait for the page to load
 
-            # Implement your automation logic here
-            # Example placeholder:
-            # personalized_message = email_template.format(name=row['Name'])
-            # Code to send the message
+        # Implement your automation logic here
+        # Example placeholder:
+        # personalized_message = email_template.format(name=row['Name'])
+        # Code to send the message
 
         # Close the WebDriver
         driver.quit()
