@@ -1,2 +1,4 @@
 pandas==2.2.3
+selenium==4.26.1
 ttkbootstrap==1.10.1
+webdriver-manager==4.0.2
