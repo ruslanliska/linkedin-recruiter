@@ -139,8 +139,7 @@ class HomePage(ttk.Frame):
                 else:
                     messagebox.showwarning(
                         'Validation Error',
-                        'CSV must contain',
-                        "'Person Linkedin Url' and 'Email' columns.",
+                        "CSV must contain 'Person Linkedin Url' and 'Email' columns.",  # noqa: E501
                     )
             except Exception as e:
                 messagebox.showerror('Error', f"Failed to read CSV: {e}")
