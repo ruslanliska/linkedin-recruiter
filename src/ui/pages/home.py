@@ -1,4 +1,5 @@
 import threading
+import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
@@ -6,6 +7,7 @@ from tkinter.scrolledtext import ScrolledText
 import pandas as pd
 import ttkbootstrap as ttk
 from selenium_automation.inmail import run_selenium_automation
+# Import the Selenium automation function
 
 
 class HomePage(ttk.Frame):
@@ -124,22 +126,57 @@ class HomePage(ttk.Frame):
         )
 
         # -----------------------------
-        # Row 5: Email Template Field
+        # Row 5: Email Option Selection
         # -----------------------------
-        label_email_template = ttk.Label(
-            form, text='Email Template:', font=('Helvetica', 12),
+        label_email_option = ttk.Label(
+            form, text='Email Option:', font=('Helvetica', 12),
         )
-        label_email_template.grid(
-            row=5, column=0, sticky='ne', padx=5, pady=10,
+        label_email_option.grid(row=5, column=0, sticky='e', padx=5, pady=10)
+
+        # 1 for Template, 2 for Personalized
+        self.email_option_var = tk.IntVar(value=1)
+
+        radio_email_template = ttk.Radiobutton(
+            form,
+            text='Use Email Template',
+            variable=self.email_option_var,
+            value=1,
+            command=self.update_email_option,
+        )
+        radio_email_template.grid(
+            row=5,
+            column=1,
+            sticky='w',
+            padx=5,
+            pady=5,
         )
 
+        radio_personalized_email = ttk.Radiobutton(
+            form,
+            text='Use Personalized Email',
+            variable=self.email_option_var,
+            value=2,
+            command=self.update_email_option,
+        )
+        radio_personalized_email.grid(
+            row=5,
+            column=2,
+            sticky='w',
+            padx=5,
+            pady=5,
+        )
+
+        # -----------------------------
+        # Row 6: Email Template Field
+        # -----------------------------
+        self.label_email_template = ttk.Label(
+            form, text='Email Template:', font=('Helvetica', 12),
+        )
         self.email_template_text = ScrolledText(
             form, wrap='word', width=50, height=10, font=('Helvetica', 12),
         )
-        self.email_template_text.grid(
-            row=5, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
-        )
-        form.rowconfigure(5, weight=1)  # Allow row 5 to expand vertically
+        # Do not grid these widgets yet;
+        # we'll manage visibility in update_email_option
 
         # -----------------------------
         # Start Button at the Bottom
@@ -150,6 +187,28 @@ class HomePage(ttk.Frame):
             bootstyle='primary',
         )
         self.start_button.pack(pady=20)
+
+        # Initialize the form to show the correct fields
+        self.update_email_option()
+
+    def update_email_option(self):
+        # Remove the email template field first
+        self.label_email_template.grid_remove()
+        self.email_template_text.grid_remove()
+        self.master.rowconfigure(6, weight=0)
+
+        # Show the email template field only if the option is selected
+        if self.email_option_var.get() == 1:
+            # Email Template selected
+            self.label_email_template.grid(
+                row=6, column=0, sticky='ne', padx=5, pady=10,
+            )
+            self.email_template_text.grid(
+                row=6, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
+            )
+            self.master.rowconfigure(6, weight=1)
+        # No else needed; if Personalized Email is selected,
+        # we don't show any additional fields
 
     def upload_csv(self):
         file_path = filedialog.askopenfilename(
@@ -185,7 +244,7 @@ class HomePage(ttk.Frame):
         linkedin_password = self.linkedin_password_var.get().strip()
         num_items = self.num_items_var.get()
         visible_mode = self.visible_mode_var.get()
-        email_template = self.email_template_text.get('1.0', 'end').strip()
+        email_option = self.email_option_var.get()
 
         if not linkedin_email or not linkedin_password:
             messagebox.showwarning(
@@ -194,10 +253,22 @@ class HomePage(ttk.Frame):
             )
             return
 
-        if not email_template:
+        if email_option == 1:
+            # Email Template
+            email_template = self.email_template_text.get('1.0', 'end').strip()
+            if not email_template:
+                messagebox.showwarning(
+                    'No Email Template',
+                    'Please enter an email template before starting.',
+                )
+                return
+        elif email_option == 2:
+            # Personalized Email
+            email_template = None  # No email template needed
+        else:
             messagebox.showwarning(
-                'No Email Template',
-                'Please enter an email template before starting.',
+                'Invalid Option',
+                'Please select a valid email option.',
             )
             return
 
