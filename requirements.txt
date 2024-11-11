@@ -3,5 +3,7 @@ langchain==0.3.7
 langchain_openai==0.2.6
 pandas==2.2.3
 selenium==4.26.1
+selenium-stealth==1.0.6
 ttkbootstrap==1.10.1
+undetected-chromedriver==3.5.5
 webdriver-manager==4.0.2
