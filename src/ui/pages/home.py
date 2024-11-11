@@ -6,7 +6,8 @@ from tkinter.scrolledtext import ScrolledText
 
 import pandas as pd
 import ttkbootstrap as ttk
-from selenium_automation.inmail import run_selenium_automation
+
+from src.inmail.main import run_selenium_automation
 # Import the Selenium automation function
 
 
