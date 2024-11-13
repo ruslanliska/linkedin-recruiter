@@ -1,5 +1,4 @@
 import threading
-import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
@@ -7,7 +6,7 @@ from tkinter.scrolledtext import ScrolledText
 import pandas as pd
 import ttkbootstrap as ttk
 
-from src.inmail.main import run_selenium_automation
+from src.inmail.personalized_email import run_selenium_automation
 # Import the Selenium automation function
 
 
@@ -35,51 +34,17 @@ class HomePage(ttk.Frame):
         form.columnconfigure(2, weight=0)
 
         # -----------------------------
-        # Row 0: LinkedIn Email
-        # -----------------------------
-        label_email = ttk.Label(
-            form, text='LinkedIn Email:', font=('Helvetica', 12),
-        )
-        label_email.grid(row=0, column=0, sticky='e', padx=5, pady=10)
-
-        self.linkedin_email_var = ttk.StringVar()
-        entry_email = ttk.Entry(
-            form, textvariable=self.linkedin_email_var, width=40,
-        )
-        entry_email.grid(
-            row=0, column=1, sticky='ew',
-            padx=5, pady=10, columnspan=2,
-        )
-
-        # -----------------------------
-        # Row 1: LinkedIn Password
-        # -----------------------------
-        label_password = ttk.Label(
-            form, text='LinkedIn Password:', font=('Helvetica', 12),
-        )
-        label_password.grid(row=1, column=0, sticky='e', padx=5, pady=10)
-
-        self.linkedin_password_var = ttk.StringVar()
-        entry_password = ttk.Entry(
-            form, textvariable=self.linkedin_password_var, width=40, show='*',
-        )
-        entry_password.grid(
-            row=1, column=1, sticky='ew',
-            padx=5, pady=10, columnspan=2,
-        )
-
-        # -----------------------------
-        # Row 2: CSV File Selection
+        # Row 0: CSV File Selection
         # -----------------------------
         label_file = ttk.Label(form, text='CSV File:', font=('Helvetica', 12))
-        label_file.grid(row=2, column=0, sticky='e', padx=5, pady=10)
+        label_file.grid(row=0, column=0, sticky='e', padx=5, pady=10)
 
         # Entry to display selected file path
         self.file_path_var = ttk.StringVar(value='')
         entry_file = ttk.Entry(
             form, textvariable=self.file_path_var, state='readonly', width=40,
         )
-        entry_file.grid(row=2, column=1, sticky='ew', padx=5, pady=10)
+        entry_file.grid(row=0, column=1, sticky='ew', padx=5, pady=10)
 
         # Button to upload CSV
         button_upload = ttk.Button(
@@ -87,35 +52,35 @@ class HomePage(ttk.Frame):
             command=self.upload_csv,
             bootstyle='success-outline',
         )
-        button_upload.grid(row=2, column=2, sticky='w', padx=5, pady=10)
+        button_upload.grid(row=0, column=2, sticky='w', padx=5, pady=10)
 
         # -----------------------------
-        # Row 3: Number of Items to Run
+        # Row 1: Number of Items to Run
         # -----------------------------
         label_num_items = ttk.Label(
             form, text='Number of items to run (0 for all):',
             font=('Helvetica', 12),
         )
-        label_num_items.grid(row=3, column=0, sticky='e', padx=5, pady=10)
+        label_num_items.grid(row=1, column=0, sticky='e', padx=5, pady=10)
 
         self.num_items_var = ttk.IntVar(value=0)
         entry_num_items = ttk.Entry(
             form, textvariable=self.num_items_var, width=10,
         )
         entry_num_items.grid(
-            row=3, column=1, sticky='w',
+            row=1, column=1, sticky='w',
             padx=5, pady=10, columnspan=2,
         )
 
         # -----------------------------
-        # Row 4: Visible Mode Toggle
+        # Row 2: Visible Mode Toggle
         # -----------------------------
         label_visible_mode = ttk.Label(
             form, text='Visible Mode:', font=('Helvetica', 12),
         )
-        label_visible_mode.grid(row=4, column=0, sticky='e', padx=5, pady=10)
+        label_visible_mode.grid(row=2, column=0, sticky='e', padx=5, pady=10)
 
-        self.visible_mode_var = ttk.BooleanVar(value=False)
+        self.visible_mode_var = ttk.BooleanVar(value=True)  # Default to True
         switch_visible_mode = ttk.Checkbutton(
             form,
             text='',
@@ -123,61 +88,43 @@ class HomePage(ttk.Frame):
             bootstyle='success-round-toggle',
         )
         switch_visible_mode.grid(
-            row=4, column=1, sticky='w', padx=5, pady=10, columnspan=2,
+            row=2, column=1, sticky='w', padx=5, pady=10, columnspan=2,
         )
 
         # -----------------------------
-        # Row 5: Email Option Selection
+        # Row 3: Prompt (ScrolledText)
         # -----------------------------
-        label_email_option = ttk.Label(
-            form, text='Email Option:', font=('Helvetica', 12),
+        label_prompt = ttk.Label(
+            form, text='Prompt:', font=('Helvetica', 12),
         )
-        label_email_option.grid(row=5, column=0, sticky='e', padx=5, pady=10)
+        label_prompt.grid(row=3, column=0, sticky='ne', padx=5, pady=10)
 
-        # 1 for Template, 2 for Personalized
-        self.email_option_var = tk.IntVar(value=1)
-
-        radio_email_template = ttk.Radiobutton(
-            form,
-            text='Use Email Template',
-            variable=self.email_option_var,
-            value=1,
-            command=self.update_email_option,
+        self.prompt_text = ScrolledText(
+            form, wrap='word', width=50, height=4, font=('Helvetica', 12),
         )
-        radio_email_template.grid(
-            row=5,
-            column=1,
-            sticky='w',
-            padx=5,
-            pady=5,
+        self.prompt_text.grid(
+            row=3, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
         )
-
-        radio_personalized_email = ttk.Radiobutton(
-            form,
-            text='Use Personalized Email',
-            variable=self.email_option_var,
-            value=2,
-            command=self.update_email_option,
-        )
-        radio_personalized_email.grid(
-            row=5,
-            column=2,
-            sticky='w',
-            padx=5,
-            pady=5,
-        )
+        # Allow prompt field to maintain its size
+        form.rowconfigure(3, weight=0)
 
         # -----------------------------
-        # Row 6: Email Template Field
+        # Row 4: Reference Email
         # -----------------------------
-        self.label_email_template = ttk.Label(
-            form, text='Email Template:', font=('Helvetica', 12),
+        label_reference_email = ttk.Label(
+            form, text='Reference Email:', font=('Helvetica', 12),
         )
-        self.email_template_text = ScrolledText(
+        label_reference_email.grid(
+            row=4, column=0, sticky='ne', padx=5, pady=10,
+        )
+
+        self.reference_email_text = ScrolledText(
             form, wrap='word', width=50, height=10, font=('Helvetica', 12),
         )
-        # Do not grid these widgets yet;
-        # we'll manage visibility in update_email_option
+        self.reference_email_text.grid(
+            row=4, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
+        )
+        form.rowconfigure(4, weight=1)  # Allow reference email field to expand
 
         # -----------------------------
         # Start Button at the Bottom
@@ -188,28 +135,6 @@ class HomePage(ttk.Frame):
             bootstyle='primary',
         )
         self.start_button.pack(pady=20)
-
-        # Initialize the form to show the correct fields
-        self.update_email_option()
-
-    def update_email_option(self):
-        # Remove the email template field first
-        self.label_email_template.grid_remove()
-        self.email_template_text.grid_remove()
-        self.master.rowconfigure(6, weight=0)
-
-        # Show the email template field only if the option is selected
-        if self.email_option_var.get() == 1:
-            # Email Template selected
-            self.label_email_template.grid(
-                row=6, column=0, sticky='ne', padx=5, pady=10,
-            )
-            self.email_template_text.grid(
-                row=6, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
-            )
-            self.master.rowconfigure(6, weight=1)
-        # No else needed; if Personalized Email is selected,
-        # we don't show any additional fields
 
     def upload_csv(self):
         file_path = filedialog.askopenfilename(
@@ -232,7 +157,10 @@ class HomePage(ttk.Frame):
                         "CSV must contain 'Person Linkedin Url' and 'Email' columns.",  # noqa: E501
                     )
             except Exception as e:
-                messagebox.showerror('Error', f"Failed to read CSV: {e}")
+                messagebox.showerror(
+                    'Error',
+                    f"Failed to read CSV: {e}",
+                )
 
     def start_process(self):
         if self.csv_data is None:
@@ -241,37 +169,20 @@ class HomePage(ttk.Frame):
             )
             return
 
-        linkedin_email = self.linkedin_email_var.get().strip()
-        linkedin_password = self.linkedin_password_var.get().strip()
         num_items = self.num_items_var.get()
         visible_mode = self.visible_mode_var.get()
-        email_option = self.email_option_var.get()
 
-        if not linkedin_email or not linkedin_password:
-            messagebox.showwarning(
-                'Credentials Missing',
-                'Please enter your LinkedIn email and password.',
-            )
-            return
+        # Retrieve the prompt and reference email
+        prompt_text = self.prompt_text.get('1.0', 'end').strip()
+        prompt = prompt_text if prompt_text else None
 
-        if email_option == 1:
-            # Email Template
-            email_template = self.email_template_text.get('1.0', 'end').strip()
-            if not email_template:
-                messagebox.showwarning(
-                    'No Email Template',
-                    'Please enter an email template before starting.',
-                )
-                return
-        elif email_option == 2:
-            # Personalized Email
-            email_template = None  # No email template needed
-        else:
-            messagebox.showwarning(
-                'Invalid Option',
-                'Please select a valid email option.',
-            )
-            return
+        reference_email_text = self.reference_email_text.get(
+            '1.0', 'end',
+        ).strip()
+        reference_email = reference_email_text if reference_email_text else None  # noqa: E501
+
+        # No longer require prompt and reference_email to be provided
+        # So we remove the validation that enforced them
 
         # Process the data based on user inputs
         if num_items == 0 or num_items > len(self.csv_data):
@@ -285,20 +196,16 @@ class HomePage(ttk.Frame):
         # Start the Selenium automation in a new thread
         threading.Thread(
             target=self.run_selenium_thread,
-            args=(
-                linkedin_email, linkedin_password,
-                data_to_process, visible_mode, email_template,
-            ),
+            args=(data_to_process, visible_mode, prompt, reference_email),
             daemon=True,
         ).start()
 
     def run_selenium_thread(
         self,
-        linkedin_email,
-        linkedin_password,
         data,
         visible_mode,
-        email_template,
+        prompt,
+        reference_email,
     ):
         # Define a callback function to handle completion or errors
         def automation_callback(success, message):
@@ -311,11 +218,10 @@ class HomePage(ttk.Frame):
 
         # Call the Selenium automation function
         run_selenium_automation(
-            linkedin_email=linkedin_email,
-            linkedin_password=linkedin_password,
             data=data,
             visible_mode=visible_mode,
-            email_template=email_template,
+            prompt=prompt,
+            reference_email=reference_email,
             callback=automation_callback,
         )
 
