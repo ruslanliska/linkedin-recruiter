@@ -127,6 +127,29 @@ class HomePage(ttk.Frame):
         form.rowconfigure(4, weight=1)  # Allow reference email field to expand
 
         # -----------------------------
+        # Row 5: Control Email Sending Checkbox
+        # -----------------------------
+        label_control_email_sending = ttk.Label(
+            form, text='Control Email Sending:', font=('Helvetica', 12),
+        )
+        label_control_email_sending.grid(
+            row=5, column=0, sticky='e', padx=5, pady=10,
+        )
+
+        self.control_email_sending_var = ttk.BooleanVar(
+            value=False,
+        )  # Default to False
+        checkbox_control_email_sending = ttk.Checkbutton(
+            form,
+            text='',
+            variable=self.control_email_sending_var,
+            bootstyle='success-round-toggle',
+        )
+        checkbox_control_email_sending.grid(
+            row=5, column=1, sticky='w', padx=5, pady=10, columnspan=2,
+        )
+
+        # -----------------------------
         # Start Button at the Bottom
         # -----------------------------
         self.start_button = ttk.Button(
@@ -154,7 +177,7 @@ class HomePage(ttk.Frame):
                 else:
                     messagebox.showwarning(
                         'Validation Error',
-                        "CSV must contain 'Person Linkedin Url' and 'Email' columns.",  # noqa: E501
+                        "CSV must contain 'Person Linkedin Url' and 'Email' columns.",
                     )
             except Exception as e:
                 messagebox.showerror(
@@ -179,10 +202,10 @@ class HomePage(ttk.Frame):
         reference_email_text = self.reference_email_text.get(
             '1.0', 'end',
         ).strip()
-        reference_email = reference_email_text if reference_email_text else None  # noqa: E501
+        reference_email = reference_email_text if reference_email_text else None
 
-        # No longer require prompt and reference_email to be provided
-        # So we remove the validation that enforced them
+        # Retrieve the control email sending option
+        control_email_sending = self.control_email_sending_var.get()
 
         # Process the data based on user inputs
         if num_items == 0 or num_items > len(self.csv_data):
@@ -196,7 +219,10 @@ class HomePage(ttk.Frame):
         # Start the Selenium automation in a new thread
         threading.Thread(
             target=self.run_selenium_thread,
-            args=(data_to_process, visible_mode, prompt, reference_email),
+            args=(
+                data_to_process, visible_mode, prompt,
+                reference_email, control_email_sending,
+            ),
             daemon=True,
         ).start()
 
@@ -206,6 +232,7 @@ class HomePage(ttk.Frame):
         visible_mode,
         prompt,
         reference_email,
+        control_email_sending,
     ):
         # Define a callback function to handle completion or errors
         def automation_callback(success, message):
@@ -222,6 +249,7 @@ class HomePage(ttk.Frame):
             visible_mode=visible_mode,
             prompt=prompt,
             reference_email=reference_email,
+            control_email_sending=control_email_sending,
             callback=automation_callback,
         )
 
