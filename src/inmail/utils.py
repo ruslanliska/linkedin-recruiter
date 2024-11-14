@@ -1,59 +1,106 @@
 import logging
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-def inject_enter_key_listener(driver):
+def inject_key_listeners(driver):
     """
-    Injects JavaScript into the browser to listen for the Enter key.
-    When Enter is pressed, a hidden DOM element is added as a signal.
+    Injects JavaScript into the browser to listen for Enter and Shift keys.
+    When Enter is pressed, sets window.keyPressed = 'Enter'.
+    When Shift is pressed, sets window.keyPressed = 'Shift'.
+    Additionally, logs the key presses in a hidden textarea.
     """
     js_code = """
     (function() {
         // Avoid injecting multiple listeners
-        if (window.enterKeyListenerInjected) return;
-        window.enterKeyListenerInjected = true;
+        if (window.keyListenersInjected) return;
+        window.keyListenersInjected = true;
+
+        // Initialize the keyPressed variable
+        window.keyPressed = null;
+
+        // Create a hidden textarea to store key logs
+        let keyLogArea = document.getElementById('key-log-area');
+        if (!keyLogArea) {
+            keyLogArea = document.createElement('textarea');
+            keyLogArea.id = 'key-log-area';
+            keyLogArea.style.display = 'none'; // Hidden from view
+            document.body.appendChild(keyLogArea);
+        }
+
+        // Variable to track if Shift is currently pressed
+        let isShiftPressed = false;
 
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                // Check if the signal element already exists
-                let signalElement = document.getElementById('enter-key-signal');
-                if (!signalElement) {
-                    signalElement = document.createElement('div');
-                    signalElement.id = 'enter-key-signal';
-                    signalElement.style.display = 'none';
-                    document.body.appendChild(signalElement);
-                }
+            const key = event.key;
+            const timestamp = new Date().toISOString();
+            let logEntry = `${timestamp}: ${key}\\n`;
+
+            if (key === 'Enter') {
+                // Set the window.keyPressed variable
+                window.keyPressed = 'Enter';
                 console.log('Enter key pressed. Signal sent to Selenium.');
+            }
+
+            if (key === 'Shift') {
+                if (!isShiftPressed) { // Prevent multiple signals if Shift is held down
+                    isShiftPressed = true;
+                    // Set the window.keyPressed variable
+                    window.keyPressed = 'Shift';
+                    console.log('Shift key pressed. Signal sent to Selenium.');
+                }
+            }
+
+            // Append the log entry
+            keyLogArea.value += logEntry;
+        });
+
+        document.addEventListener('keyup', function(event) {
+            const key = event.key;
+            if (key === 'Shift') {
+                isShiftPressed = false; // Reset the flag when Shift is released
             }
         });
     })();
     """
     driver.execute_script(js_code)
-    logging.info('Injected Enter key listener into the browser.')
+    logging.info('Injected Enter and Shift key listeners into the browser.')
 
 
-def wait_for_enter_key_signal(driver, timeout=300):
+def wait_for_key_signal(driver, timeout=300):
     """
-    Waits until the hidden signal element is present in the DOM,
-    indicating that the Enter key has been pressed.
+    Waits until the window.keyPressed variable is set to 'Enter' or 'Shift'.
+    Returns the key that was pressed ('Enter' or 'Shift').
     """
     try:
-        logging.info('Waiting for Enter key signal from the user...')
-        WebDriverWait(driver, timeout).until(
-            EC.presence_of_element_located((By.ID, 'enter-key-signal')),
+        logging.info('Waiting for Enter or Shift key signal from the user...')
+
+        # Define the condition to wait until window.keyPressed is 'Enter' or 'Shift'
+        def key_pressed(driver):
+            try:
+                key = driver.execute_script('return window.keyPressed;')
+                if key in ['Enter', 'Shift']:
+                    return key
+                return False
+            except Exception:
+                return False
+
+        pressed_key = WebDriverWait(driver, timeout).until(key_pressed)
+
+        logging.info(
+            f'{pressed_key} key signal detected. Continuing the script...',
         )
-        logging.info('Enter key signal detected. Continuing the script...')
+        return pressed_key
+
     except Exception as e:
-        logging.error(f"Timeout waiting for Enter key signal: {e}")
+        logging.error(f"Timeout waiting for key signal: {e}")
         raise e
 
 
 def get_captured_keys(driver):
     """
-    Retrieves and returns the value of the hidden textarea that logs Enter key presses.
+    Retrieves and returns the value of the hidden textarea that logs Enter and Shift key presses.
     """
     try:
         key_log = driver.find_element(
