@@ -6,6 +6,9 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
+from src.agents.email_writer import DEFAULT_EMAIL_INSTRUCTION
+from src.agents.email_writer import DEFAULT_USER_PROMPT
+from src.agents.main import generate_personal_email
 from src.inmail.utils import *
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -85,6 +88,42 @@ def run_selenium_automation(
         # Clear the flag in case this part of the script runs again
         driver.get('https://www.linkedin.com')
         time.sleep(2)
+
+        linkedin_profile = 'https://www.linkedin.com/in/ruslan-liska/'
+        driver.get(linkedin_profile)
+        # Get the full page HTML
+        from bs4 import BeautifulSoup
+
+        full_html = driver.page_source
+        print('Full HTML Content:')
+        print('FINISH PERSONALISED')
+        # print(full_html)  # This prints the full HTML of the page
+
+        # Optional: Parse the HTML with BeautifulSoup to extract only the visible text
+        soup = BeautifulSoup(full_html, 'html.parser')
+
+        desired_tags = ['main']
+        text_from_desired_tags = []
+        for tag in soup.find_all(desired_tags):
+            tag_text = tag.get_text(separator=' ', strip=True)
+            if tag_text:  # Only add non-empty text
+                text_from_desired_tags.append(tag_text)
+
+        # Join the text from desired tags, with each entry on a new line
+        cleaned_text = '\n'.join(text_from_desired_tags)
+
+        print('\nCleaned Visible Page Text:')
+        email = generate_personal_email(
+            page_summary=cleaned_text,
+            user_prompt=prompt,
+            email_instructions=reference_email,
+        )
+        print(email)
+
+        # Implement your automation logic here
+        # Example placeholder:
+        # personalized_message = email_template.format(name=row['Name'])
+        # Code to send the message
         if control_email_sending:
             # Inject JavaScript listeners for Enter and Backspace keys
             inject_key_listeners(driver)
@@ -117,47 +156,6 @@ def run_selenium_automation(
             else:
                 print('Unrecognized key press detected.')
 
-        linkedin_profile = 'https://www.linkedin.com/in/ruslan-liska/'
-        driver.get(linkedin_profile)
-        time.sleep(12)
-        # Get the full page HTML
-        from bs4 import BeautifulSoup
-
-        full_html = driver.page_source
-        print('Full HTML Content:')
-        print('FINISH PERSONALISED')
-        # print(full_html)  # This prints the full HTML of the page
-
-        # Optional: Parse the HTML with BeautifulSoup to extract only the visible text
-        soup = BeautifulSoup(full_html, 'html.parser')
-
-        desired_tags = ['main']
-        text_from_desired_tags = []
-        for tag in soup.find_all(desired_tags):
-            tag_text = tag.get_text(separator=' ', strip=True)
-            if tag_text:  # Only add non-empty text
-                text_from_desired_tags.append(tag_text)
-
-        # Join the text from desired tags, with each entry on a new line
-        cleaned_text = '\n'.join(text_from_desired_tags)
-
-        print('\nCleaned Visible Page Text:')
-        # print(cleaned_text)
-        # create_email(cleaned_text)
-        print('FINISH PERONAKL')
-        filename = 'page_text_output.txt'
-
-        # Write the cleaned text to a text file
-        with open(filename, 'w', encoding='utf-8') as file:
-            file.write(cleaned_text)
-
-        print(f"Text content successfully written to {filename}")
-
-        # Implement your automation logic here
-        # Example placeholder:
-        # personalized_message = email_template.format(name=row['Name'])
-        # Code to send the message
-
         # Close the WebDriver
         driver.quit()
 
@@ -168,7 +166,7 @@ def run_selenium_automation(
                 message='Automation completed successfully.',
             )
 
-    except Exception as e:
+    except ZeroDivisionError as e:
         # If a callback is provided, call it to indicate an error
         if callback:
             callback(
