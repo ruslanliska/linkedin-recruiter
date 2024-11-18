@@ -90,6 +90,7 @@ def run_selenium_automation(
         time.sleep(2)
 
         linkedin_profile = 'https://www.linkedin.com/in/ruslan-liska/'
+        # linkedin_profile = 'https://www.linkedin.com/in/lidia-herrero-coy-64197232/'
         driver.get(linkedin_profile)
         # Get the full page HTML
         from bs4 import BeautifulSoup
@@ -113,12 +114,100 @@ def run_selenium_automation(
         cleaned_text = '\n'.join(text_from_desired_tags)
 
         print('\nCleaned Visible Page Text:')
+        # TODO uncomment line for email
         email = generate_personal_email(
             page_summary=cleaned_text,
             user_prompt=prompt,
             email_instructions=reference_email,
         )
         print(email)
+        # Find all <code> elements on the page
+        code_elements = driver.find_elements(By.TAG_NAME, 'code')
+
+        # Loop through the elements to find the correct one
+        profile_id = None
+        for code_element in code_elements:
+            # Get the inner content of the <code> element
+            code_content = code_element.get_attribute('innerHTML')
+            import json
+            # Check if the desired JSON block exists
+            if 'identityDashProfilesByMemberIdentity' in code_content:
+                try:
+                    # Parse the content as JSON
+                    data = json.loads(code_content)
+
+                    # Extract the profile URN
+                    profile_urn = data['data']['data']['identityDashProfilesByMemberIdentity']['*elements'][0]
+
+                    # Extract the profile ID
+                    profile_id = profile_urn.split(':')[-1]
+                    break  # Stop searching once we find the correct block
+                except (json.JSONDecodeError, KeyError):
+                    # Skip blocks that don't match the structure
+                    continue
+
+        # Output the extracted profile ID
+        if profile_id:
+            print(f"Profile ID: {profile_id}")
+        else:
+            print('Profile ID not found.')
+        # driver.find_element(By.XPATH, '//*[@id="ember79-profile-overflow-action"]').click()
+        # driver.find_element(By.XPATH, '//*[@id="ember85"]').click()
+        # print('CLICKED')
+        time.sleep(random.uniform(2, 5))
+
+        driver.get(
+            f'https://www.linkedin.com/talent/profile/{
+                profile_id
+            }?rightRail=composer',
+        )
+        time.sleep(random.uniform(5, 8))
+
+        # Locate the subject input field using stable attributes
+        subject_input = driver.find_element(
+            By.CSS_SELECTOR, "input[aria-label='Message subject'][placeholder='Add a subject']",
+        )
+
+        # Click the subject input to activate it (if required)
+        subject_input.click()
+
+        # Write the subject
+        subject_input.send_keys('Talent Found')
+        # Locate the inner contenteditable div
+        editor = driver.find_element(
+            By.CSS_SELECTOR, ".ql-editor[contenteditable='true']",
+        )
+
+        # Click to activate the editor (if required)
+        editor.click()
+
+        # Write text into the editor
+        # editor.send_keys(email)
+
+        # typing
+        # for char in email:
+        #     editor.send_keys(char)
+        #     time.sleep(0.00001)
+
+        # chunks
+        chunk_size = 20  # Number of characters to send in each chunk
+
+        for i in range(0, len(email), chunk_size):
+            editor.send_keys(email[i:i + chunk_size])
+            time.sleep(0.001)
+
+        time.sleep(random.uniform(5, 8))
+        # Locate the send button using its attributes
+        send_button = driver.find_element(
+            By.CSS_SELECTOR, 'button[data-live-test-messaging-submit-btn]',
+        )
+
+        # Check if the button is disabled
+        if send_button.get_attribute('disabled'):
+            print('Button disabled')
+        else:
+            send_button.click()
+            print('Message sent!')
 
         # Implement your automation logic here
         # Example placeholder:
@@ -179,3 +268,9 @@ def run_selenium_automation(
         if driver:
             driver.quit()
             logging.info('Automation complete. Browser closed.')
+
+
+run_selenium_automation(
+    data='', visible_mode=True,
+    control_email_sending=False,
+)
