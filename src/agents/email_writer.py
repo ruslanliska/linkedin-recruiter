@@ -30,7 +30,7 @@ SYSTEM_PROMPT = """Write an email to a prospective employer to introduce fitting
 Use the information from the candidate's experience summary to craft a compelling narrative about how your proposed candidates have similar qualities and are an excellent match for the company.
 
 **Note**: Do not mention or imply direct experience of the receiver or any specific individual. Instead, position the proposed candidates as representative of ideal experience aligned with the company's needs and existing goals. Avoid focusing on the receiver's experience.
-You must write only email body, no subject
+You must write only email body, no subject, no signature.
 User will provide some email reference/instructions:
 
 
