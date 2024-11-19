@@ -202,16 +202,17 @@ def run_selenium_automation(
                 # Inject JavaScript listeners for Enter and Backspace keys
                 inject_key_listeners(driver)
 
-                # Provide instructions to the user
-                print('Please perform the necessary actions in the browser.')
-                print(
-                    'Once done, press the **Enter** or **Backspace** key within the browser to continue...',
-                )
                 try:
                     # Wait for the user to press Enter or Backspace
                     pressed_key = wait_for_key_signal(
-                        driver, timeout=10,
+                        driver, timeout=300,
                     )  # Timeout after 5 minutes
+
+                    # Provide instructions to the user
+                    print('Please perform the necessary actions in the browser.')
+                    print(
+                        'Once done, press the **Enter** or **Backspace** key within the browser to continue...',
+                    )
 
                     # After key press, retrieve the captured keys
                     captured_keys = get_captured_keys(driver)
