@@ -1,4 +1,7 @@
 import logging
+import platform
+import sys
+from pathlib import Path
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -147,3 +150,30 @@ def inject_key_logging(driver):
     """
     driver.execute_script(js_code)
     logging.info('Injected Enter key logging into the browser.')
+
+
+def get_user_data_dir():
+    """
+    Determines the user data directory for Chrome based on the operating system.
+    Returns:
+        Path: The path to the Chrome user data directory.
+    """
+    os_type = platform.system()
+    home_dir = Path.home()
+
+    if os_type == 'Windows':
+        # Path for Windows
+        profile_dir = Path(__file__).resolve(
+        ).parent.parent / 'automation_profile'
+    elif os_type == 'Darwin':
+        # Path for macOS
+        profile_dir = Path(__file__).resolve(
+        ).parent.parent / 'automation_profile'
+    else:
+        logging.error(f"Unsupported Operating System: {os_type}")
+        sys.exit(1)
+
+    return profile_dir
+
+
+print(get_user_data_dir())
