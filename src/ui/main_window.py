@@ -1,6 +1,5 @@
 # src/ui/main_window.py
 import logging
-import threading
 from tkinter import messagebox
 
 import ttkbootstrap as ttk
@@ -10,15 +9,22 @@ from PIL import ImageTk
 from src.ui.pages.history import HistoryPage
 from src.ui.pages.home import HomePage
 
+# Configure logging (ensure this is at the top of your script)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # Log to console
+        logging.FileHandler('application.log'),  # Log to a file
+    ],
+)
+
 
 class LinkedInAutomationApp(ttk.Window):
     def __init__(self):
         super().__init__(themename='superhero')  # Choose a theme
         self.title('InMail Automation')
         self.geometry('900x600')
-
-        # Initialize the stop_event
-        self.stop_event = threading.Event()
 
         self.load_images()
         self.create_styles()
@@ -105,7 +111,6 @@ class LinkedInAutomationApp(ttk.Window):
         main_page = HomePage(
             self.page_container,
             upload_callback=self.on_upload,
-            stop_event=self.stop_event,  # Pass the stop_event to HomePage
         )
         self.pages['main'] = main_page
         main_page.grid(row=0, column=0, sticky='nsew')
@@ -136,24 +141,7 @@ class LinkedInAutomationApp(ttk.Window):
             logging.info(
                 'Quit signal received. Attempting to stop automation.',
             )
-            # Signal the automation thread to stop
-            self.stop_event.set()
 
             # Wait for the automation thread to finish
-            for page in self.pages.values():
-                if isinstance(page, HomePage) and page.automation_thread:
-                    logging.info(
-                        'Waiting for automation thread to terminate...',
-                    )
-                    # Increase timeout if necessary
-                    page.automation_thread.join(timeout=10)
-                    if page.automation_thread.is_alive():
-                        logging.warning(
-                            'Automation thread did not terminate within the timeout.',  # noqa: E501
-                        )
-                    else:
-                        logging.info(
-                            'Automation thread terminated successfully.',
-                        )
 
             self.destroy()
