@@ -6,6 +6,7 @@ from tkinter.scrolledtext import ScrolledText
 import pandas as pd
 import ttkbootstrap as ttk
 
+from src.database.handlers import log_run  # Import the SQLite logging function
 from src.inmail.personalized_email import run_selenium_automation
 # Import the Selenium automation function
 
@@ -167,22 +168,34 @@ class HomePage(ttk.Frame):
             self.file_path_var.set(file_path)
             try:
                 data = pd.read_csv(file_path)
-                if 'Person Linkedin Url' in data.columns \
-                        and 'Email' in data.columns:
+                if 'Person Linkedin Url' in data.columns and 'Email' in data.columns:  # noqa: E501
                     messagebox.showinfo('Success', 'CSV file is valid.')
                     self.csv_data = data  # Store the data
+                    # Log the successful run
+                    log_run(file_name=file_path, status='Success')
+
                     # Call the upload callback if needed
                     if self.upload_callback:
                         self.upload_callback(data)
                 else:
                     messagebox.showwarning(
                         'Validation Error',
-                        "CSV must contain 'Person Linkedin Url' and 'Email' columns.",
+                        "CSV must contain 'Person Linkedin Url' and 'Email' columns.",  # noqa: E501
+                    )
+                    # Log the error due to missing columns
+                    log_run(
+                        file_name=file_path, status='Error',
+                        error_message='Missing required columns.',
                     )
             except Exception as e:
                 messagebox.showerror(
                     'Error',
                     f"Failed to read CSV: {e}",
+                )
+                # Log the error due to an exception
+                log_run(
+                    file_name=file_path, status='Error',
+                    error_message=str(e),
                 )
 
     def start_process(self):
@@ -202,7 +215,7 @@ class HomePage(ttk.Frame):
         reference_email_text = self.reference_email_text.get(
             '1.0', 'end',
         ).strip()
-        reference_email = reference_email_text if reference_email_text else None
+        reference_email = reference_email_text if reference_email_text else None  # noqa: E501
 
         # Retrieve the control email sending option
         control_email_sending = self.control_email_sending_var.get()
