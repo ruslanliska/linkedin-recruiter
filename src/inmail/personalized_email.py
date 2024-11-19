@@ -3,6 +3,7 @@ import random
 import time
 
 import undetected_chromedriver as uc
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -10,6 +11,7 @@ from src.agents.email_writer import DEFAULT_EMAIL_INSTRUCTION
 from src.agents.email_writer import DEFAULT_USER_PROMPT
 from src.agents.main import generate_personal_email
 from src.inmail.utils import *
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
@@ -191,17 +193,6 @@ def run_selenium_automation(
                 time.sleep(0.001)
 
             time.sleep(random.uniform(5, 8))
-            # Locate the send button using its attributes
-            send_button = driver.find_element(
-                By.CSS_SELECTOR, 'button[data-live-test-messaging-submit-btn]',
-            )
-
-            # Check if the button is disabled
-            if send_button.get_attribute('disabled'):
-                print('Button disabled')
-            else:
-                # send_button.click()
-                print('Message sent!')
 
             # Implement your automation logic here
             # Example placeholder:
@@ -216,28 +207,49 @@ def run_selenium_automation(
                 print(
                     'Once done, press the **Enter** or **Backspace** key within the browser to continue...',
                 )
+                try:
+                    # Wait for the user to press Enter or Backspace
+                    pressed_key = wait_for_key_signal(
+                        driver, timeout=10,
+                    )  # Timeout after 5 minutes
 
-                # Wait for the user to press Enter or Backspace
-                pressed_key = wait_for_key_signal(
-                    driver, timeout=300,
-                )  # Timeout after 5 minutes
+                    # After key press, retrieve the captured keys
+                    captured_keys = get_captured_keys(driver)
+                    print('Captured Key Presses:')
+                    print(captured_keys)
 
-                # After key press, retrieve the captured keys
-                captured_keys = get_captured_keys(driver)
-                print('Captured Key Presses:')
-                print(captured_keys)
+                    # Execute different logic based on the key pressed
+                    if pressed_key == 'Enter':
+                        print(
+                            'Enter key was pressed. Executing Enter-specific logic...',
+                        )
+                        # Add your Enter key specific logic here
+                        # Example: Proceed to the next step
+                    elif pressed_key == 'Shift':
+                        print(
+                            'X key was pressed. Executing Backspace-specific logic...',
+                        )
+                        # Add your Backspace key specific logic here
+                        # Example: Perform a different action or exit
+                        continue
+                    else:
+                        print('Unrecognized key press detected.')
+                        continue
+                except TimeoutException:
+                    print('Timeout: No key press detected within the timeout period.')
+                    continue
 
-                # Execute different logic based on the key pressed
-                if pressed_key == 'Enter':
-                    print('Enter key was pressed. Executing Enter-specific logic...')
-                    # Add your Enter key specific logic here
-                    # Example: Proceed to the next step
-                elif pressed_key == 'Shift':
-                    print('X key was pressed. Executing Backspace-specific logic...')
-                    # Add your Backspace key specific logic here
-                    # Example: Perform a different action or exit
-                else:
-                    print('Unrecognized key press detected.')
+            # Locate the send button using its attributes
+            send_button = driver.find_element(
+                By.CSS_SELECTOR, 'button[data-live-test-messaging-submit-btn]',
+            )
+
+            # Check if the button is disabled
+            if send_button.get_attribute('disabled'):
+                print('Button disabled')
+            else:
+                # send_button.click()
+                print('Message sent!')
 
         # Close the WebDriver
         driver.quit()
