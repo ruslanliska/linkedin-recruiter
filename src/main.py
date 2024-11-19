@@ -10,7 +10,8 @@ def setup_logging():
     Logs are written to both the console and a file named 'application.log'.
     """
     # Define log file path
-    log_dir = Path(__file__).resolve().parent.parent / 'logs'
+    log_dir = Path(__file__).resolve().parent / 'logs'
+
     # Ensure the logs directory exists
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / 'application.log'
