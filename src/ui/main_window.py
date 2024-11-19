@@ -1,10 +1,14 @@
+# src/ui/main_window.py
+import logging
+import threading
+from tkinter import messagebox
+
 import ttkbootstrap as ttk
 from PIL import Image
 from PIL import ImageTk
 
 from src.ui.pages.history import HistoryPage
 from src.ui.pages.home import HomePage
-# Import the page classes
 
 
 class LinkedInAutomationApp(ttk.Window):
@@ -12,6 +16,9 @@ class LinkedInAutomationApp(ttk.Window):
         super().__init__(themename='superhero')  # Choose a theme
         self.title('InMail Automation')
         self.geometry('900x600')
+
+        # Initialize the stop_event
+        self.stop_event = threading.Event()
 
         self.load_images()
         self.create_styles()
@@ -22,19 +29,28 @@ class LinkedInAutomationApp(ttk.Window):
         self.create_left_menu()
         self.create_pages()
 
+        # Override the window close protocol
+        self.protocol('WM_DELETE_WINDOW', self.on_close)
+
     def load_images(self):
-        self.main_icon = ImageTk.PhotoImage(
-            Image.open('src/ui/static/home.png').resize(
-                (16, 16),
-                Image.LANCZOS,
-            ),
-        )
-        self.history_icon = ImageTk.PhotoImage(
-            Image.open('src/ui/static/history.png').resize(
-                (16, 16),
-                Image.LANCZOS,
-            ),
-        )
+        try:
+            self.main_icon = ImageTk.PhotoImage(
+                Image.open('src/ui/static/home.png').resize(
+                    (16, 16),
+                    Image.LANCZOS,
+                ),
+            )
+            self.history_icon = ImageTk.PhotoImage(
+                Image.open('src/ui/static/history.png').resize(
+                    (16, 16),
+                    Image.LANCZOS,
+                ),
+            )
+        except Exception as e:
+            logging.error(f"Error loading images: {e}")
+            # Use default images or handle the error as needed
+            self.main_icon = None
+            self.history_icon = None
 
     def create_styles(self):
         # Use a style name that doesn't include 'Menu' to avoid conflicts
@@ -89,6 +105,7 @@ class LinkedInAutomationApp(ttk.Window):
         main_page = HomePage(
             self.page_container,
             upload_callback=self.on_upload,
+            stop_event=self.stop_event,  # Pass the stop_event to HomePage
         )
         self.pages['main'] = main_page
         main_page.grid(row=0, column=0, sticky='nsew')
@@ -103,6 +120,40 @@ class LinkedInAutomationApp(ttk.Window):
         page = self.pages[page_name]
         page.tkraise()
 
-    def on_upload(self, data):
+    def on_upload(self, data, run_id):
         # Handle the uploaded data if needed
         pass
+
+    def on_close(self):
+        """
+        Handles the window close event.
+        Signals the automation thread to stop and waits for it to terminate.
+        """
+        if messagebox.askokcancel(
+            'Quit',
+            'Do you want to quit the application?',
+        ):
+            logging.info(
+                'Quit signal received. Attempting to stop automation.',
+            )
+            # Signal the automation thread to stop
+            self.stop_event.set()
+
+            # Wait for the automation thread to finish
+            for page in self.pages.values():
+                if isinstance(page, HomePage) and page.automation_thread:
+                    logging.info(
+                        'Waiting for automation thread to terminate...',
+                    )
+                    # Increase timeout if necessary
+                    page.automation_thread.join(timeout=10)
+                    if page.automation_thread.is_alive():
+                        logging.warning(
+                            'Automation thread did not terminate within the timeout.',  # noqa: E501
+                        )
+                    else:
+                        logging.info(
+                            'Automation thread terminated successfully.',
+                        )
+
+            self.destroy()
