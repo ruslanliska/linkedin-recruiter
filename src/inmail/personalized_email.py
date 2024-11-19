@@ -12,6 +12,7 @@ from selenium.webdriver.common.by import By
 from src.agents.main import generate_personal_email
 from src.database.handlers import log_email
 from src.database.handlers import log_run_end
+from src.inmail.utils import get_user_data_dir
 from src.inmail.utils import inject_key_listeners
 from src.inmail.utils import wait_for_key_signal
 # Configure logging
@@ -50,13 +51,14 @@ def run_selenium_automation(
 
         if not visible_mode:
             options.add_argument('--headless')
-
+        print('USERDATADIR', get_user_data_dir())
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
-        options.add_argument(
-            '--user-data-dir=/Users/ruslanliska/automation_profile',
-        )
+        options.add_argument(f'--user-data-dir={get_user_data_dir()}')
+        # options.add_argument(
+        #     '--user-data-dir=/Users/ruslanliska/automation_profile',
+        # )
         # On Windows: C:\Users\<YourUsername>\AppData\Local\Google\Chrome\User Data
         # options.add_argument("--user-data-dir=/Users/ruslanliska/Library/Application Support/Google/Chrome")  # Main User Data folder
 
@@ -152,7 +154,7 @@ def run_selenium_automation(
                     }?rightRail=composer',
                 )
 
-                time.sleep(random.uniform(2, 3))
+                time.sleep(random.uniform(10, 12))
                 # Locate and interact with the subject input field
                 subject_input = driver.find_element(
                     By.CSS_SELECTOR, "input[aria-label='Message subject'][placeholder='Add a subject']",
