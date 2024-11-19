@@ -14,10 +14,9 @@ from src.inmail.personalized_email import run_selenium_automation
 
 
 class HomePage(ttk.Frame):
-    def __init__(self, parent, upload_callback=None, stop_event=None):
+    def __init__(self, parent, upload_callback=None):
         super().__init__(parent)
         self.upload_callback = upload_callback
-        self.stop_event = stop_event  # Store the stop_event
         self.csv_data = None  # To store the loaded CSV data
         self.run_id = None  # To store the current run_id
         self.automation_thread = None  # Initialize automation_thread
@@ -269,7 +268,6 @@ class HomePage(ttk.Frame):
             # Re-enable the Start button
             self.enable_start_button()
 
-        # Call the Selenium automation function with a stop_event
         run_selenium_automation(
             data=data,
             visible_mode=visible_mode,
@@ -277,7 +275,6 @@ class HomePage(ttk.Frame):
             reference_email=reference_email,
             control_email_sending=control_email_sending,
             run_id=run_id,
-            stop_event=self.stop_event,  # Pass the stop_event
             callback=automation_callback,
         )
 
