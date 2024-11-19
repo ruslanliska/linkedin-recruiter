@@ -1,3 +1,4 @@
+# src/ui/pages/home.py
 import threading
 from tkinter import filedialog
 from tkinter import messagebox
@@ -6,16 +7,20 @@ from tkinter.scrolledtext import ScrolledText
 import pandas as pd
 import ttkbootstrap as ttk
 
-from src.database.handlers import log_run  # Import the SQLite logging function
+from src.database.handlers import log_run_end
+from src.database.handlers import log_run_start
 from src.inmail.personalized_email import run_selenium_automation
-# Import the Selenium automation function
+# Ensure correct import
 
 
 class HomePage(ttk.Frame):
-    def __init__(self, parent, upload_callback=None):
+    def __init__(self, parent, upload_callback=None, stop_event=None):
         super().__init__(parent)
         self.upload_callback = upload_callback
+        self.stop_event = stop_event  # Store the stop_event
         self.csv_data = None  # To store the loaded CSV data
+        self.run_id = None  # To store the current run_id
+        self.automation_thread = None  # Initialize automation_thread
         self.create_widgets()
 
     def create_widgets(self):
@@ -168,23 +173,28 @@ class HomePage(ttk.Frame):
             self.file_path_var.set(file_path)
             try:
                 data = pd.read_csv(file_path)
-                if 'Person Linkedin Url' in data.columns and 'Email' in data.columns:  # noqa: E501
+                required_columns = {'Person Linkedin Url'}
+                if 'Person Linkedin Url' in data.columns:
                     messagebox.showinfo('Success', 'CSV file is valid.')
                     self.csv_data = data  # Store the data
-                    # Log the successful run
-                    log_run(file_name=file_path, status='Success')
+
+                    # Log the start of the run and get run_id
+                    run_id = log_run_start(file_name=file_path)
+                    self.run_id = run_id  # Store run_id for later use
 
                     # Call the upload callback if needed
                     if self.upload_callback:
-                        self.upload_callback(data)
+                        # Pass data and run_id to the callback
+                        self.upload_callback(data, run_id)
                 else:
                     messagebox.showwarning(
                         'Validation Error',
-                        "CSV must contain 'Person Linkedin Url' and 'Email' columns.",  # noqa: E501
+                        "CSV must contain 'Person Linkedin Url' column.",
                     )
-                    # Log the error due to missing columns
-                    log_run(
-                        file_name=file_path, status='Error',
+                    # Log the run as Error due to missing columns
+                    run_id = log_run_start(file_name=file_path)
+                    log_run_end(
+                        run_id, status='Error',
                         error_message='Missing required columns.',
                     )
             except Exception as e:
@@ -192,11 +202,9 @@ class HomePage(ttk.Frame):
                     'Error',
                     f"Failed to read CSV: {e}",
                 )
-                # Log the error due to an exception
-                log_run(
-                    file_name=file_path, status='Error',
-                    error_message=str(e),
-                )
+                # Log the run as Error due to exception
+                run_id = log_run_start(file_name=file_path)
+                log_run_end(run_id, status='Error', error_message=str(e))
 
     def start_process(self):
         if self.csv_data is None:
@@ -230,14 +238,15 @@ class HomePage(ttk.Frame):
         self.disable_start_button()
 
         # Start the Selenium automation in a new thread
-        threading.Thread(
+        self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
             args=(
                 data_to_process, visible_mode, prompt,
-                reference_email, control_email_sending,
+                reference_email, control_email_sending, self.run_id,
             ),
             daemon=True,
-        ).start()
+        )
+        self.automation_thread.start()
 
     def run_selenium_thread(
         self,
@@ -246,6 +255,7 @@ class HomePage(ttk.Frame):
         prompt,
         reference_email,
         control_email_sending,
+        run_id,
     ):
         # Define a callback function to handle completion or errors
         def automation_callback(success, message):
@@ -256,13 +266,15 @@ class HomePage(ttk.Frame):
             # Re-enable the Start button
             self.enable_start_button()
 
-        # Call the Selenium automation function
+        # Call the Selenium automation function with a stop_event
         run_selenium_automation(
             data=data,
             visible_mode=visible_mode,
             prompt=prompt,
             reference_email=reference_email,
             control_email_sending=control_email_sending,
+            run_id=run_id,
+            stop_event=self.stop_event,  # Pass the stop_event
             callback=automation_callback,
         )
 
