@@ -125,18 +125,21 @@ class HomePage(ttk.Frame):
         )
 
         self.reference_email_text = ScrolledText(
-            form, wrap='word', width=50, height=10, font=('Helvetica', 12),
+            form, wrap='word', width=50, height=10,
+            font=('Helvetica', 12),
         )
         self.reference_email_text.grid(
-            row=4, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
+            row=4, column=1, sticky='nsew', padx=5, pady=10,
+            columnspan=2,
         )
-        form.rowconfigure(4, weight=1)  # Allow reference email field to expand
+        form.rowconfigure(4, weight=1)
 
         # -----------------------------
         # Row 5: Control Email Sending Checkbox
         # -----------------------------
         label_control_email_sending = ttk.Label(
-            form, text='Control Email Sending:', font=('Helvetica', 12),
+            form, text='Control Email Sending:',
+            font=('Helvetica', 12),
         )
         label_control_email_sending.grid(
             row=5, column=0, sticky='e', padx=5, pady=10,
