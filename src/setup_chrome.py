@@ -7,6 +7,8 @@ import sys
 import time
 from pathlib import Path
 
+import psutil
+
 
 def setup_logging():
     """
@@ -69,22 +71,14 @@ def get_chrome_path(os_type):
         sys.exit(1)
 
 
-def get_profile_path(os_type):
+def get_profile_path():
     """
     Defines the Chrome user data directory based on the operating system.
-    Args:
-        os_type (str): 'Windows' or 'Darwin' for macOS
     Returns:
-        Path: Path object to the automation profile directory
+        Path: Path object to the automation profile directory within project root
     """
-    home_dir = Path.home()
-    if os_type == 'Windows':
-        profile_dir = home_dir / 'automation_profile'
-    elif os_type == 'Darwin':
-        profile_dir = home_dir / 'automation_profile'
-    else:
-        logging.error(f"Unsupported Operating System: {os_type}")
-        sys.exit(1)
+    project_root = Path(__file__).resolve().parent
+    profile_dir = project_root / 'automation_profile'
     return profile_dir
 
 
@@ -105,13 +99,14 @@ def create_profile_directory(profile_path):
         sys.exit(1)
 
 
-def launch_chrome(chrome_path, profile_path, os_type):
+def launch_chrome(chrome_path, profile_path, os_type, log_file):
     """
     Launches Google Chrome with the specified user data directory to initialize the profile.
     Args:
         chrome_path (Path): Path to the Chrome executable
         profile_path (Path): Path to the automation profile directory
         os_type (str): 'Windows' or 'Darwin' for macOS
+        log_file (Path): Path to the log file for Chrome's output
     Returns:
         subprocess.Popen: The subprocess running Chrome
     """
@@ -121,20 +116,34 @@ def launch_chrome(chrome_path, profile_path, os_type):
             f'--user-data-dir={str(profile_path)}',
             '--no-first-run',
             '--no-default-browser-check',
+            '--new-instance',  # Force a new instance on Windows
         ],
         'Darwin': [
             str(chrome_path),
             f'--user-data-dir={str(profile_path)}',
             '--no-first-run',
             '--no-default-browser-check',
+            # '--new-instance' not needed on macOS
         ],
     }
 
     try:
         cmd = chrome_commands[os_type]
         logging.info(f"Launching Chrome with command: {' '.join(cmd)}")
-        # Start Chrome
-        chrome_process = subprocess.Popen(cmd)
+
+        # Open the log file in append mode for Chrome's stdout and stderr
+        chrome_log_path = log_file.parent / 'chrome_output.log'
+        chrome_log = chrome_log_path.open('a', encoding='utf-8')
+
+        # Start Chrome, redirecting stdout and stderr to the chrome_output.log file
+        chrome_process = subprocess.Popen(
+            cmd,
+            stdout=chrome_log,
+            stderr=chrome_log,
+        )
+        logging.info(f"Chrome launched successfully with PID: {
+                     chrome_process.pid
+                     }")
         return chrome_process
     except FileNotFoundError:
         logging.error('Google Chrome executable not found.')
@@ -144,25 +153,60 @@ def launch_chrome(chrome_path, profile_path, os_type):
         sys.exit(1)
 
 
+def terminate_process_and_children(process):
+    """
+    Terminates the given subprocess and all its child processes.
+    Args:
+        process (subprocess.Popen): The subprocess to terminate
+    """
+    try:
+        parent = psutil.Process(process.pid)
+        children = parent.children(recursive=True)
+        for child in children:
+            child.terminate()
+        gone, still_alive = psutil.wait_procs(children, timeout=5)
+        for p in still_alive:
+            p.kill()
+        parent.terminate()
+        parent.wait(timeout=5)
+        logging.info('Chrome process and all child processes terminated.')
+    except Exception as e:
+        logging.error(f"Error terminating Chrome and its child processes: {e}")
+
+
 def terminate_process(process):
     """
-    Terminates the given subprocess.
+    Terminates the given subprocess and its child processes.
     Args:
         process (subprocess.Popen): The subprocess to terminate
     """
     try:
         if process.poll() is None:
-            logging.info('Terminating Chrome process...')
-            process.terminate()
-            process.wait(timeout=5)
-            logging.info('Chrome process terminated gracefully.')
-    except subprocess.TimeoutExpired:
-        logging.warning(
-            'Chrome process did not terminate in time. Killing process.',
-        )
-        process.kill()
+            logging.info(
+                'Terminating Chrome process and its child processes...',
+            )
+            terminate_process_and_children(process)
     except Exception as e:
         logging.error(f"Error terminating Chrome process: {e}")
+
+
+def is_chrome_running_with_profile(profile_path):
+    """
+    Checks if any Chrome process is running with the specified user data directory.
+    Args:
+        profile_path (Path): Path to the automation profile directory
+    Returns:
+        bool: True if a matching Chrome process is found, False otherwise
+    """
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            if 'chrome' in proc.info['name'].lower():
+                cmdline = proc.info['cmdline']
+                if any(f"--user-data-dir={str(profile_path)}" in arg for arg in cmdline):
+                    return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    return False
 
 
 def main():
@@ -178,8 +222,12 @@ def main():
     chrome_path = get_chrome_path(os_type)
     logger.info(f"Google Chrome executable found at: {chrome_path}")
 
-    profile_path = get_profile_path(os_type)
+    profile_path = get_profile_path()
     create_profile_directory(profile_path)
+
+    # Define the main log file
+    main_log_file = Path(__file__).resolve().parent / \
+        'logs' / 'setup_chrome_profile.log'
 
     # If the profile directory already has data, prompt the user to clear it
     if any(profile_path.iterdir()):
@@ -204,8 +252,20 @@ def main():
     else:
         logger.info(f"No existing data in profile directory: {profile_path}")
 
-    # Launch Chrome with the custom profile
-    chrome_process = launch_chrome(chrome_path, profile_path, os_type)
+    # Ensure no other Chrome instances are running with the same profile
+    if is_chrome_running_with_profile(profile_path):
+        logger.error(
+            'Another Chrome instance is already running with the automation profile.',
+        )
+        logger.error(
+            'Please close all Chrome windows using the automation profile and try again.',
+        )
+        sys.exit(1)
+
+    # Launch Chrome with the custom profile, redirecting its output to chrome_output.log
+    chrome_process = launch_chrome(
+        chrome_path, profile_path, os_type, main_log_file,
+    )
 
     logger.info('Chrome has been launched with the custom automation profile.')
     logger.info(
@@ -218,11 +278,17 @@ def main():
     # Wait for the user to close Chrome
     try:
         while True:
-            # Check if Chrome process has terminated
-            if chrome_process.poll() is not None:
-                logger.info('Chrome process has been closed.')
+            if not is_chrome_running_with_profile(profile_path):
+                logger.info(
+                    'Chrome process associated with the automation profile has been closed.',
+                )
                 break
-            time.sleep(1)
+            else:
+                # Optional: Uncomment the following lines to log every minute that Chrome is still running
+                # current_time = time.strftime("%H:%M:%S")
+                # logger.debug(f"Chrome is still running at {current_time}...")
+                pass
+            time.sleep(5)  # Check every 5 seconds
     except KeyboardInterrupt:
         logger.info('Keyboard interrupt received. Terminating Chrome process.')
         terminate_process(chrome_process)
