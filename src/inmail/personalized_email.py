@@ -149,9 +149,7 @@ def run_selenium_automation(
 
                 # Navigate to the messaging composer
                 driver.get(
-                    f'https://www.linkedin.com/talent/profile/{
-                        profile_id
-                    }?rightRail=composer',
+                    f'https://www.linkedin.com/talent/profile/{profile_id}?rightRail=composer',
                 )
 
                 time.sleep(random.uniform(10, 20))
@@ -253,9 +251,7 @@ def run_selenium_automation(
             except Exception as e:
                 email_status = 'Failed'
                 error_message = str(e)
-                logging.error(f"Error processing profile {
-                              linkedin_profile
-                              }: {e}")
+                logging.error(f"Error processing profile {linkedin_profile}: {e}")
                 logging.debug(traceback.format_exc())
                 # Log the error for this email
                 log_email(
