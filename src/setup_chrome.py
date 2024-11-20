@@ -104,7 +104,7 @@ def get_profile_path():
         profile directory within project root
     """
     app_path = get_application_path()
-    profile_dir = app_path / 'src' / 'automation_profile'
+    profile_dir = app_path / 'automation_profile'
     return profile_dir
 
 

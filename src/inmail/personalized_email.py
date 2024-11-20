@@ -76,7 +76,7 @@ def run_selenium_automation(
                 renderer='Intel Iris OpenGL Engine',
                 fix_hairline=True,
             )
-            time.sleep(random.uniform(2, 5))
+            time.sleep(random.uniform(2, 10))
 
             logging.info('ChromeDriver initialized successfully.')
         except Exception as e:
@@ -154,7 +154,7 @@ def run_selenium_automation(
                     }?rightRail=composer',
                 )
 
-                time.sleep(random.uniform(10, 12))
+                time.sleep(random.uniform(10, 20))
                 # Locate and interact with the subject input field
                 subject_input = driver.find_element(
                     By.CSS_SELECTOR, "input[aria-label='Message subject'][placeholder='Add a subject']",
