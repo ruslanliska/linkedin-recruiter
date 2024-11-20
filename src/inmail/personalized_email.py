@@ -150,7 +150,8 @@ def run_selenium_automation(
                 # Navigate to the messaging composer
                 driver.get(
                     f'https://www.linkedin.com/talent/profile/{
-                        profile_id}?rightRail=composer',
+                        profile_id
+                    }?rightRail=composer',
                 )
 
                 time.sleep(random.uniform(10, 20))
