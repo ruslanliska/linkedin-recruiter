@@ -1,4 +1,6 @@
 # src/ui/main_window.py
+import sys
+import os
 import logging
 from tkinter import messagebox
 
@@ -18,6 +20,23 @@ logging.basicConfig(
         logging.FileHandler('application.log'),  # Log to a file
     ],
 )
+
+
+def get_resource_path(relative_path):
+    """
+    Get the absolute path to a resource, whether in development or bundled with PyInstaller.
+    """
+    if hasattr(sys, '_MEIPASS'):  # Running as an executable
+        base_path = sys._MEIPASS
+    else:  # Running in development mode
+        base_path = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(base_path, relative_path)
+
+
+# Replace the direct path with this function
+home_image_path2 = get_resource_path('static/home.png')
+
+print(f"Resolved home image path: {home_image_path2}")
 
 
 class LinkedInAutomationApp(ttk.Window):
@@ -41,13 +60,13 @@ class LinkedInAutomationApp(ttk.Window):
     def load_images(self):
         try:
             self.main_icon = ImageTk.PhotoImage(
-                Image.open('src/ui/static/home.png').resize(
+                Image.open(get_resource_path('static/home.png')).resize(
                     (16, 16),
                     Image.LANCZOS,
                 ),
             )
             self.history_icon = ImageTk.PhotoImage(
-                Image.open('src/ui/static/history.png').resize(
+                Image.open(get_resource_path('static/history.png')).resize(
                     (16, 16),
                     Image.LANCZOS,
                 ),
@@ -57,6 +76,7 @@ class LinkedInAutomationApp(ttk.Window):
             # Use default images or handle the error as needed
             self.main_icon = None
             self.history_icon = None
+            sys.exit(1)
 
     def create_styles(self):
         # Use a style name that doesn't include 'Menu' to avoid conflicts
