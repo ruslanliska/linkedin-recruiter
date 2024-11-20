@@ -170,9 +170,7 @@ def launch_chrome(chrome_path, profile_path, os_type, log_file):
             stderr=chrome_log,
             shell=False,  # Avoid using shell for security reasons
         )
-        logging.info(f"Chrome launched successfully with PID: {
-                     chrome_process.pid
-                     }")
+        logging.info(f"Chrome launched successfully with PID: {chrome_process.pid}")
         return chrome_process
     except FileNotFoundError:
         logging.error('Google Chrome executable not found.')
@@ -268,9 +266,7 @@ def main():
             try:
                 shutil.rmtree(profile_path)
                 profile_path.mkdir(parents=True, exist_ok=True)
-                logger.info(f"Cleared and recreated profile directory: {
-                            profile_path
-                            }")
+                logger.info(f"Cleared and recreated profile directory: {profile_path}")
             except Exception as e:
                 logger.error(f"Failed to clear profile directory: {e}")
                 sys.exit(1)
