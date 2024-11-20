@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
 REM Define Python version, virtual environment name, and Chrome setup script
 set "PYTHON_VERSION=python"
@@ -61,7 +61,7 @@ if exist "requirements.txt" (
 REM Run Chrome setup script
 if exist "%CHROME_SETUP_SCRIPT%" (
     echo Running Chrome setup script (%CHROME_SETUP_SCRIPT%)...
-    python %CHROME_SETUP_SCRIPT%
+    python "%CHROME_SETUP_SCRIPT%"
     if %errorlevel% neq 0 (
         echo Failed to execute Chrome setup script.
         exit /b 1
