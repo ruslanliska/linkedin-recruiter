@@ -19,6 +19,7 @@ if %errorlevel% neq 0 (
     echo Python is installed.
 )
 
+echo Before virtual environment creation...
 REM Create virtual environment
 if not exist "%VENV_NAME%" (
     echo Creating virtual environment (%VENV_NAME%)...
@@ -26,30 +27,34 @@ if not exist "%VENV_NAME%" (
     if %errorlevel% neq 0 (
         echo Failed to create virtual environment.
         exit /b 1
+    ) else (
+        echo Finished creating virtual environment...
     )
 ) else (
     echo Virtual environment already exists.
 )
 
+echo Before activating the virtual environment...
 REM Activate the virtual environment
-call "%VENV_NAME%\Scripts\activate"
+call "%VENV_NAME%\Scripts\activate.bat"
 if %errorlevel% neq 0 (
     echo Failed to activate virtual environment.
     exit /b 1
 )
 
+echo Before upgrading pip...
 REM Upgrade pip
-echo Upgrading pip...
-pip install --upgrade pip
+python -m pip install --upgrade pip
 if %errorlevel% neq 0 (
     echo Failed to upgrade pip.
     exit /b 1
 )
 
+echo Before installing dependencies...
 REM Install dependencies
 if exist "requirements.txt" (
     echo Installing dependencies from requirements.txt...
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
     if %errorlevel% neq 0 (
         echo Failed to install dependencies.
         exit /b 1
@@ -58,6 +63,7 @@ if exist "requirements.txt" (
     echo requirements.txt not found. Skipping dependency installation.
 )
 
+echo Before running Chrome setup script...
 REM Run Chrome setup script
 if exist "%CHROME_SETUP_SCRIPT%" (
     echo Running Chrome setup script (%CHROME_SETUP_SCRIPT%)...
