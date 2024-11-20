@@ -1,12 +1,8 @@
-
-from src.config import settings  # Import settings early
-
 import logging
 import os
 import subprocess
 import sys
 from pathlib import Path
-
 
 
 def get_application_path():
@@ -30,7 +26,10 @@ def get_application_path():
         return project_root
     else:
         # If run as a normal script
-        return Path(__file__).parent
+        return Path(__file__).parent.parent
+
+
+sys.path.append(str(get_application_path()))
 
 
 def setup_logging():
@@ -39,7 +38,6 @@ def setup_logging():
     Logs are written to both the console and a file named 'application.log'.
     """
     # Define log file path
-    app_path = get_application_path()
     app_path = get_application_path()
     log_dir = app_path / 'logs'
     # Ensure the logs directory exists
