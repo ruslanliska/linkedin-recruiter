@@ -149,7 +149,8 @@ def run_selenium_automation(
 
                 # Navigate to the messaging composer
                 driver.get(
-                    f'https://www.linkedin.com/talent/profile/{profile_id}?rightRail=composer',
+                    f'https://www.linkedin.com/talent/profile/{
+                        profile_id}?rightRail=composer',
                 )
 
                 time.sleep(random.uniform(10, 20))
@@ -158,7 +159,7 @@ def run_selenium_automation(
                     By.CSS_SELECTOR, "input[aria-label='Message subject'][placeholder='Add a subject']",
                 )
                 subject_input.click()
-                subject_input.send_keys('Talent Found')
+                subject_input.send_keys('Staffing Partner')
 
                 # Locate and interact with the email editor
                 editor = driver.find_element(
@@ -235,7 +236,7 @@ def run_selenium_automation(
                     error_message = 'Send button disabled.'
                     logging.warning('Send button is disabled.')
                 else:
-                    # send_button.click()
+                    send_button.click()
                     email_status = 'Sent'
                     logging.info('Message sent successfully.')
 
@@ -251,7 +252,8 @@ def run_selenium_automation(
             except Exception as e:
                 email_status = 'Failed'
                 error_message = str(e)
-                logging.error(f"Error processing profile {linkedin_profile}: {e}")
+                logging.error(f"Error processing profile {
+                              linkedin_profile}: {e}")
                 logging.debug(traceback.format_exc())
                 # Log the error for this email
                 log_email(
