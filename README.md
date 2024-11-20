@@ -1,331 +1,276 @@
-# LinkedIn Recruiter Automation
+## **Prerequisites**
 
-Automate your LinkedIn recruitment process seamlessly with our Python-based tool. This application leverages a custom Chrome profile to interact with LinkedIn, enabling tasks such as sending connection requests, messaging candidates, and more.
+Before you begin, ensure you have the following installed on your system:
 
-## Table of Contents
-
-1. [Features](#features)
-2. [Prerequisites](#prerequisites)
-3. [Installation](#installation)
-    - [1. Clone the Repository](#1-clone-the-repository)
-    - [2. Set Up a Virtual Environment](#2-set-up-a-virtual-environment)
-    - [3. Install Dependencies](#3-install-dependencies)
-    - [4. Build Executables (Optional)](#4-build-executables-optional)
-4. [Usage](#usage)
-    - [1. Running the Setup Script](#1-running-the-setup-script)
-    - [2. Configuring Chrome](#2-configuring-chrome)
-    - [3. Running the Main Automation Script](#3-running-the-main-automation-script)
-5. [Project Structure](#project-structure)
-6. [Troubleshooting](#troubleshooting)
-7. [Contributing](#contributing)
-8. [License](#license)
+- **Python 3.x**: Download and install from [python.org](https://www.python.org/downloads/). During installation, check the option to **Add Python to PATH**.
+- **Git** (optional): If you prefer cloning the repository instead of downloading the ZIP file, install Git from [git-scm.com](https://git-scm.com/downloads).
+- **Google Chrome**: The project may interact with Chrome; download it from [google.com/chrome](https://www.google.com/chrome/).
 
 ---
 
-## Features
+## **Step-by-Step Instructions**
 
-- **Automated LinkedIn Tasks:** Streamline connection requests, messaging, and profile visits.
-- **Custom Chrome Profile:** Maintain separate browsing sessions to avoid interference with personal accounts.
-- **Cross-Platform Support:** Currently optimized for macOS, with plans for Windows support.
-- **Detailed Logging:** Monitor activities and troubleshoot issues with comprehensive logs.
+### **1. Download the Project**
+
+You have two options to get the project files: cloning the repository or downloading it as a ZIP file.
+
+#### **Option A: Clone the Repository Using Git**
+
+1. **Open PowerShell**:
+
+   - Press `Win + X` and select **Windows PowerShell** or **Windows PowerShell (Admin)**.
+
+2. **Navigate to Your Desired Directory**:
+
+   ```powershell
+   cd C:\path\to\your\desired\directory
+   ```
+
+   - Replace `C:\path\to\your\desired\directory` with the path where you want to place the project folder.
+
+3. **Clone the Repository**:
+
+   ```powershell
+   git clone https://github.com/ruslanliska/linkedin-recruiter.git
+   ```
+
+   - This command creates a folder named `linkedin-recruiter` in your current directory.
+
+#### **Option B: Download as ZIP**
+
+1. **Download the ZIP File**:
+
+   - Visit the repository: [https://github.com/ruslanliska/linkedin-recruiter](https://github.com/ruslanliska/linkedin-recruiter).
+   - Click on the green **Code** button and select **Download ZIP**.
+
+2. **Extract the ZIP File**:
+
+   - Right-click the downloaded ZIP file and select **Extract All**.
+   - Choose the destination folder where you want the project files.
+
+### **2. Navigate to the Project Root Directory**
+
+In PowerShell, navigate to the root directory of the project:
+
+```powershell
+cd C:\path\to\linkedin-recruiter
+```
+
+- Replace `C:\path\to\linkedin-recruiter` with the actual path to the project folder.
+
+### **3. Adjust PowerShell Execution Policy**
+
+To allow the execution of the setup script, adjust the execution policy for the current session:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+```
+
+- **Explanation**: This command temporarily bypasses the execution policy restrictions for the current PowerShell session, allowing you to run unsigned scripts like `setup.ps1`.
+
+### **4. Run the Setup Script**
+
+Execute the setup script to set up the project environment:
+
+```powershell
+.\setup.ps1
+```
+
+- **What This Does**:
+  - Checks for Python installation.
+  - Creates a virtual environment named `venv` if it doesn't exist.
+  - Activates the virtual environment.
+  - Upgrades `pip` to the latest version.
+  - Installs required Python packages from `requirements.txt`.
+  - Runs the Chrome setup script (`src/setup_chrome.py`) if it exists.
+
+- **Possible Prompts**:
+  - If prompted to install packages or confirm actions, type `Y` and press **Enter**.
+
+### **5. Add the `.env` File with Your OpenAI API Key**
+
+Create a `.env` file in the project root directory to store your OpenAI API key.
+
+#### **Create the .env File**
+
+```powershell
+New-Item -ItemType File -Path .\.env
+```
+
+#### **Edit the .env File**
+
+1. **Open the .env File**:
+
+   ```powershell
+   notepad .\.env
+   ```
+
+2. **Add Your OpenAI API Key**:
+
+   In the Notepad window that opens, type the following line:
+
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+
+   - Replace `your_openai_api_key_here` with your actual OpenAI API key.
+
+3. **Save and Close Notepad**:
+
+   - Click **File** > **Save**, then close Notepad.
+
+### **6. Run the Project**
+
+Execute the main script to start the application:
+
+```powershell
+.\run.ps1
+```
+
+- **What This Does**:
+  - Activates the virtual environment.
+  - Runs the main application script (e.g., `src/main.py` or similar, depending on the project's structure).
 
 ---
 
-## Prerequisites
+## **Full Command Sequence**
 
-Before installing the LinkedIn Recruiter Automation tool, ensure your system meets the following requirements:
+Here's the complete set of commands for quick reference:
 
-- **Operating System:** macOS (tested on macOS Catalina and later)
-- **Python Version:** Python 3.6 or higher
-- **Google Chrome:** Installed on your system
-- **Apple Developer Account (Optional):** For code signing and notarization (recommended for distribution)
+```powershell
+# Navigate to the project directory
+cd C:\path\to\linkedin-recruiter
 
----
+# Adjust execution policy for the current session
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 
-## Installation
+# Run the setup script
+.\setup.ps1
 
-Follow these steps to set up the LinkedIn Recruiter Automation tool on your macOS system.
+# Create the .env file
+New-Item -ItemType File -Path .\.env
 
-### 1. Clone the Repository
+# Add your OpenAI API key to the .env file
+notepad .\.env
+# In Notepad, add: OPENAI_API_KEY=your_openai_api_key_here
+# Save and close Notepad
 
-Begin by cloning the repository to your local machine.
-
-```bash
-git clone https://github.com/ruslanliska/linkedin-recruiter.git
-cd linkedin-recruiter
-```
-
-*Replace `yourusername` with your actual GitHub username.*
-
-### 2. Set Up a Virtual Environment
-
-It's recommended to use a virtual environment to manage dependencies without affecting your global Python installation.
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-*To deactivate the virtual environment later, simply run `deactivate`.*
-
-### 3. Install Dependencies
-
-Install the required Python packages using `pip`.
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-*Ensure that the `requirements.txt` file includes all necessary packages, such as `undetected-chromedriver`, `selenium`, and `psutil`.*
-
-### 4. Build Executables (Optional)
-
-If you prefer running standalone executables without managing a Python environment, you can build them using **PyInstaller**.
-
-#### A. Install PyInstaller
-
-With your virtual environment activated, install PyInstaller:
-
-```bash
-pip install pyinstaller
-```
-
-#### B. Build Executables
-
-Run PyInstaller to create executables for both `setup_chrome.py` and `main.py`.
-
-```bash
-pyinstaller --onefile --console src/setup_chrome/setup_chrome.py
-pyinstaller --onefile --console src/main/main.py
-```
-
-- `--onefile`: Packages the script and all dependencies into a single executable.
-- `--console`: Keeps the console window open for user interaction. Use `--windowed` if you prefer to hide the console (suitable for GUI applications).
-
-The executables will be located in the `dist/` directory.
-
----
-
-## Usage
-
-### 1. Running the Setup Script
-
-The `setup_chrome` script initializes a custom Chrome profile for automation.
-
-#### A. Navigate to the Executable
-
-```bash
-cd dist
-```
-
-#### B. Run the Setup Executable
-
-```bash
-./setup_chrome
-```
-
-**Output Example:**
-
-```
-2024-11-20 08:25:27,668 - INFO - Application Path: /Users/ruslanliska/PycharmProjects/linkedin-recruiter
-2024-11-20 08:25:27,668 - INFO - Profile Path: /Users/ruslanliska/PycharmProjects/linkedin-recruiter/src/automation_profile
-2024-11-20 08:25:27,668 - INFO - === Starting Chrome Automation Profile Setup ===
-2024-11-20 08:25:27,668 - INFO - Detected Operating System: Darwin
-2024-11-20 08:25:27,668 - INFO - Google Chrome executable found at: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-2024-11-20 08:25:27,668 - INFO - Profile directory already exists: /Users/ruslanliska/PycharmProjects/linkedin-recruiter/src/automation_profile
-2024-11-20 08:25:27,668 - INFO - Chrome launched successfully with PID: 5938
-2024-11-20 08:25:27,668 - INFO - Chrome has been launched with the custom automation profile.
-2024-11-20 08:25:27,668 - INFO - Please configure Chrome as needed (e.g., log in, install extensions).
-2024-11-20 08:25:27,668 - INFO - Once you have completed the setup, close the Chrome window to proceed.
-```
-
-### 2. Configuring Chrome
-
-After launching Chrome with the custom profile:
-
-1. **Log In:** Sign in with your LinkedIn account to synchronize your session.
-2. **Install Extensions:** Add any necessary Chrome extensions that facilitate automation tasks.
-3. **Adjust Settings:** Modify Chrome settings as required (e.g., disable notifications, set default search engine).
-
-**Important:** Ensure you **close Chrome** after completing the setup to allow the script to finalize the profile.
-
-### 3. Running the Main Automation Script
-
-Once the setup is complete, run the main automation script to start automating LinkedIn tasks.
-
-#### A. Navigate to the Executable
-
-If not already in the `dist/` directory:
-
-```bash
-cd dist
-```
-
-#### B. Run the Main Executable
-
-```bash
-./main
-```
-
-**Output Example:**
-
-```
-2024-11-20 09:00:00,123 - INFO - Run ID: 28 - Automation Task Started.
-2024-11-20 09:00:05,456 - INFO - ChromeDriver initialized successfully.
-2024-11-20 09:00:10,789 - INFO - Navigated to https://www.example.com
-2024-11-20 09:00:15,012 - INFO - Page Title: Example Domain
-2024-11-20 09:00:20,345 - INFO - ChromeDriver has been closed.
+# Run the project
+.\run.ps1
 ```
 
 ---
 
-## Project Structure
+## **Additional Information**
 
-Understanding the project's directory structure helps in navigating and managing the project effectively.
+### **Virtual Environment**
 
-```
-linkedin-recruiter/
-├── src/
-│   ├── setup_chrome/
-│   │   └── setup_chrome.py
-│   ├── main/
-│   │   └── main.py
-│   ├── logs/                     # Log files (auto-created by scripts)
-│   └── automation_profile/      # Chrome profile (auto-created by setup script)
-├── dist/                        # PyInstaller output (executables)
-│   ├── setup_chrome              # Executable for setup
-│   └── main                      # Executable for main automation
-├── build/                       # PyInstaller build files (auto-created)
-├── requirements.txt             # Python dependencies
-├── setup_chrome.spec            # PyInstaller spec file for setup_chrome.py
-├── main.spec                    # PyInstaller spec file for main.py
-└── README.md                    # Project documentation
-```
+- **Purpose**: The virtual environment ensures that the project's Python dependencies are isolated from other Python projects on your system.
+- **Activation**: The `setup.ps1` and `run.ps1` scripts handle the activation of the virtual environment automatically.
+
+### **Python Packages**
+
+- **Dependencies**: Listed in `requirements.txt`.
+- **Installation**: Handled by the `setup.ps1` script using `pip`.
+
+### **Chrome Setup**
+
+- **Script**: `src/setup_chrome.py`
+- **Function**: Configures the Chrome WebDriver needed for automation tasks.
+- **Requirement**: Ensure you have Google Chrome installed.
+
+### **Environment Variables**
+
+- **File**: `.env`
+- **Usage**: Stores sensitive information like API keys without hardcoding them into scripts.
+- **Security**: Do not commit the `.env` file to version control systems like Git.
 
 ---
 
-## Troubleshooting
+## **Troubleshooting**
 
-Encountering issues during installation or usage? Here are some common problems and their solutions.
+### **Execution Policy Error**
 
-### 1. `automation_profile` Created in `dist/` Instead of `src/`
+- **Issue**: Error message stating scripts cannot be run due to execution policy.
+- **Solution**: Ensure you've run `Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process`.
 
-**Cause:** Path resolution issues in the `setup_chrome.py` script.
+### **Python Not Recognized**
 
-**Solution:**
+- **Issue**: Error stating `python` is not recognized as a command.
+- **Solution**:
+  - Verify Python is installed.
+  - Ensure Python is added to the system PATH.
+  - Close and reopen PowerShell after installation.
 
-- Ensure that the `get_application_path()` function correctly determines the project root.
-- Verify that the project structure aligns with the path calculations in the script.
-- Check the `setup_chrome_profile.log` located in `src/logs/` for detailed path information.
+### **Permission Denied Errors**
 
-**Example Log Entries:**
+- **Issue**: Access is denied when running scripts.
+- **Solution**:
+  - Run PowerShell as an administrator.
+  - Right-click on PowerShell and select **Run as administrator**.
 
-```
-2024-11-20 08:25:27,668 - INFO - Application Path: /Users/ruslanliska/PycharmProjects/linkedin-recruiter
-2024-11-20 08:25:27,668 - INFO - Profile Path: /Users/ruslanliska/PycharmProjects/linkedin-recruiter/src/automation_profile
-```
+### **Missing Dependencies**
 
-### 2. Executable Fails to Launch Chrome
+- **Issue**: Errors about missing Python packages.
+- **Solution**:
+  - Ensure `setup.ps1` completed successfully.
+  - Manually install packages:
 
-**Cause:** Incorrect path to the Chrome executable or Chrome not installed.
+    ```powershell
+    .\venv\Scripts\Activate.ps1
+    python -m pip install -r requirements.txt
+    ```
 
-**Solution:**
+### **API Key Errors**
 
-- Verify that Google Chrome is installed at `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
-- Update the `get_chrome_path()` function if Chrome is installed in a different location.
+- **Issue**: Application fails due to missing or incorrect API key.
+- **Solution**:
+  - Double-check the `.env` file.
+  - Ensure there are no extra spaces or characters.
+  - Verify that your OpenAI API key is active and has the necessary permissions.
 
-### 3. Permission Denied Errors
+### **Virtual Environment Activation Failure**
 
-**Cause:** Lack of necessary permissions to create directories or execute files.
+- **Issue**: Scripts can't activate the virtual environment.
+- **Solution**:
+  - Check if the `venv` folder exists.
+  - Manually activate the virtual environment:
 
-**Solution:**
+    ```powershell
+    .\venv\Scripts\Activate.ps1
+    ```
 
-- Ensure you have read/write permissions in the project directory.
-- Run the executable with elevated permissions if necessary:
+---
 
-  ```bash
-  sudo ./setup_chrome
+## **Security Considerations**
+
+- **Execution Policy**: Changing the execution policy to `Bypass` lowers your system's security for the session. Only do this when running trusted scripts.
+- **Resetting Execution Policy**: After you're done, you can close the PowerShell session, or reset the execution policy:
+
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy Restricted -Scope Process
   ```
 
-### 4. Missing Dependencies
-
-**Cause:** Required Python packages are not installed.
-
-**Solution:**
-
-- Activate your virtual environment:
-
-  ```bash
-  source venv/bin/activate
-  ```
-
-- Install dependencies:
-
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-### 5. Executable Not Found After Building
-
-**Cause:** PyInstaller build failed or output path issues.
-
-**Solution:**
-
-- Ensure PyInstaller ran without errors during the build process.
-- Check the `dist/` directory for the executables.
-- Review the `setup_chrome.spec` and `main.spec` files for correct configurations.
+- **API Keys**: Keep your `.env` file secure. Do not share your API key or commit it to any repositories.
 
 ---
 
-## Contributing
+## **Summary**
 
-Contributions are welcome! To contribute to the LinkedIn Recruiter Automation tool, follow these steps:
+By following these steps, you will:
 
-1. **Fork the Repository:** Click the "Fork" button on the repository page.
-
-2. **Clone Your Fork:**
-
-   ```bash
-   git clone https://github.com/yourusername/linkedin-recruiter.git
-   cd linkedin-recruiter
-   ```
-
-3. **Create a New Branch:**
-
-   ```bash
-   git checkout -b feature/YourFeatureName
-   ```
-
-4. **Make Changes:** Implement your feature or fix.
-
-5. **Commit Changes:**
-
-   ```bash
-   git commit -m "Add feature: YourFeatureName"
-   ```
-
-6. **Push to Your Fork:**
-
-   ```bash
-   git push origin feature/YourFeatureName
-   ```
-
-7. **Create a Pull Request:** Navigate to the original repository and create a pull request.
-
-**Please ensure that your contributions adhere to the project's coding standards and include appropriate documentation and tests.**
+- Obtain the project files.
+- Configure your environment to run PowerShell scripts.
+- Set up the Python virtual environment and install dependencies.
+- Provide the necessary API key for OpenAI services.
+- Run the application successfully.
 
 ---
 
-## License
+## **Need Further Assistance?**
 
-This project is licensed under the [MIT License](LICENSE).
+If you encounter any issues or have questions:
 
----
-
-## Acknowledgements
-
-- **PyInstaller:** For enabling the creation of standalone executables.
-- **Undetected-Chromedriver:** For facilitating Selenium interactions with Chrome.
-- **Selenium:** For web browser automation.
-- **psutil:** For process management.
+- **Check the Project's README**: There may be additional instructions or updates.
+- **GitHub Issues**: Look for existing issues or open a new one on the project's GitHub page.
+- **Contact the Developer**: Reach out to the project maintainer for support.
