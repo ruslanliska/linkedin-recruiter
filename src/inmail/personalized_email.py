@@ -107,6 +107,10 @@ def run_selenium_automation(
                     )
                     continue
 
+                # Force a hard reload
+                driver.execute_script('location.reload(true);')
+                time.sleep(random.uniform(4, 7))
+
                 driver.get(linkedin_profile)
 
                 from bs4 import BeautifulSoup
@@ -280,6 +284,8 @@ def run_selenium_automation(
                             logger.warning(
                                 'Error message. No recipient email found. Select InMail instead.',  # noqa:E501
                             )
+                            # Force a hard reload
+                            driver.execute_script('location.reload(true);')
                             continue
                         else:
                             logger.info(
@@ -393,6 +399,9 @@ def run_selenium_automation(
                     error_message=error_message,
                 )
                 time.sleep(random.uniform(61, 82))
+                # Force a hard reload
+                driver.execute_script('location.reload(true);')
+                logger.info('Page refreshed.')
 
             except Exception as e:
                 email_status = 'Failed'
@@ -407,6 +416,9 @@ def run_selenium_automation(
                     email_status=email_status,
                     error_message=error_message,
                 )
+                # Force a hard reload
+                driver.execute_script('location.reload(true);')
+                logger.info('Page refreshed.')
                 continue
 
         # Update run status to Completed
