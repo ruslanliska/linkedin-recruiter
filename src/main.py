@@ -118,6 +118,7 @@ def is_frozen():
 
 
 if __name__ == '__main__':
+    setup_logging()
     if is_frozen():
         logging.info('Running as a bundled executable.')
         run_subprocess()
