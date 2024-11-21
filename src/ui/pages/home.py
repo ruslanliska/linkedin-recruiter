@@ -131,6 +131,8 @@ class HomePage(ttk.Frame):
             row=4, column=1, sticky='nsew', padx=5, pady=10,
             columnspan=2,
         )
+        self.reference_email_text.configure(state='normal')
+
         form.rowconfigure(4, weight=1)
 
         # -----------------------------
