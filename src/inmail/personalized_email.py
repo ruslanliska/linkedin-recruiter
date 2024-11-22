@@ -49,6 +49,7 @@ def run_selenium_automation(
     driver = None
     run_status = 'Running'
     error_message = None
+    iteration_count = 0
 
     try:
         # Set up Selenium WebDriver options
@@ -95,11 +96,40 @@ def run_selenium_automation(
 
         # Process each item in the data
         for index, row in data.iterrows():
+            iteration_count += 1
+            if iteration_count % 2 == 0:
+                logger.info(f"Restarting ChromeDriver. {iteration_count=}")
+                driver.quit()
+                # Set up Selenium WebDriver options
+                options = uc.ChromeOptions()
+
+                if not visible_mode:
+                    options.add_argument('--headless')
+                logger.info(f'Chrome directory: {get_user_data_dir()}')
+                options.add_argument('--disable-gpu')
+                options.add_argument('--no-sandbox')
+                options.add_argument('--start-maximized')
+                options.add_argument(f'--user-data-dir={get_user_data_dir()}')
+
+                driver = uc.Chrome(options=options)
+
+                from selenium_stealth import stealth
+                stealth(
+                    driver,
+                    languages=['en-US', 'en'],
+                    vendor='Google Inc.',
+                    platform='Win32',
+                    webgl_vendor='Intel Inc.',
+                    renderer='Intel Iris OpenGL Engine',
+                    fix_hairline=True,
+                )
+                time.sleep(random.uniform(2, 10))
             try:
                 email = None
                 email_status = None
                 error_message = None
                 linkedin_profile = row['Person Linkedin Url']
+                logger.info(f"Processing row {index}: {linkedin_profile=}")
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
                     logger.warning(
@@ -292,7 +322,7 @@ def run_selenium_automation(
                                 'Error message is not visible. Continue with Email.',  # noqa:E501
                             )
                     except NoSuchElementException:
-                        logger.warning('Error message element not found.')
+                        logger.debug('Error message element not found.')
 
                 elif 'Send immediately via Email' in text_content:
                     logger.info(
