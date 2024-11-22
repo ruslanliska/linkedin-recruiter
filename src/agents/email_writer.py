@@ -43,7 +43,7 @@ Use the information from the candidate's experience summary.
 You must write only email body, no subject, no signature.
 If user provides some technologies or stack in reference, you must delete it and use stack and techologies from receiver profile_summary
 User will provide some email reference/instructions. Please, personalize email and write directly
-
+IMPORTANT! Write readty to send email, remove any placeholders, if any - change them with generic words.
 """
 
 DEFAULT_USER_PROMPT = 'Generate email in english.'
