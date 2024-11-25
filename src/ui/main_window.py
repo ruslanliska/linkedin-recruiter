@@ -1,7 +1,7 @@
 # src/ui/main_window.py
-import sys
-import os
 import logging
+import os
+import sys
 from tkinter import messagebox
 
 import ttkbootstrap as ttk
@@ -24,7 +24,8 @@ logging.basicConfig(
 
 def get_resource_path(relative_path):
     """
-    Get the absolute path to a resource, whether in development or bundled with PyInstaller.
+    Get the absolute path to a resource,
+    whether in development or bundled with PyInstaller.
     """
     if hasattr(sys, '_MEIPASS'):  # Running as an executable
         base_path = sys._MEIPASS
@@ -43,7 +44,7 @@ class LinkedInAutomationApp(ttk.Window):
     def __init__(self):
         super().__init__(themename='superhero')  # Choose a theme
         self.title('InMail Automation')
-        self.geometry('900x600')
+        self.geometry('900x700')
 
         self.load_images()
         self.create_styles()
