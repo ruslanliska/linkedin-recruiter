@@ -34,6 +34,15 @@ def create_database():
     """
     cursor.execute(create_emails_table_query)
 
+    # Create settings table
+    create_settings_table_query = """
+    CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
+    )
+    """
+    cursor.execute(create_settings_table_query)
+
     connection.commit()
     connection.close()
     print('SQLite database setup complete')
