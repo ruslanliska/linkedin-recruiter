@@ -160,7 +160,7 @@ def run_selenium_automation(
                 logger.debug(f"Cleaned Text: {cleaned_text[:100]}...")
 
                 # Generate the personal email
-                email = generate_personal_email(
+                email, subject = generate_personal_email(
                     page_summary=cleaned_text,
                     user_prompt=prompt,
                     email_instructions=reference_email,
@@ -337,7 +337,7 @@ def run_selenium_automation(
                     "input[aria-label='Message subject'][placeholder='Add a subject']",  # noqa:E501
                 )
                 subject_input.click()
-                subject_input.send_keys('Staffing Partner')
+                subject_input.send_keys(subject)
 
                 # Locate and interact with the email editor
                 editor = driver.find_element(
