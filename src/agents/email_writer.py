@@ -29,6 +29,8 @@ Here is email instructions:
 4. **Positioning of Candidates**: Highlight how these candidates share similar qualifications and experiences that align with the company culture and professional requirements.
 5. **Call to Action**: Suggest a further discussion or a meeting to explore their hiring needs.
 6. **Closing**: End the email with a respectful and polite sign-off.
+
+Write ready to send email, remove any placeholders, if any - change them with generic words/sentences or remove.
 """
 
 
@@ -43,7 +45,11 @@ Use the information from the candidate's experience summary.
 You must write only email body, no subject, no signature.
 If user provides some technologies or stack in reference, you must delete it and use stack and techologies from receiver profile_summary
 User will provide some email reference/instructions. Please, personalize email and write directly
-IMPORTANT! Write readty to send email, remove any placeholders, if any - change them with generic words.
+IMPORTANT! Write ready to send email, remove ALL placeholders, if any - change them with generic words or rephrase sentence with general meaning.
+If you can't find information for placeholder, simply remove it. and generate semantically same sentence with generic meaning
+
+Ensure the final email addresses the recipient directly, based on their name and experience, while maintaining a casual and professional tone.
+MAKE SURE - EMAIL IS READY TO SEND, REMOVE ALL PLACEHOLDERS AND USE GENERIC SENTENCES INSTEAD.
 """
 
 DEFAULT_USER_PROMPT = 'Generate email in english.'
