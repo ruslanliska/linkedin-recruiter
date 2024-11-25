@@ -78,6 +78,28 @@ class HomePage(ttk.Frame):
         )
 
         # -----------------------------
+        # Row 1.1: Start Row
+        # -----------------------------
+        label_start_row = ttk.Label(
+            form, text='Start Row:', font=('Helvetica', 12),
+        )
+        label_start_row.grid(row=1, column=3, sticky='e', padx=5, pady=10)
+
+        # Default to 1 (assuming 1-based indexing)
+        self.start_row_var = ttk.IntVar(value=1)
+        entry_start_row = ttk.Entry(
+            form, textvariable=self.start_row_var, width=10,
+        )
+        entry_start_row.grid(
+            row=1, column=4, sticky='w',
+            padx=5, pady=10,
+        )
+
+        # Adjust column configuration if necessary
+        form.columnconfigure(3, weight=0)
+        form.columnconfigure(4, weight=0)
+
+        # -----------------------------
         # Row 2: Visible Mode Toggle
         # -----------------------------
         label_visible_mode = ttk.Label(
@@ -108,7 +130,7 @@ class HomePage(ttk.Frame):
             form, wrap='word', width=50, height=4, font=('Helvetica', 12),
         )
         self.prompt_text.grid(
-            row=3, column=1, sticky='nsew', padx=5, pady=10, columnspan=2,
+            row=3, column=1, sticky='nsew', padx=5, pady=10, columnspan=4,
         )
         # Allow prompt field to maintain its size
         form.rowconfigure(3, weight=0)
@@ -129,7 +151,7 @@ class HomePage(ttk.Frame):
         )
         self.reference_email_text.grid(
             row=4, column=1, sticky='nsew', padx=5, pady=10,
-            columnspan=2,
+            columnspan=4,
         )
         self.reference_email_text.configure(state='normal')
 
@@ -220,6 +242,28 @@ class HomePage(ttk.Frame):
         num_items = self.num_items_var.get()
         visible_mode = self.visible_mode_var.get()
 
+        # Retrieve the start row
+        start_row = self.start_row_var.get()
+        if start_row < 1:
+            messagebox.showwarning(
+                'Invalid Start Row',
+                'Start row must be 1 or greater.',
+            )
+            return
+
+        total_rows = len(self.csv_data)
+        if start_row > total_rows:
+            messagebox.showwarning(
+                'Start Row Out of Range',
+                f'Start row ({start_row}) exceeds total rows in CSV ({
+                    total_rows
+                }).',
+            )
+            return
+
+        # Adjust for zero-based indexing in pandas
+        start_index = start_row - 1
+
         # Retrieve the prompt and reference email
         prompt_text = self.prompt_text.get('1.0', 'end').strip()
         prompt = prompt_text if prompt_text else None
@@ -233,10 +277,12 @@ class HomePage(ttk.Frame):
         control_email_sending = self.control_email_sending_var.get()
 
         # Process the data based on user inputs
-        if num_items == 0 or num_items > len(self.csv_data):
-            num_items = len(self.csv_data)
+        if num_items == 0:
+            num_items = total_rows - start_index
+        elif num_items > (total_rows - start_index):
+            num_items = total_rows - start_index
 
-        data_to_process = self.csv_data.head(num_items)
+        data_to_process = self.csv_data.iloc[start_index:start_index + num_items]  # noqa: E501
 
         # Disable the Start button to prevent multiple clicks
         self.disable_start_button()
