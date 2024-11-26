@@ -1,5 +1,6 @@
 import logging
 import platform
+import re
 import sys
 from pathlib import Path
 
@@ -47,7 +48,7 @@ def inject_key_listeners(driver):
             }
 
             if (key === 'Shift') {
-                if (!isShiftPressed) { // Prevent multiple signals if Shift is held down
+                if (!isShiftPressed) { // Prevent multiple signals if Shift
                     isShiftPressed = true;
                     // Set the window.keyPressed variable
                     window.keyPressed = 'Shift';
@@ -62,7 +63,7 @@ def inject_key_listeners(driver):
         document.addEventListener('keyup', function(event) {
             const key = event.key;
             if (key === 'Shift') {
-                isShiftPressed = false; // Reset the flag when Shift is released
+                isShiftPressed = false; // Reset the flag when Shift
             }
         });
     })();
@@ -79,7 +80,8 @@ def wait_for_key_signal(driver, timeout=300):
     try:
         logging.info('Waiting for Enter or Shift key signal from the user...')
 
-        # Define the condition to wait until window.keyPressed is 'Enter' or 'Shift'
+        # Define the condition to wait
+        # until window.keyPressed is 'Enter' or 'Shift'
         def key_pressed(driver):
             try:
                 key = driver.execute_script('return window.keyPressed;')
@@ -103,7 +105,8 @@ def wait_for_key_signal(driver, timeout=300):
 
 def get_captured_keys(driver):
     """
-    Retrieves and returns the value of the hidden textarea that logs Enter and Shift key presses.
+    Retrieves and returns the value of the hidden textarea that
+      logs Enter and Shift key presses.
     """
     try:
         key_log = driver.find_element(
@@ -117,7 +120,8 @@ def get_captured_keys(driver):
 
 def inject_key_logging(driver):
     """
-    Injects JavaScript into the browser to log all Enter key presses with timestamps.
+    Injects JavaScript into the browser to log all
+    Enter key presses with timestamps.
     The logs are stored in a hidden textarea element.
     """
     js_code = """
@@ -138,7 +142,7 @@ def inject_key_logging(driver):
         // Listen for Enter keydown events
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
-                const timestamp = new Date().toISOString(); // Timestamp for each key press
+                const timestamp = new Date().toISOString(); // Timestamp
                 const logEntry = `${timestamp}: Enter\n`;
                 keyLogArea.value += logEntry; // Append to the textarea
 
@@ -154,7 +158,8 @@ def inject_key_logging(driver):
 
 def get_user_data_dir():
     """
-    Determines the user data directory for Chrome based on the operating system.
+    Determines the user data directory for Chrome
+      based on the operating system.
     Returns:
         Path: The path to the Chrome user data directory.
     """
@@ -176,4 +181,7 @@ def get_user_data_dir():
     return profile_dir
 
 
-print(get_user_data_dir())
+def slugify_company(company_name):
+    # Lowercase and replace spaces and special characters with a dash
+    slug = re.sub(r'[^\w\s-]', '', company_name).lower().replace(' ', '-')
+    return slug
