@@ -18,7 +18,9 @@ from src.database.handlers import log_email
 from src.database.handlers import log_run_end
 from src.inmail.utils import get_user_data_dir
 from src.inmail.utils import inject_key_listeners
+from src.inmail.utils import slugify_company
 from src.inmail.utils import wait_for_key_signal
+
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -133,9 +135,17 @@ def run_selenium_automation(
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
                     logger.warning(
-                        f"Skipping row {index} due to missing email address.",
+                        f"Guessing email for row {
+                            index
+                        } due to missing email address.",
                     )
-                    continue
+                    first_name = row['First Name'].lower()
+                    last_name = row['Last Name'].lower()
+                    company_slug = slugify_company(row['Company'])
+                    profile_email_address = (
+                        f"{first_name}.{last_name}@{company_slug}.com"
+                    )
+                    logger.info(f'Guessed {profile_email_address=}')
 
                 # Force a hard reload
                 driver.execute_script('location.reload(true);')
