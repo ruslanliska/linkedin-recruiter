@@ -67,7 +67,7 @@ def run_selenium_automation(
 
         # Initialize the WebDriver
         try:
-            driver = uc.Chrome(options=options)
+            driver = uc.Chrome(options=options, version_main=131)
 
             from selenium_stealth import stealth
             stealth(
