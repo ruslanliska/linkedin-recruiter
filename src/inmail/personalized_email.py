@@ -125,7 +125,11 @@ def run_selenium_automation(
                 options.add_argument('--start-maximized')
                 options.add_argument(f'--user-data-dir={get_user_data_dir()}')
 
-                driver = uc.Chrome(options=options)
+                driver = uc.Chrome(
+                    options=options,
+                    version_main=131,
+                    driver_executable_path=r'C:\Windows\system32\linkedin_email_automation\linkedin-recruiter\chromedriver.exe',
+                )
 
                 from selenium_stealth import stealth
                 stealth(
