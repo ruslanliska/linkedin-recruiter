@@ -69,17 +69,12 @@ def run_selenium_automation(
 
         # Initialize the WebDriver
         try:
-            for attempt in range(3):  # Retry up to 3 times
-                try:
-                    driver = uc.Chrome(
-                        options=options,
-                        version_main=131,
-                        driver_executable_path=r'C:\Windows\system32\linkedin_email_automation\linkedin-recruiter\chromedriver.exe',
-                    )
-                    break
-                except Exception as e:
-                    logger.error(f"Attempt {attempt + 1} failed: {e}")
-                    time.sleep(5)
+
+            driver = uc.Chrome(
+                options=options,
+                version_main=131,
+                driver_executable_path=r'C:\Windows\system32\linkedin_email_automation\linkedin-recruiter\chromedriver.exe',
+            )
 
             from selenium_stealth import stealth
             stealth(
@@ -114,6 +109,7 @@ def run_selenium_automation(
             if iteration_count % 2 == 0:
                 logger.info(f"Restarting ChromeDriver. {iteration_count=}")
                 driver.quit()
+                time.sleep(5)
                 # Set up Selenium WebDriver options
                 options = uc.ChromeOptions()
 
