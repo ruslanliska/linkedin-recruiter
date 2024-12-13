@@ -1,6 +1,7 @@
 import json
 import logging
 import random
+import socket
 import time
 import traceback
 
@@ -20,6 +21,7 @@ from src.inmail.utils import get_user_data_dir
 from src.inmail.utils import inject_key_listeners
 from src.inmail.utils import slugify_company
 from src.inmail.utils import wait_for_key_signal
+socket.setdefaulttimeout(60)  # Set global timeout to 60 seconds
 
 
 # Configure logger
@@ -67,7 +69,13 @@ def run_selenium_automation(
 
         # Initialize the WebDriver
         try:
-            driver = uc.Chrome(options=options, version_main=131)
+            for attempt in range(3):  # Retry up to 3 times
+                try:
+                    driver = uc.Chrome(options=options, version_main=131)
+                    break
+                except Exception as e:
+                    logger.error(f"Attempt {attempt + 1} failed: {e}")
+                    time.sleep(5)
 
             from selenium_stealth import stealth
             stealth(
