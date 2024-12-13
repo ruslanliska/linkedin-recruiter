@@ -71,7 +71,11 @@ def run_selenium_automation(
         try:
             for attempt in range(3):  # Retry up to 3 times
                 try:
-                    driver = uc.Chrome(options=options, version_main=131)
+                    driver = uc.Chrome(
+                        options=options,
+                        version_main=131,
+                        driver_executable_path=r'C:\Windows\system32\linkedin_email_automation\linkedin-recruiter\chromedriver.exe',
+                    )
                     break
                 except Exception as e:
                     logger.error(f"Attempt {attempt + 1} failed: {e}")
