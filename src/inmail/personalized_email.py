@@ -62,10 +62,13 @@ def run_selenium_automation(
         if not visible_mode:
             options.add_argument('--headless')
         logger.info(f'Chrome directory: {get_user_data_dir()}')
+
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
         options.add_argument(f'--user-data-dir={get_user_data_dir()}')
+        # options.add_argument(r"--user-data-dir=C:\Users\Robin\AppData\Local\Google\Chrome\User Data")
+        # options.add_argument(r"--profile-directory=Profile 151")
 
         # Initialize the WebDriver
         try:
@@ -73,7 +76,7 @@ def run_selenium_automation(
             driver = uc.Chrome(
                 options=options,
                 version_main=131,
-                driver_executable_path=r'C:\Windows\system32\linkedin_email_automation\linkedin-recruiter\chromedriver.exe',
+                driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
             )
 
             from selenium_stealth import stealth
@@ -116,15 +119,18 @@ def run_selenium_automation(
                 if not visible_mode:
                     options.add_argument('--headless')
                 logger.info(f'Chrome directory: {get_user_data_dir()}')
+
                 options.add_argument('--disable-gpu')
                 options.add_argument('--no-sandbox')
                 options.add_argument('--start-maximized')
                 options.add_argument(f'--user-data-dir={get_user_data_dir()}')
+                # options.add_argument(r"--user-data-dir=C:\Users\Robin\AppData\Local\Google\Chrome\User Data")
+                # options.add_argument(r"--profile-directory=Profile 151")
 
                 driver = uc.Chrome(
                     options=options,
                     version_main=131,
-                    driver_executable_path=r'C:\Windows\system32\linkedin_email_automation\linkedin-recruiter\chromedriver.exe',
+                    driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
                 )
 
                 from selenium_stealth import stealth
