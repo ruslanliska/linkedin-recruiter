@@ -108,6 +108,7 @@ def run_selenium_automation(
 
         # Process each item in the data
         for index, row in data.iterrows():
+            time.sleep(500)
             iteration_count += 1
             if iteration_count % 2 == 0:
                 logger.info(f"Restarting ChromeDriver. {iteration_count=}")
