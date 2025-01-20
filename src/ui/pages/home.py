@@ -8,6 +8,7 @@ from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 
 import pandas as pd
+import pytz
 import ttkbootstrap as ttk
 
 from src.database.handlers import log_run_end
@@ -419,16 +420,34 @@ class HomePage(ttk.Frame):
 
     def wait_until_next_day(self):
         """
-        Sleep (block) until midnight local time.
-        This stops processing in this thread until next day.
+        Sleep (block) until 9 AM CET.
+        This stops processing in this thread until the specified time.
         """
-        now = datetime.now()
-        # Next day at 00:00:00
-        next_day = (now + timedelta(days=1)).replace(
-            hour=0, minute=0, second=0, microsecond=0,
-        )
-        print(f'{next_day=}')
-        seconds_to_wait = (next_day - now).total_seconds()
+        # Get current time in UTC
+        now_utc = datetime.now(pytz.utc)
+
+        # Convert to CET
+        cet_timezone = pytz.timezone('CET')
+        now_cet = now_utc.astimezone(cet_timezone)
+
+        # Calculate next 9 AM CET
+        if now_cet.hour >= 9:
+            # If it's past 9 AM today, set to 9 AM next day
+            next_cet = (now_cet + timedelta(days=1)).replace(
+                hour=9, minute=0, second=0, microsecond=0,
+            )
+        else:
+            # If it's before 9 AM today, set to 9 AM today
+            next_cet = now_cet.replace(
+                hour=9, minute=0, second=0, microsecond=0,
+            )
+
+        # Convert the target time back to UTC
+        next_utc = next_cet.astimezone(pytz.utc)
+
+        # Calculate the time to wait in seconds
+        seconds_to_wait = (next_utc - now_utc).total_seconds()
+        print(f'{next_cet=}')
         print(f'{seconds_to_wait=}')
         time.sleep(seconds_to_wait)
 
