@@ -430,16 +430,16 @@ class HomePage(ttk.Frame):
         cet_timezone = pytz.timezone('CET')
         now_cet = now_utc.astimezone(cet_timezone)
 
-        # Calculate next 6 AM CET
-        if now_cet.hour >= 6:
-            # If it's past 6 AM today, set to 6 AM next day
+        # Calculate next 5 AM CET
+        if now_cet.hour >= 5:
+            # If it's past 6 AM today, set to 5 AM next day
             next_cet = (now_cet + timedelta(days=1)).replace(
-                hour=6, minute=0, second=0, microsecond=0,
+                hour=5, minute=0, second=0, microsecond=0,
             )
         else:
-            # If it's before 6 AM today, set to 6 AM today
+            # If it's before 5 AM today, set to 5 AM today
             next_cet = now_cet.replace(
-                hour=6, minute=0, second=0, microsecond=0,
+                hour=5, minute=0, second=0, microsecond=0,
             )
 
         # Convert the target time back to UTC
