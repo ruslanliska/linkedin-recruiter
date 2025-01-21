@@ -170,6 +170,7 @@ def run_selenium_automation(
                 time.sleep(random.uniform(4, 7))
 
                 driver.get(linkedin_profile)
+                time.sleep(1000)
 
                 from bs4 import BeautifulSoup
 
