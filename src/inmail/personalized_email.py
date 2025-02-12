@@ -345,32 +345,28 @@ def run_selenium_automation(
                     # Click the label (using JavaScript click to avoid potential overlay issues)
                     driver.execute_script("arguments[0].click();", email_label)
                     logger.info("Clicked on the email label")
-                    time.sleep(600)
+                    # Optionally, wait a moment if needed
+                    time.sleep(random.uniform(1, 2))
 
-                    # # Optional: Click the "Save" button in the modal
-                    # save_button = modal.find_element(
-                    #     By.XPATH,
-                    #     "//button[contains(@class, 'artdeco-button--secondary') and span[text()='Save']]",  # noqa:E501
-                    # )
-                    # save_button.click()
-                    # Locate the Save button by finding the <span> with text "Save" and then its parent <button>
-                    save_button = WebDriverWait(driver, 10).until(
+                    # Locate and click the Save button.
+                    # Here we use a relative XPath to search within the modal.
+                    save_button = WebDriverWait(modal, 10).until(
                         EC.element_to_be_clickable(
                             (
                                 By.XPATH,
-                                "//span[normalize-space(text())='Save']/ancestor::button",
-                            ),
-                        ),
+                                ".//button[.//span[contains(normalize-space(), 'Save')]]",
+                            )
+                        )
                     )
-
-                    # Scroll the Save button into view
+                    logger.info(
+                        "Save button HTML: %s", save_button.get_attribute("outerHTML")
+                    )
                     driver.execute_script(
-                        "arguments[0].scrollIntoView({block: 'center'});",
-                        save_button,
+                        "arguments[0].scrollIntoView({block: 'center'});", save_button
                     )
-
-                    # Click the Save button
-                    save_button.click()
+                    time.sleep(random.uniform(1, 2))
+                    driver.execute_script("arguments[0].click();", save_button)
+                    logger.info("Clicked on the Save button.")
 
                     try:
                         # Locate the <h3> element
