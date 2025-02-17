@@ -363,7 +363,7 @@ def process_chunk_of_rows(
                 # If you do not need a reload here, you can remove it.
                 driver.execute_script('location.reload(true);')
                 logger.info('Page refreshed.')
-                time.sleep(random.uniform(3, 6))
+                time.sleep(random.uniform(15, 60))
 
             except Exception as e:
                 # Per-row error
