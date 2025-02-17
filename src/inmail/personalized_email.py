@@ -400,7 +400,7 @@ def run_selenium_automation(
     reference_email: str = None,
     run_id: int = None,
     callback=None,
-    batch_size: int = 300,  # Adjust as needed
+    batch_size: int = 50,  # Adjust as needed
 ):
     logger.info(f"Run ID: {run_id} - Automation started.")
     run_status = 'Running'
