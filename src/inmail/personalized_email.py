@@ -9,6 +9,7 @@ import pandas as pd
 import undetected_chromedriver as uc
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -29,7 +30,452 @@ socket.setdefaulttimeout(60)  # Set global timeout to 60 seconds
 logger = logging.getLogger(__name__)
 
 
+socket.setdefaulttimeout(60)  # Set global timeout to 60 seconds
+logger = logging.getLogger(__name__)
+
+
+def process_chunk_of_rows(
+    batch_df,
+    visible_mode,
+    control_email_sending,
+    prompt,
+    reference_email,
+    run_id,
+):
+    """
+    Process a batch (chunk) of rows in one WebDriver session.
+    """
+    driver = None
+    error_message = None
+
+    try:
+        # === 1) Initialize WebDriver once for this batch ===
+        options = uc.ChromeOptions()
+        if not visible_mode:
+            options.add_argument('--headless')
+
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--start-maximized')
+        options.add_argument(f"--user-data-dir={get_user_data_dir()}")
+
+        # IMPORTANT: Remove or fix version_main to match your real browser version
+        # driver = uc.Chrome(options=options)  # auto-detect
+        driver = uc.Chrome(
+            options=options,
+            # e.g., version_main=110, or remove version_main entirely:
+            version_main=131,
+            driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
+        )
+
+        # Optional: stealth, if you want to keep it
+        from selenium_stealth import stealth
+        stealth(
+            driver,
+            languages=['en-US', 'en'],
+            vendor='Google Inc.',
+            platform='Win32',
+            webgl_vendor='Intel Inc.',
+            renderer='Intel Iris OpenGL Engine',
+            fix_hairline=True,
+        )
+        time.sleep(random.uniform(2, 5))
+
+        logger.info('ChromeDriver initialized successfully for this batch.')
+
+        # === 2) Loop through all rows in this chunk ===
+        for index, row in batch_df.iterrows():
+            try:
+                email_status = None
+                error_message = None
+                linkedin_profile = row['Person Linkedin Url']
+                logger.info(f"Processing row {index}: linkedin_profile={
+                            linkedin_profile
+                            }")
+
+                profile_email_address = row['Email']
+                if pd.isna(profile_email_address):
+                    # Guess the email if missing
+                    logger.warning(f"Guessing email for row {index}")
+                    first_name = row['First Name'].lower()
+                    last_name = row['Last Name'].lower()
+                    company_slug = slugify_company(row['Company'])
+                    profile_email_address = f"{first_name}.{
+                        last_name
+                    }@{company_slug}.com"
+                    logger.info(f"Guessed profile_email_address={
+                                profile_email_address
+                                }")
+
+                # Navigate directly to the profile
+                # (You can remove these forced reloads if not strictly needed)
+                driver.get(linkedin_profile)
+                time.sleep(random.uniform(4, 7))
+
+                # Extract main content from the page
+                from bs4 import BeautifulSoup
+                full_html = driver.page_source
+                soup = BeautifulSoup(full_html, 'html.parser')
+
+                desired_tags = ['main']
+                text_from_desired_tags = []
+                for tag in soup.find_all(desired_tags):
+                    tag_text = tag.get_text(separator=' ', strip=True)
+                    if tag_text:
+                        text_from_desired_tags.append(tag_text)
+
+                cleaned_text = '\n'.join(text_from_desired_tags)
+                logger.debug(f"Cleaned Text snippet: {cleaned_text[:100]}...")
+
+                # Generate the personal email
+                email, subject = generate_personal_email(
+                    page_summary=cleaned_text,
+                    user_prompt=prompt,
+                    email_instructions=reference_email,
+                )
+
+                # Extract profile ID from <code> elements
+                code_elements = driver.find_elements(By.TAG_NAME, 'code')
+                profile_id = None
+                for code_element in code_elements:
+                    code_content = code_element.get_attribute('innerHTML')
+                    if 'identityDashProfilesByMemberIdentity' in code_content:
+                        try:
+                            data_json = json.loads(code_content)
+                            profile_urn = data_json['data']['data']['identityDashProfilesByMemberIdentity']['*elements'][0]
+                            profile_id = profile_urn.split(':')[-1]
+                            break
+                        except (json.JSONDecodeError, KeyError) as e:
+                            logger.warning(f"JSON parsing error: {e}")
+                            continue
+
+                if not profile_id:
+                    logger.warning('Profile ID not found.')
+                    raise ValueError('Profile ID extraction failed.')
+
+                logger.info(f"Extracted Profile ID: {profile_id}")
+
+                # Navigate to messaging composer
+                target_url = f"https://www.linkedin.com/talent/profile/{
+                    profile_id
+                }"
+                logger.debug(f"Navigate to {target_url}")
+                driver.get(target_url)
+                time.sleep(random.uniform(10, 20))
+
+                # Wait for the contact info element
+                contact_info = driver.find_element(
+                    By.CLASS_NAME, 'contact-info',
+                )
+
+                # Check if email is saved
+                try:
+                    existing_email = contact_info.find_element(
+                        By.XPATH, './/span[@data-test-contact-email-address]',
+                    )
+                    logger.debug(f"Email found: {existing_email.text}")
+                except NoSuchElementException:
+                    # If no email, add it
+                    logger.debug(
+                        "No email found. Looking for 'Add email' button...",
+                    )
+                    add_email_button = driver.find_element(
+                        By.XPATH,
+                        ".//button[@class='button-small-muted-tertiary contact-info__add']",
+                    )
+                    add_email_button.click()
+                    email_input = driver.find_element(
+                        By.XPATH, ".//input[@type='email']",
+                    )
+                    email_input.send_keys(profile_email_address)
+                    email_input.send_keys(Keys.ENTER)
+                    logger.debug('Email saved')
+                    time.sleep(random.uniform(4, 7))
+
+                driver.refresh()
+                time.sleep(random.uniform(4, 7))
+
+                # Open message composer
+                email_button = driver.find_element(
+                    By.XPATH,
+                    "//button[contains(@class, 'artdeco-button') and contains(@data-live-test-component, 'message-icon-btn')]",
+                )
+                email_button.click()
+                time.sleep(random.uniform(4, 7))
+
+                # Detect if it's InMail or Email
+                send_info = driver.find_element(
+                    By.XPATH, "//div[contains(@class, 'single-message-composer__trigger-message')]",
+                )
+                text_content = send_info.text.strip()
+
+                if 'Send immediately via InMail' in text_content:
+                    logger.info(
+                        'Detected: Send immediately via InMail -> switching to Email',
+                    )
+                    settings_button = driver.find_element(
+                        By.XPATH,
+                        "//button[contains(@class, 'single-message-composer__trigger-message-gear-icon')]",
+                    )
+                    settings_button.click()
+                    time.sleep(random.uniform(3, 6))
+
+                    # Wait for the modal, switch to Email
+                    modal = WebDriverWait(driver, 10).until(
+                        EC.visibility_of_element_located(
+                            (
+                                By.XPATH,
+                                "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",
+                            ),
+                        ),
+                    )
+                    # Click the Email radio label
+                    email_label = WebDriverWait(modal, 10).until(
+                        EC.element_to_be_clickable(
+                            (By.XPATH, ".//label[normalize-space(.)='Email']"),
+                        ),
+                    )
+                    driver.execute_script('arguments[0].click();', email_label)
+                    time.sleep(random.uniform(1, 2))
+
+                    save_button = WebDriverWait(modal, 10).until(
+                        EC.element_to_be_clickable(
+                            (
+                                By.XPATH,
+                                ".//button[.//span[contains(normalize-space(), 'Save')]]",
+                            ),
+                        ),
+                    )
+                    driver.execute_script('arguments[0].click();', save_button)
+                    time.sleep(random.uniform(2, 4))
+
+                    # Check for error
+                    try:
+                        error_message_element = driver.find_element(
+                            By.XPATH, "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",
+                        )
+                        if error_message_element.is_displayed():
+                            logger.warning(
+                                'Error: No recipient email found. Switching to InMail instead.',
+                            )
+                            # Possibly skip or handle differently
+                            driver.execute_script('location.reload(true);')
+                            continue
+                    except NoSuchElementException:
+                        pass
+
+                elif 'Send immediately via Email' in text_content:
+                    logger.info('Detected: Send immediately via Email')
+
+                else:
+                    logger.warning(
+                        'Unknown message mode text. Proceed carefully.',
+                    )
+
+                # Fill in subject
+                subject_input = driver.find_element(
+                    By.CSS_SELECTOR,
+                    "input[aria-label='Message subject'][placeholder='Add a subject']",
+                )
+                subject_input.click()
+                subject_input.send_keys(subject)
+
+                # Fill in the message body
+                editor = driver.find_element(
+                    By.CSS_SELECTOR, ".ql-editor[contenteditable='true']",
+                )
+                editor.click()
+
+                chunk_size = 20
+                for i in range(0, len(email), chunk_size):
+                    editor.send_keys(email[i: i + chunk_size])
+
+                # If control_email_sending, wait for user key press
+                if control_email_sending:
+                    inject_key_listeners(driver)
+                    try:
+                        pressed_key = wait_for_key_signal(
+                            driver, timeout=300,
+                        )  # 5 min
+                        logger.info(f"Key pressed: {pressed_key}")
+                        if pressed_key == 'Enter':
+                            logger.info('User pressed Enter -> sending email.')
+                        elif pressed_key == 'Backspace':
+                            logger.info('User pressed Backspace -> skipping.')
+                            email_status = 'Skipped'
+                            log_email(
+                                run_id=run_id,
+                                linkedin_profile_url=linkedin_profile,
+                                email_text=email,
+                                email_status=email_status,
+                                error_message='User skipped sending.',
+                            )
+                            continue
+                        else:
+                            logger.warning('Unrecognized key press.')
+                            email_status = 'Failed'
+                            error_message = 'Unrecognized key press.'
+                            log_email(
+                                run_id=run_id,
+                                linkedin_profile_url=linkedin_profile,
+                                email_text=email,
+                                email_status=email_status,
+                                error_message=error_message,
+                            )
+                            continue
+                    except TimeoutException:
+                        logger.error('Timeout waiting for user input.')
+                        email_status = 'Failed'
+                        error_message = 'Timeout waiting for user input.'
+                        log_email(
+                            run_id=run_id,
+                            linkedin_profile_url=linkedin_profile,
+                            email_text=email,
+                            email_status=email_status,
+                            error_message=error_message,
+                        )
+                        continue
+
+                # Send
+                send_button = driver.find_element(
+                    By.CSS_SELECTOR, 'button[data-live-test-messaging-submit-btn]',
+                )
+                if send_button.get_attribute('disabled'):
+                    email_status = 'Failed'
+                    error_message = 'Send button disabled.'
+                    logger.warning('Send button is disabled.')
+                else:
+                    send_button.click()
+                    email_status = 'Sent'
+                    logger.info('Message sent successfully.')
+                    time.sleep(random.uniform(4, 7))
+
+                # Log email result
+                log_email(
+                    run_id=run_id,
+                    linkedin_profile_url=linkedin_profile,
+                    email_text=email,
+                    email_status=email_status,
+                    error_message=error_message,
+                )
+
+                # Optional: reload or navigate to next.
+                # If you do not need a reload here, you can remove it.
+                driver.execute_script('location.reload(true);')
+                logger.info('Page refreshed.')
+                time.sleep(random.uniform(3, 6))
+
+            except Exception as e:
+                # Per-row error
+                email_status = 'Failed'
+                error_message = str(e)
+                logger.error(f"Error processing profile {
+                             linkedin_profile
+                             }: {e}")
+                logger.debug(traceback.format_exc())
+                log_email(
+                    run_id=run_id,
+                    linkedin_profile_url=linkedin_profile,
+                    email_text='',  # or email if defined
+                    email_status=email_status,
+                    error_message=error_message,
+                )
+                # Attempt reload and continue
+                driver.execute_script('location.reload(true);')
+                logger.info('Page refreshed.')
+                time.sleep(random.uniform(3, 6))
+                continue
+
+    finally:
+        if driver:
+            driver.quit()
+            logger.info('WebDriver has been closed for this batch.')
+
+
 def run_selenium_automation(
+    data: pd.DataFrame,
+    visible_mode: bool,
+    control_email_sending: bool,
+    prompt: str = None,
+    reference_email: str = None,
+    run_id: int = None,
+    callback=None,
+    batch_size: int = 300,  # Adjust as needed
+):
+    logger.info(f"Run ID: {run_id} - Automation started.")
+    run_status = 'Running'
+    error_message = None
+
+    try:
+        total_rows = len(data)
+        start_index = 0
+
+        while start_index < total_rows:
+            end_index = min(start_index + batch_size, total_rows)
+            batch_df = data.iloc[start_index:end_index]
+
+            logger.info(f"Processing batch rows {
+                        start_index
+                        } to {end_index - 1}")
+            process_chunk_of_rows(
+                batch_df=batch_df,
+                visible_mode=visible_mode,
+                control_email_sending=control_email_sending,
+                prompt=prompt,
+                reference_email=reference_email,
+                run_id=run_id,
+            )
+
+            start_index = end_index
+
+        # If we reach here, we processed all batches
+        run_status = 'Completed'
+        log_run_end(
+            run_id=run_id,
+            status=run_status,
+            error_message='Run completed successfully.',
+        )
+        logger.info(f"Run ID: {run_id} - Automation completed successfully.")
+        if callback:
+            callback(success=True, message='Automation completed successfully.')
+
+    except KeyboardInterrupt:
+        run_status = 'Interrupted'
+        error_message = 'Run was interrupted by the user (KeyboardInterrupt).'
+        logger.warning(error_message)
+        log_run_end(
+            run_id=run_id, status=run_status,
+            error_message=error_message,
+        )
+        if callback:
+            callback(success=False, message=error_message)
+
+    except Exception as e:
+        run_status = 'Failed'
+        error_message = f"An unexpected error occurred: {e}"
+        logger.error(error_message)
+        logger.debug(traceback.format_exc())
+        log_run_end(
+            run_id=run_id, status=run_status,
+            error_message=error_message,
+        )
+        if callback:
+            callback(success=False, message=error_message)
+
+    finally:
+        # If the run was interrupted or failed, ensure the run end is logged
+        if run_id and run_status not in ['Completed', 'Failed', 'Interrupted']:
+            run_status = 'Failed'
+            error_message = 'Run ended unexpectedly.'
+            log_run_end(
+                run_id=run_id, status=run_status,
+                error_message=error_message,
+            )
+            if callback:
+                callback(success=False, message=error_message)
+
+
+def run_selenium_automation_old(
     data,
     visible_mode,
     control_email_sending,
@@ -52,7 +498,7 @@ def run_selenium_automation(
     """
     logger.info(f"Run ID: {run_id} - Automation started.")
     driver = None
-    run_status = "Running"
+    run_status = 'Running'
     error_message = None
     iteration_count = 0
 
@@ -61,12 +507,12 @@ def run_selenium_automation(
         options = uc.ChromeOptions()
 
         if not visible_mode:
-            options.add_argument("--headless")
+            options.add_argument('--headless')
         logger.info(f"Chrome directory: {get_user_data_dir()}")
 
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--start-maximized")
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--start-maximized')
         options.add_argument(f"--user-data-dir={get_user_data_dir()}")
         # options.add_argument(r"--user-data-dir=C:\Users\Robin\AppData\Local\Google\Chrome\User Data")
         # options.add_argument(r"--profile-directory=Profile 151")
@@ -77,28 +523,28 @@ def run_selenium_automation(
             driver = uc.Chrome(
                 options=options,
                 version_main=133,
-                driver_executable_path=r"C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe",
+                driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
             )
 
             from selenium_stealth import stealth
 
             stealth(
                 driver,
-                languages=["en-US", "en"],
-                vendor="Google Inc.",
-                platform="Win32",
-                webgl_vendor="Intel Inc.",
-                renderer="Intel Iris OpenGL Engine",
+                languages=['en-US', 'en'],
+                vendor='Google Inc.',
+                platform='Win32',
+                webgl_vendor='Intel Inc.',
+                renderer='Intel Iris OpenGL Engine',
                 fix_hairline=True,
             )
             time.sleep(random.uniform(2, 10))
 
-            logger.info("ChromeDriver initialized successfully.")
+            logger.info('ChromeDriver initialized successfully.')
         except Exception as e:
             logger.error(
                 f"Failed to initialize ChromeDriver automatically: {e}",
             )
-            run_status = "Failed"
+            run_status = 'Failed'
             error_message = f"ChromeDriver Initialization Error: {e}"
             log_run_end(
                 run_id=run_id,
@@ -120,11 +566,11 @@ def run_selenium_automation(
                 options = uc.ChromeOptions()
 
                 if not visible_mode:
-                    options.add_argument("--headless")
+                    options.add_argument('--headless')
                 logger.info(f"Chrome directory: {get_user_data_dir()}")
-                options.add_argument("--disable-gpu")
-                options.add_argument("--no-sandbox")
-                options.add_argument("--start-maximized")
+                options.add_argument('--disable-gpu')
+                options.add_argument('--no-sandbox')
+                options.add_argument('--start-maximized')
                 options.add_argument(f"--user-data-dir={get_user_data_dir()}")
                 # options.add_argument(r"--user-data-dir=C:\Users\Robin\AppData\Local\Google\Chrome\User Data")
                 # options.add_argument(r"--profile-directory=Profile 151")
@@ -132,18 +578,18 @@ def run_selenium_automation(
                 driver = uc.Chrome(
                     options=options,
                     version_main=131,
-                    driver_executable_path=r"C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe",
+                    driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
                 )
 
                 from selenium_stealth import stealth
 
                 stealth(
                     driver,
-                    languages=["en-US", "en"],
-                    vendor="Google Inc.",
-                    platform="Win32",
-                    webgl_vendor="Intel Inc.",
-                    renderer="Intel Iris OpenGL Engine",
+                    languages=['en-US', 'en'],
+                    vendor='Google Inc.',
+                    platform='Win32',
+                    webgl_vendor='Intel Inc.',
+                    renderer='Intel Iris OpenGL Engine',
                     fix_hairline=True,
                 )
                 time.sleep(random.uniform(2, 10))
@@ -151,25 +597,25 @@ def run_selenium_automation(
                 email = None
                 email_status = None
                 error_message = None
-                linkedin_profile = row["Person Linkedin Url"]
+                linkedin_profile = row['Person Linkedin Url']
                 logger.info(f"Processing row {index}: {linkedin_profile=}")
-                profile_email_address = row["Email"]
+                profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
                     logger.warning(
                         f"Guessing email for row {
                             index
                         } due to missing email address.",
                     )
-                    first_name = row["First Name"].lower()
-                    last_name = row["Last Name"].lower()
-                    company_slug = slugify_company(row["Company"])
+                    first_name = row['First Name'].lower()
+                    last_name = row['Last Name'].lower()
+                    company_slug = slugify_company(row['Company'])
                     profile_email_address = (
                         f"{first_name}.{last_name}@{company_slug}.com"
                     )
                     logger.info(f"Guessed {profile_email_address=}")
 
                 # Force a hard reload
-                driver.execute_script("location.reload(true);")
+                driver.execute_script('location.reload(true);')
                 time.sleep(random.uniform(4, 7))
 
                 driver.get(linkedin_profile)
@@ -177,16 +623,16 @@ def run_selenium_automation(
                 from bs4 import BeautifulSoup
 
                 full_html = driver.page_source
-                soup = BeautifulSoup(full_html, "html.parser")
+                soup = BeautifulSoup(full_html, 'html.parser')
 
-                desired_tags = ["main"]
+                desired_tags = ['main']
                 text_from_desired_tags = []
                 for tag in soup.find_all(desired_tags):
-                    tag_text = tag.get_text(separator=" ", strip=True)
+                    tag_text = tag.get_text(separator=' ', strip=True)
                     if tag_text:
                         text_from_desired_tags.append(tag_text)
 
-                cleaned_text = "\n".join(text_from_desired_tags)
+                cleaned_text = '\n'.join(text_from_desired_tags)
                 # Log a snippet
                 logger.debug(f"Cleaned Text: {cleaned_text[:100]}...")
 
@@ -198,19 +644,19 @@ def run_selenium_automation(
                 )
 
                 # Extract profile ID from <code> elements
-                code_elements = driver.find_elements(By.TAG_NAME, "code")
+                code_elements = driver.find_elements(By.TAG_NAME, 'code')
                 profile_id = None
                 for code_element in code_elements:
-                    code_content = code_element.get_attribute("innerHTML")
-                    if "identityDashProfilesByMemberIdentity" in code_content:
+                    code_content = code_element.get_attribute('innerHTML')
+                    if 'identityDashProfilesByMemberIdentity' in code_content:
                         try:
                             data_json = json.loads(code_content)
-                            profile_urn = data_json["data"]["data"][
-                                "identityDashProfilesByMemberIdentity"
-                            ]["*elements"][
+                            profile_urn = data_json['data']['data'][
+                                'identityDashProfilesByMemberIdentity'
+                            ]['*elements'][
                                 0
                             ]  # noqa:E501
-                            profile_id = profile_urn.split(":")[-1]
+                            profile_id = profile_urn.split(':')[-1]
                             break
                         except (json.JSONDecodeError, KeyError) as e:
                             logger.warning(f"JSON parsing error: {e}")
@@ -219,8 +665,8 @@ def run_selenium_automation(
                 if profile_id:
                     logger.info(f"Extracted Profile ID: {profile_id}")
                 else:
-                    logger.warning("Profile ID not found.")
-                    raise ValueError("Profile ID extraction failed.")
+                    logger.warning('Profile ID not found.')
+                    raise ValueError('Profile ID extraction failed.')
 
                 # Navigate to the messaging composer
                 logger.debug(
@@ -237,14 +683,14 @@ def run_selenium_automation(
                 # Wait for the contact info element to load
                 contact_info = driver.find_element(
                     By.CLASS_NAME,
-                    "contact-info",
+                    'contact-info',
                 )
 
                 # Check if an email already exists
                 try:
                     existing_email = contact_info.find_element(
                         By.XPATH,
-                        ".//span[@data-test-contact-email-address]",
+                        './/span[@data-test-contact-email-address]',
                     )
                     logger.debug(f"Email found: {existing_email.text}")
                 except NoSuchElementException:
@@ -264,13 +710,13 @@ def run_selenium_automation(
                         ".//input[@type='email']",
                     )
 
-                    logger.debug("Email input field found. Sending keys...")
+                    logger.debug('Email input field found. Sending keys...')
                     email_input.send_keys(profile_email_address)
                     logger.debug("Clicking on the 'Save' button...")
 
                     # Simulate pressing the Enter key
                     email_input.send_keys(Keys.ENTER)
-                    logger.debug("Email saved")
+                    logger.debug('Email saved')
                     # Wait for the email to be saved
                     time.sleep(random.uniform(4, 7))
 
@@ -294,7 +740,7 @@ def run_selenium_automation(
                 text_content = send_info.text.strip()
 
                 # Check the content
-                if "Send immediately via InMail" in text_content:
+                if 'Send immediately via InMail' in text_content:
                     logger.info(
                         'The text indicates "Send immediately via InMail".',
                     )
@@ -316,35 +762,30 @@ def run_selenium_automation(
                             ),
                         ),
                     )
-                    logger.info("Modal is visible")
+                    logger.info('Modal is visible')
                     # Debug: log the modal's inner HTML
-                    modal_html = modal.get_attribute("innerHTML")
-                    logger.info("Modal HTML: %s", modal_html)
+                    modal_html = modal.get_attribute('innerHTML')
+                    logger.info('Modal HTML: %s', modal_html)
                     time.sleep(
                         2,
                     )  # Short pause, if needed, to ensure modal fully rendered
                     email_label = WebDriverWait(modal, 10).until(
                         EC.element_to_be_clickable(
-                            (By.XPATH, ".//label[normalize-space(.)='Email']")
-                        )
-                    )
-
-                    # (Optional) Log the HTML for debugging
-                    logger.info(
-                        "Email label HTML: %s", email_label.get_attribute("outerHTML")
+                            (By.XPATH, ".//label[normalize-space(.)='Email']"),
+                        ),
                     )
 
                     # Scroll the element into view
                     driver.execute_script(
-                        "arguments[0].scrollIntoView({block: 'center'});", email_label
+                        "arguments[0].scrollIntoView({block: 'center'});", email_label,
                     )
 
                     # Pause a bit to ensure everything settles (you may adjust or remove this if unnecessary)
                     time.sleep(random.uniform(1, 2))
 
                     # Click the label (using JavaScript click to avoid potential overlay issues)
-                    driver.execute_script("arguments[0].click();", email_label)
-                    logger.info("Clicked on the email label")
+                    driver.execute_script('arguments[0].click();', email_label)
+                    logger.info('Clicked on the email label')
                     # Optionally, wait a moment if needed
                     time.sleep(random.uniform(1, 2))
 
@@ -355,18 +796,20 @@ def run_selenium_automation(
                             (
                                 By.XPATH,
                                 ".//button[.//span[contains(normalize-space(), 'Save')]]",
-                            )
-                        )
+                            ),
+                        ),
                     )
                     logger.info(
-                        "Save button HTML: %s", save_button.get_attribute("outerHTML")
+                        'Save button HTML: %s', save_button.get_attribute(
+                            'outerHTML',
+                        ),
                     )
                     driver.execute_script(
-                        "arguments[0].scrollIntoView({block: 'center'});", save_button
+                        "arguments[0].scrollIntoView({block: 'center'});", save_button,
                     )
                     time.sleep(random.uniform(1, 2))
-                    driver.execute_script("arguments[0].click();", save_button)
-                    logger.info("Clicked on the Save button.")
+                    driver.execute_script('arguments[0].click();', save_button)
+                    logger.info('Clicked on the Save button.')
 
                     try:
                         # Locate the <h3> element
@@ -378,24 +821,24 @@ def run_selenium_automation(
                         # Check if the element is visible
                         if error_message_element.is_displayed():
                             logger.warning(
-                                "Error message. No recipient email found. Select InMail instead.",  # noqa:E501
+                                'Error message. No recipient email found. Select InMail instead.',  # noqa:E501
                             )
                             # Force a hard reload
-                            driver.execute_script("location.reload(true);")
+                            driver.execute_script('location.reload(true);')
                             continue
                         else:
                             logger.info(
-                                "Error message is not visible. Continue with Email.",  # noqa:E501
+                                'Error message is not visible. Continue with Email.',  # noqa:E501
                             )
                     except NoSuchElementException:
-                        logger.debug("Error message element not found.")
+                        logger.debug('Error message element not found.')
 
-                elif "Send immediately via Email" in text_content:
+                elif 'Send immediately via Email' in text_content:
                     logger.info(
                         "The text indicates 'Send immediately via Email'.",
                     )
                 else:
-                    logger.warning("The text for send is changed.")
+                    logger.warning('The text for send is changed.')
 
                 # Locate and interact with the subject input field
                 subject_input = driver.find_element(
@@ -415,7 +858,7 @@ def run_selenium_automation(
                 # Type the email in chunks to mimic human typing
                 chunk_size = 20
                 for i in range(0, len(email), chunk_size):
-                    editor.send_keys(email[i : i + chunk_size])
+                    editor.send_keys(email[i: i + chunk_size])
 
                 # Control email sending if required
                 if control_email_sending:
@@ -428,27 +871,27 @@ def run_selenium_automation(
                         )  # 5 minutes
                         logger.info(f"Key pressed: {pressed_key}")
 
-                        if pressed_key == "Enter":
+                        if pressed_key == 'Enter':
                             logger.info(
-                                "Enter key was pressed. Proceeding with email sending.",  # noqa:E501
+                                'Enter key was pressed. Proceeding with email sending.',  # noqa:E501
                             )
-                        elif pressed_key == "Backspace":
+                        elif pressed_key == 'Backspace':
                             logger.info(
-                                "Backspace key was pressed. Skipping email sending.",  # noqa:E501
+                                'Backspace key was pressed. Skipping email sending.',  # noqa:E501
                             )
-                            email_status = "Skipped"
+                            email_status = 'Skipped'
                             log_email(
                                 run_id=run_id,
                                 linkedin_profile_url=linkedin_profile,
                                 email_text=email,
                                 email_status=email_status,
-                                error_message="User skipped sending.",
+                                error_message='User skipped sending.',
                             )
                             continue
                         else:
-                            logger.warning("Unrecognized key press detected.")
-                            email_status = "Failed"
-                            error_message = "Unrecognized key press."
+                            logger.warning('Unrecognized key press detected.')
+                            email_status = 'Failed'
+                            error_message = 'Unrecognized key press.'
                             log_email(
                                 run_id=run_id,
                                 linkedin_profile_url=linkedin_profile,
@@ -459,10 +902,10 @@ def run_selenium_automation(
                             continue
                     except TimeoutException:
                         logger.error(
-                            "Timeout: No key press detected within the timeout period.",  # noqa:E501
+                            'Timeout: No key press detected within the timeout period.',  # noqa:E501
                         )
-                        email_status = "Failed"
-                        error_message = "Timeout waiting for user input."
+                        email_status = 'Failed'
+                        error_message = 'Timeout waiting for user input.'
                         log_email(
                             run_id=run_id,
                             linkedin_profile_url=linkedin_profile,
@@ -475,17 +918,17 @@ def run_selenium_automation(
                 # Locate and interact with the send button
                 send_button = driver.find_element(
                     By.CSS_SELECTOR,
-                    "button[data-live-test-messaging-submit-btn]",
+                    'button[data-live-test-messaging-submit-btn]',
                 )
 
-                if send_button.get_attribute("disabled"):
-                    email_status = "Failed"
-                    error_message = "Send button disabled."
-                    logger.warning("Send button is disabled.")
+                if send_button.get_attribute('disabled'):
+                    email_status = 'Failed'
+                    error_message = 'Send button disabled.'
+                    logger.warning('Send button is disabled.')
                 else:
                     send_button.click()
-                    email_status = "Sent"
-                    logger.info("Message sent successfully.")
+                    email_status = 'Sent'
+                    logger.info('Message sent successfully.')
                     time.sleep(random.uniform(4, 7))
 
                 # Log the email sending result
@@ -498,11 +941,11 @@ def run_selenium_automation(
                 )
                 time.sleep(random.uniform(61, 82))
                 # Force a hard reload
-                driver.execute_script("location.reload(true);")
-                logger.info("Page refreshed.")
+                driver.execute_script('location.reload(true);')
+                logger.info('Page refreshed.')
 
             except Exception as e:
-                email_status = "Failed"
+                email_status = 'Failed'
                 error_message = str(e)
                 logger.error(
                     f"Error processing profile {linkedin_profile}: {e}",
@@ -512,21 +955,21 @@ def run_selenium_automation(
                 log_email(
                     run_id=run_id,
                     linkedin_profile_url=linkedin_profile,
-                    email_text=email if email else "",
+                    email_text=email if email else '',
                     email_status=email_status,
                     error_message=error_message,
                 )
                 # Force a hard reload
-                driver.execute_script("location.reload(true);")
-                logger.info("Page refreshed.")
+                driver.execute_script('location.reload(true);')
+                logger.info('Page refreshed.')
                 continue
 
         # Update run status to Completed
-        run_status = "Completed"
+        run_status = 'Completed'
         log_run_end(
             run_id=run_id,
             status=run_status,
-            error_message="Run completed successfully.",
+            error_message='Run completed successfully.',
         )
         logger.info(f"Run ID: {run_id} - Automation completed successfully.")
 
@@ -534,12 +977,12 @@ def run_selenium_automation(
         if callback:
             callback(
                 success=True,
-                message="Automation completed successfully.",
+                message='Automation completed successfully.',
             )
 
     except KeyboardInterrupt:
-        run_status = "Interrupted"
-        error_message = "Run was interrupted by the user (KeyboardInterrupt)."
+        run_status = 'Interrupted'
+        error_message = 'Run was interrupted by the user (KeyboardInterrupt).'
         logger.warning(error_message)
         log_run_end(
             run_id=run_id,
@@ -554,7 +997,7 @@ def run_selenium_automation(
             )
 
     except Exception as e:
-        run_status = "Failed"
+        run_status = 'Failed'
         error_message = f"An unexpected error occurred: {e}"
         logger.error(error_message)
         logger.debug(traceback.format_exc())
@@ -574,12 +1017,12 @@ def run_selenium_automation(
         # Ensure the WebDriver is properly closed
         if driver:
             driver.quit()
-            logger.info("WebDriver has been closed.")
+            logger.info('WebDriver has been closed.')
 
         # If the run was interrupted or failed, ensure the run end is logged
-        if run_id and run_status not in ["Completed", "Failed", "Interrupted"]:
-            run_status = "Failed"
-            error_message = "Run ended unexpectedly."
+        if run_id and run_status not in ['Completed', 'Failed', 'Interrupted']:
+            run_status = 'Failed'
+            error_message = 'Run ended unexpectedly.'
             log_run_end(
                 run_id=run_id,
                 status=run_status,
