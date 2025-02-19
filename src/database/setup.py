@@ -14,7 +14,8 @@ def create_database():
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         file_name TEXT,
         status TEXT,
-        error_message TEXT
+        error_message TEXT,
+        last_processed_row INTEGER DEFAULT 0
     )
     """
     cursor.execute(create_runs_table_query)
