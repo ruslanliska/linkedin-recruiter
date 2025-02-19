@@ -1,9 +1,8 @@
+import logging
 import sqlite3
 
-DB_PATH = 'run_history.db'
 
-
-# src/modules/history_handler.py
+logger = logging.getLogger(__name__)
 
 
 DB_PATH = 'run_history.db'
@@ -103,6 +102,7 @@ def log_email(
             error_message,
         ),
     )
+    logger.info('Email logged')
 
     # 2) If we have a row_number, update the runs table
     if row_number is not None:
@@ -112,6 +112,7 @@ def log_email(
         WHERE run_id = ?
         """
         cursor.execute(update_query, (row_number, run_id))
+        logger.info('Last row logged')
 
     connection.commit()
     connection.close()
