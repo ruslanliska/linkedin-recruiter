@@ -303,6 +303,7 @@ class HomePage(ttk.Frame):
         file_path = filedialog.askopenfilename(
             filetypes=[('CSV files', '*.csv')],
         )
+        print(f"{file_path=}")
         if file_path:
             self.file_path_var.set(file_path)
             try:
@@ -314,9 +315,11 @@ class HomePage(ttk.Frame):
                     self.csv_data = data  # Store the data
                     # Get the last processed row (if any) for this file
                     self.last_row = get_last_processed_row_by_file(file_path)
-                    print(f"Last processed row for {
-                          file_path
-                          } is: {self.last_row=}")
+                    print(
+                        f"Last processed row for {
+                            file_path
+                        } is: {self.last_row=}",
+                    )
                     # Log the start of the run and get run_id
                     run_id = log_run_start(file_name=file_path)
                     self.run_id = run_id
@@ -406,7 +409,7 @@ class HomePage(ttk.Frame):
         """
         total_rows = len(data)
         print(f"{self.last_row=}")
-        current_index = self.last_row + 1
+        current_index = self.last_row + 1 if self.last_row != 0 else 0
         print(f"{current_index=}")
         print(f"{total_rows=}")
         print(f"{current_index=}")
