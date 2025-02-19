@@ -321,7 +321,9 @@ class HomePage(ttk.Frame):
                         } is: {self.last_row=}",
                     )
                     # Log the start of the run and get run_id
-                    run_id = log_run_start(file_name=file_path)
+                    run_id = log_run_start(
+                        file_name=file_path, last_processed_row=self.last_row,
+                    )
                     self.run_id = run_id
 
                     # Call the upload callback if needed
