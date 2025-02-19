@@ -70,6 +70,7 @@ def process_chunk_of_rows(
 
         # Optional: stealth, if you want to keep it
         from selenium_stealth import stealth
+
         stealth(
             driver,
             languages=['en-US', 'en'],
@@ -89,9 +90,11 @@ def process_chunk_of_rows(
                 email_status = None
                 error_message = None
                 linkedin_profile = row['Person Linkedin Url']
-                logger.info(f"Processing row {index}: linkedin_profile={
-                            linkedin_profile
-                            }")
+                logger.info(
+                    f"Processing row {index}: linkedin_profile={
+                        linkedin_profile
+                    }",
+                )
 
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
@@ -103,9 +106,11 @@ def process_chunk_of_rows(
                     profile_email_address = f"{first_name}.{
                         last_name
                     }@{company_slug}.com"
-                    logger.info(f"Guessed profile_email_address={
-                                profile_email_address
-                                }")
+                    logger.info(
+                        f"Guessed profile_email_address={
+                            profile_email_address
+                        }",
+                    )
 
                 # Navigate directly to the profile
                 # (You can remove these forced reloads if not strictly needed)
@@ -114,6 +119,7 @@ def process_chunk_of_rows(
 
                 # Extract main content from the page
                 from bs4 import BeautifulSoup
+
                 full_html = driver.page_source
                 soup = BeautifulSoup(full_html, 'html.parser')
 
@@ -142,7 +148,9 @@ def process_chunk_of_rows(
                     if 'identityDashProfilesByMemberIdentity' in code_content:
                         try:
                             data_json = json.loads(code_content)
-                            profile_urn = data_json['data']['data']['identityDashProfilesByMemberIdentity']['*elements'][0]
+                            profile_urn = data_json['data']['data'][
+                                'identityDashProfilesByMemberIdentity'
+                            ]['*elements'][0]
                             profile_id = profile_urn.split(':')[-1]
                             break
                         except (json.JSONDecodeError, KeyError) as e:
@@ -165,13 +173,15 @@ def process_chunk_of_rows(
 
                 # Wait for the contact info element
                 contact_info = driver.find_element(
-                    By.CLASS_NAME, 'contact-info',
+                    By.CLASS_NAME,
+                    'contact-info',
                 )
 
                 # Check if email is saved
                 try:
                     existing_email = contact_info.find_element(
-                        By.XPATH, './/span[@data-test-contact-email-address]',
+                        By.XPATH,
+                        './/span[@data-test-contact-email-address]',
                     )
                     logger.debug(f"Email found: {existing_email.text}")
                 except NoSuchElementException:
@@ -185,7 +195,8 @@ def process_chunk_of_rows(
                     )
                     add_email_button.click()
                     email_input = driver.find_element(
-                        By.XPATH, ".//input[@type='email']",
+                        By.XPATH,
+                        ".//input[@type='email']",
                     )
                     email_input.send_keys(profile_email_address)
                     email_input.send_keys(Keys.ENTER)
@@ -205,7 +216,8 @@ def process_chunk_of_rows(
 
                 # Detect if it's InMail or Email
                 send_info = driver.find_element(
-                    By.XPATH, "//div[contains(@class, 'single-message-composer__trigger-message')]",
+                    By.XPATH,
+                    "//div[contains(@class, 'single-message-composer__trigger-message')]",
                 )
                 text_content = send_info.text.strip()
 
@@ -252,7 +264,8 @@ def process_chunk_of_rows(
                     # Check for error
                     try:
                         error_message_element = driver.find_element(
-                            By.XPATH, "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",
+                            By.XPATH,
+                            "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",
                         )
                         if error_message_element.is_displayed():
                             logger.warning(
@@ -282,7 +295,8 @@ def process_chunk_of_rows(
 
                 # Fill in the message body
                 editor = driver.find_element(
-                    By.CSS_SELECTOR, ".ql-editor[contenteditable='true']",
+                    By.CSS_SELECTOR,
+                    ".ql-editor[contenteditable='true']",
                 )
                 editor.click()
 
@@ -295,7 +309,8 @@ def process_chunk_of_rows(
                     inject_key_listeners(driver)
                     try:
                         pressed_key = wait_for_key_signal(
-                            driver, timeout=300,
+                            driver,
+                            timeout=300,
                         )  # 5 min
                         logger.info(f"Key pressed: {pressed_key}")
                         if pressed_key == 'Enter':
@@ -309,6 +324,7 @@ def process_chunk_of_rows(
                                 email_text=email,
                                 email_status=email_status,
                                 error_message='User skipped sending.',
+                                row_number=index,
                             )
                             continue
                         else:
@@ -321,6 +337,7 @@ def process_chunk_of_rows(
                                 email_text=email,
                                 email_status=email_status,
                                 error_message=error_message,
+                                row_number=index,
                             )
                             continue
                     except TimeoutException:
@@ -333,12 +350,14 @@ def process_chunk_of_rows(
                             email_text=email,
                             email_status=email_status,
                             error_message=error_message,
+                            row_number=index,
                         )
                         continue
 
                 # Send
                 send_button = driver.find_element(
-                    By.CSS_SELECTOR, 'button[data-live-test-messaging-submit-btn]',
+                    By.CSS_SELECTOR,
+                    'button[data-live-test-messaging-submit-btn]',
                 )
                 if send_button.get_attribute('disabled'):
                     email_status = 'Failed'
@@ -357,6 +376,7 @@ def process_chunk_of_rows(
                     email_text=email,
                     email_status=email_status,
                     error_message=error_message,
+                    row_number=index,
                 )
 
                 # Optional: reload or navigate to next.
@@ -369,9 +389,11 @@ def process_chunk_of_rows(
                 # Per-row error
                 email_status = 'Failed'
                 error_message = str(e)
-                logger.error(f"Error processing profile {
-                             linkedin_profile
-                             }: {e}")
+                logger.error(
+                    f"Error processing profile {
+                        linkedin_profile
+                    }: {e}",
+                )
                 logger.debug(traceback.format_exc())
                 log_email(
                     run_id=run_id,
@@ -379,6 +401,7 @@ def process_chunk_of_rows(
                     email_text='',  # or email if defined
                     email_status=email_status,
                     error_message=error_message,
+                    row_number=index,
                 )
                 # Attempt reload and continue
                 driver.execute_script('location.reload(true);')
@@ -414,9 +437,11 @@ def run_selenium_automation(
             end_index = min(start_index + batch_size, total_rows)
             batch_df = data.iloc[start_index:end_index]
 
-            logger.info(f"Processing batch rows {
-                        start_index
-                        } to {end_index - 1}")
+            logger.info(
+                f"Processing batch rows {
+                    start_index
+                } to {end_index - 1}",
+            )
             process_chunk_of_rows(
                 batch_df=batch_df,
                 visible_mode=visible_mode,
@@ -444,7 +469,8 @@ def run_selenium_automation(
         error_message = 'Run was interrupted by the user (KeyboardInterrupt).'
         logger.warning(error_message)
         log_run_end(
-            run_id=run_id, status=run_status,
+            run_id=run_id,
+            status=run_status,
             error_message=error_message,
         )
         if callback:
@@ -456,7 +482,8 @@ def run_selenium_automation(
         logger.error(error_message)
         logger.debug(traceback.format_exc())
         log_run_end(
-            run_id=run_id, status=run_status,
+            run_id=run_id,
+            status=run_status,
             error_message=error_message,
         )
         if callback:
@@ -468,7 +495,8 @@ def run_selenium_automation(
             run_status = 'Failed'
             error_message = 'Run ended unexpectedly.'
             log_run_end(
-                run_id=run_id, status=run_status,
+                run_id=run_id,
+                status=run_status,
                 error_message=error_message,
             )
             if callback:
@@ -777,7 +805,8 @@ def run_selenium_automation_old(
 
                     # Scroll the element into view
                     driver.execute_script(
-                        "arguments[0].scrollIntoView({block: 'center'});", email_label,
+                        "arguments[0].scrollIntoView({block: 'center'});",
+                        email_label,
                     )
 
                     # Pause a bit to ensure everything settles (you may adjust or remove this if unnecessary)
@@ -800,12 +829,14 @@ def run_selenium_automation_old(
                         ),
                     )
                     logger.info(
-                        'Save button HTML: %s', save_button.get_attribute(
+                        'Save button HTML: %s',
+                        save_button.get_attribute(
                             'outerHTML',
                         ),
                     )
                     driver.execute_script(
-                        "arguments[0].scrollIntoView({block: 'center'});", save_button,
+                        "arguments[0].scrollIntoView({block: 'center'});",
+                        save_button,
                     )
                     time.sleep(random.uniform(1, 2))
                     driver.execute_script('arguments[0].click();', save_button)
@@ -886,6 +917,7 @@ def run_selenium_automation_old(
                                 email_text=email,
                                 email_status=email_status,
                                 error_message='User skipped sending.',
+                                row_number=index,
                             )
                             continue
                         else:
@@ -898,6 +930,7 @@ def run_selenium_automation_old(
                                 email_text=email,
                                 email_status=email_status,
                                 error_message=error_message,
+                                row_number=index,
                             )
                             continue
                     except TimeoutException:
@@ -912,6 +945,7 @@ def run_selenium_automation_old(
                             email_text=email,
                             email_status=email_status,
                             error_message=error_message,
+                            row_number=index,
                         )
                         continue
 
@@ -938,6 +972,7 @@ def run_selenium_automation_old(
                     email_text=email,
                     email_status=email_status,
                     error_message=error_message,
+                    row_number=index,
                 )
                 time.sleep(random.uniform(61, 82))
                 # Force a hard reload
@@ -958,6 +993,7 @@ def run_selenium_automation_old(
                     email_text=email if email else '',
                     email_status=email_status,
                     error_message=error_message,
+                    row_number=index,
                 )
                 # Force a hard reload
                 driver.execute_script('location.reload(true);')
