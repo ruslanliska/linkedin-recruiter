@@ -8,18 +8,23 @@ logger = logging.getLogger(__name__)
 DB_PATH = 'run_history.db'
 
 
-def log_run_start(file_name):
+def log_run_start(file_name, last_processed_row=0):
+    """
+    Starts a new 'run' record in the database.
+    'last_processed_row' defaults to 0 for a new run,
+    but you can pass a different value if you are resuming.
+    """
     connection = sqlite3.connect(DB_PATH)
     cursor = connection.cursor()
     insert_query = """
-    INSERT INTO runs (file_name, status)
-    VALUES (?, ?)
+    INSERT INTO runs (file_name, status, last_processed_row)
+    VALUES (?, ?, ?)
     """
-    cursor.execute(insert_query, (file_name, 'Running'))
+    cursor.execute(insert_query, (file_name, 'Running', last_processed_row))
     run_id = cursor.lastrowid  # Get the ID of the inserted run
     connection.commit()
     connection.close()
-    return run_id  # Return the run_id to associate emails with this run
+    return run_id
 
 
 def log_run_end(run_id, status, error_message=None):
