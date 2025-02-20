@@ -505,6 +505,128 @@ def run_selenium_automation(
                 callback(success=False, message=error_message)
 
 
+def run_selenium_automation_with_retries(
+    data: pd.DataFrame,
+    visible_mode: bool,
+    control_email_sending: bool,
+    prompt: str = None,
+    reference_email: str = None,
+    run_id: int = None,
+    callback=None,
+    batch_size: int = 50,       # How many rows per batch
+    max_retries: int = 2,      # How many times to retry a failing batch
+):
+    logger.info(f"Run ID: {run_id} - Automation started (with retries).")
+    run_status = 'Running'
+    error_message = None
+
+    try:
+        total_rows = len(data)
+        start_index = 0
+
+        # Loop over data in batches
+        while start_index < total_rows:
+            end_index = min(start_index + batch_size, total_rows)
+            batch_df = data.iloc[start_index:end_index]
+
+            logger.info(f"Processing batch rows {
+                        start_index
+                        } to {end_index - 1}")
+
+            # Attempt to process this batch up to max_retries times
+            attempts = 0
+            batch_success = False
+            while attempts < max_retries and not batch_success:
+                attempts += 1
+                try:
+                    # This function does the actual row-by-row Selenium logic
+                    process_chunk_of_rows(
+                        batch_df=batch_df,
+                        visible_mode=visible_mode,
+                        control_email_sending=control_email_sending,
+                        prompt=prompt,
+                        reference_email=reference_email,
+                        run_id=run_id,
+                    )
+                    # If we get here, the batch was processed without raising a fatal error
+                    batch_success = True
+
+                except WebDriverException as wde:
+                    logger.warning(
+                        f"WebDriverException on batch {
+                            start_index
+                        }-{end_index - 1}, "
+                        f"attempt {attempts}/{max_retries}: {wde}",
+                    )
+                    logger.debug(traceback.format_exc())
+
+                    # If it's the last attempt, decide whether to skip or abort
+                    if attempts == max_retries:
+                        logger.error(f"Batch {
+                                     start_index
+                                     }-{end_index-1} failed after {max_retries} attempts. Skipping.")
+                        # Optionally, you could `break` the entire loop or `return`
+                        # if you want to stop the run entirely.
+
+                except Exception as e:
+                    logger.error(
+                        f"Unexpected exception on batch {
+                            start_index
+                        }-{end_index - 1}, "
+                        f"attempt {attempts}/{max_retries}: {e}",
+                    )
+                    logger.debug(traceback.format_exc())
+                    # Same logic: decide if you want to skip or break on final attempt.
+                    if attempts == max_retries:
+                        logger.error(
+                            f"Batch {start_index}-{
+                                end_index -
+                                1
+                            } failed after {max_retries} attempts.",
+                        )
+
+            # Move on to the next batch, even if this batch ultimately failed
+            start_index = end_index
+
+        # If we reach here, we've attempted all batches
+        run_status = 'Completed'
+        logger.info(
+            'All batches processed (with potential skips after max_retries).',
+        )
+
+        # Mark the run as completed in your DB
+        # log_run_end(run_id, status=run_status, error_message="Run completed with retries.")
+
+        # Callback if needed
+        if callback:
+            callback(success=True, message='Run completed with retries.')
+
+    except KeyboardInterrupt:
+        run_status = 'Interrupted'
+        error_message = 'Run was interrupted by the user (KeyboardInterrupt).'
+        logger.warning(error_message)
+        # log_run_end(run_id, status=run_status, error_message=error_message)
+        if callback:
+            callback(success=False, message=error_message)
+
+    except Exception as e:
+        run_status = 'Failed'
+        error_message = f"An unexpected error occurred: {e}"
+        logger.error(error_message)
+        logger.debug(traceback.format_exc())
+        # log_run_end(run_id, status=run_status, error_message=error_message)
+        if callback:
+            callback(success=False, message=error_message)
+
+    finally:
+        if run_id and run_status not in ['Completed', 'Failed', 'Interrupted']:
+            run_status = 'Failed'
+            error_message = 'Run ended unexpectedly.'
+            # log_run_end(run_id, status=run_status, error_message=error_message)
+            if callback:
+                callback(success=False, message=error_message)
+
+
 def run_selenium_automation_old(
     data,
     visible_mode,

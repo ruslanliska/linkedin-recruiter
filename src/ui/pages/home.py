@@ -15,6 +15,7 @@ from src.database.handlers import get_last_processed_row_by_file
 from src.database.handlers import log_run_end
 from src.database.handlers import log_run_start
 from src.inmail.personalized_email import run_selenium_automation
+from src.inmail.personalized_email import run_selenium_automation_with_retries
 
 DB_PATH = 'run_history.db'
 
@@ -322,7 +323,8 @@ class HomePage(ttk.Frame):
                     )
                     # Log the start of the run and get run_id
                     run_id = log_run_start(
-                        file_name=file_path, last_processed_row=self.last_row,
+                        file_name=file_path,
+                        last_processed_row=self.last_row,
                     )
                     self.run_id = run_id
 
@@ -455,7 +457,7 @@ class HomePage(ttk.Frame):
                         self.show_error_message('Automation Error', message)
 
                 # Pass the chunk to run_selenium_automation
-                run_selenium_automation(
+                run_selenium_automation_with_retries(
                     data=chunk_data,
                     visible_mode=visible_mode,
                     prompt=prompt,
