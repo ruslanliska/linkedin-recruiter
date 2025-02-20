@@ -64,7 +64,7 @@ def process_chunk_of_rows(
         driver = uc.Chrome(
             options=options,
             # e.g., version_main=110, or remove version_main entirely:
-            version_main=131,
+            version_main=133,
             driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
         )
 
@@ -272,7 +272,9 @@ def process_chunk_of_rows(
                                 'Error: No recipient email found. Switching to InMail instead.',
                             )
                             # Possibly skip or handle differently
-                            driver.execute_script('location.reload(true);')
+                            driver.refresh()
+                            time.sleep(random.uniform(4, 7))
+
                             continue
                     except NoSuchElementException:
                         pass
@@ -381,7 +383,7 @@ def process_chunk_of_rows(
 
                 # Optional: reload or navigate to next.
                 # If you do not need a reload here, you can remove it.
-                driver.execute_script('location.reload(true);')
+                driver.refresh()
                 logger.info('Page refreshed.')
                 time.sleep(random.uniform(15, 60))
 
@@ -404,7 +406,7 @@ def process_chunk_of_rows(
                     row_number=index,
                 )
                 # Attempt reload and continue
-                driver.execute_script('location.reload(true);')
+                driver.refresh()
                 logger.info('Page refreshed.')
                 time.sleep(random.uniform(3, 6))
                 continue
@@ -643,7 +645,7 @@ def run_selenium_automation_old(
                     logger.info(f"Guessed {profile_email_address=}")
 
                 # Force a hard reload
-                driver.execute_script('location.reload(true);')
+                driver.refresh()
                 time.sleep(random.uniform(4, 7))
 
                 driver.get(linkedin_profile)
@@ -855,7 +857,9 @@ def run_selenium_automation_old(
                                 'Error message. No recipient email found. Select InMail instead.',  # noqa:E501
                             )
                             # Force a hard reload
-                            driver.execute_script('location.reload(true);')
+                            driver.refresh()
+                            time.sleep(random.uniform(4, 7))
+
                             continue
                         else:
                             logger.info(
@@ -976,7 +980,9 @@ def run_selenium_automation_old(
                 )
                 time.sleep(random.uniform(61, 82))
                 # Force a hard reload
-                driver.execute_script('location.reload(true);')
+                driver.refresh()
+                time.sleep(random.uniform(4, 7))
+
                 logger.info('Page refreshed.')
 
             except Exception as e:
@@ -996,7 +1002,9 @@ def run_selenium_automation_old(
                     row_number=index,
                 )
                 # Force a hard reload
-                driver.execute_script('location.reload(true);')
+                driver.refresh()
+                time.sleep(random.uniform(4, 7))
+
                 logger.info('Page refreshed.')
                 continue
 
