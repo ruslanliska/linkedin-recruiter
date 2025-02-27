@@ -14,7 +14,6 @@ import ttkbootstrap as ttk
 from src.database.handlers import get_last_processed_row_by_file
 from src.database.handlers import log_run_end
 from src.database.handlers import log_run_start
-from src.inmail.personalized_email import run_selenium_automation
 from src.inmail.personalized_email import run_selenium_automation_with_retries
 
 DB_PATH = 'run_history.db'
@@ -55,7 +54,10 @@ class HomePage(ttk.Frame):
 
         # Configure grid columns for alignment (simple approach)
         for col_index in range(6):
-            form.columnconfigure(col_index, weight=0)
+            if col_index == 1:
+                form.columnconfigure(col_index, weight=1)
+            else:
+                form.columnconfigure(col_index, weight=0)
 
         # -----------------------------
         # Row 0: CSV File Selection
@@ -181,7 +183,26 @@ class HomePage(ttk.Frame):
         )
 
         # -----------------------------
-        # Reference Email (ScrolledText)
+        # Row 4: Email Subject
+        # -----------------------------
+        label_subject = ttk.Label(
+            form,
+            text='Email Subject:',
+            font=('Helvetica', 12),
+        )
+        label_subject.grid(row=4, column=0, sticky='e', padx=5, pady=10)
+
+        self.subject_var = ttk.StringVar()
+        entry_subject = ttk.Entry(
+            form, textvariable=self.subject_var, width=50,
+        )
+        entry_subject.grid(
+            row=4, column=1, columnspan=4,
+            sticky='ew', padx=5, pady=10,
+        )
+
+        # -----------------------------
+        # Row 5: Reference Email (ScrolledText)
         # -----------------------------
         label_reference_email = ttk.Label(
             form,
@@ -189,7 +210,7 @@ class HomePage(ttk.Frame):
             font=('Helvetica', 12),
         )
         label_reference_email.grid(
-            row=4,
+            row=5,
             column=0,
             sticky='ne',
             padx=5,
@@ -204,7 +225,7 @@ class HomePage(ttk.Frame):
             font=('Helvetica', 12),
         )
         self.reference_email_text.grid(
-            row=4,
+            row=5,
             column=1,
             sticky='nsew',
             padx=5,
@@ -214,7 +235,7 @@ class HomePage(ttk.Frame):
         self.reference_email_text.configure(state='normal')
 
         # -----------------------------
-        # Control Email Sending Checkbox
+        # Row 6: Control Email Sending Checkbox
         # -----------------------------
         label_control_email_sending = ttk.Label(
             form,
@@ -222,7 +243,7 @@ class HomePage(ttk.Frame):
             font=('Helvetica', 12),
         )
         label_control_email_sending.grid(
-            row=5,
+            row=6,
             column=0,
             sticky='e',
             padx=5,
@@ -237,7 +258,7 @@ class HomePage(ttk.Frame):
             bootstyle='success-round-toggle',
         )
         checkbox_control_email_sending.grid(
-            row=5,
+            row=6,
             column=1,
             sticky='w',
             padx=5,
@@ -257,7 +278,7 @@ class HomePage(ttk.Frame):
         self.start_button.pack(pady=20)
 
         # Let the reference email text area expand if the window is resized
-        form.rowconfigure(4, weight=1)
+        form.rowconfigure(5, weight=1)
 
     def load_daily_limit(self):
         """Load the daily limit from the database (settings table)."""
@@ -289,7 +310,7 @@ class HomePage(ttk.Frame):
         connection = sqlite3.connect(DB_PATH)
         cursor = connection.cursor()
         cursor.execute(
-            "SELECT COUNT(*) FROM emails WHERE DATE(timestamp) = DATE('now', 'localtime')",
+            "SELECT COUNT(*) FROM emails WHERE DATE(timestamp) = DATE('now', 'localtime')",  # noqa: E501
         )
         result = cursor.fetchone()
         emails_sent_today = result[0] if result else 0
@@ -310,7 +331,7 @@ class HomePage(ttk.Frame):
             try:
                 data = pd.read_csv(file_path)
 
-                # We check required column(s); in your example, "Person Linkedin Url"
+                # We check required column(s); "Person Linkedin Url"
                 if 'Person Linkedin Url' in data.columns:
                     messagebox.showinfo('Success', 'CSV file is valid.')
                     self.csv_data = data  # Store the data
@@ -364,7 +385,7 @@ class HomePage(ttk.Frame):
             )
             return
 
-        # Disable the Start and Upload buttons to prevent multiple clicks/changes
+        # Disable the Start and Upload buttons to prevent multiple clicks
         self.disable_start_button()
 
         # Gather user input
@@ -376,10 +397,10 @@ class HomePage(ttk.Frame):
             '1.0',
             'end',
         ).strip()
-        reference_email = reference_email_text if reference_email_text else None
+        reference_email = reference_email_text if reference_email_text else None  # noqa: E501
 
         control_email_sending = self.control_email_sending_var.get()
-
+        email_subject = self.subject_var.get() if self.subject_var.get() else None  # noqa: E501
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
@@ -390,6 +411,7 @@ class HomePage(ttk.Frame):
                 reference_email,
                 control_email_sending,
                 self.run_id,
+                email_subject,
             ),
             daemon=True,
         )
@@ -403,13 +425,15 @@ class HomePage(ttk.Frame):
         reference_email,
         control_email_sending,
         run_id,
+        email_subject=None,
     ):
         """
         Process all rows in 'data' chunk by chunk.
         For each day:
           - Send up to (daily_limit - emails_sent_today) rows.
           - If more rows remain, sleep until next day, then continue.
-        We do NOT modify run_selenium_automation; we just pass in subsets of data.
+        We do NOT modify run_selenium_automation;
+        we just pass in subsets of data.
         """
         total_rows = len(data)
         print(f"{self.last_row=}")
@@ -428,7 +452,8 @@ class HomePage(ttk.Frame):
                 emails_sent_today = self.emails_sent_today_var.get()
                 daily_limit = self.daily_limit_var.get()
 
-                # If we are already at or above today's limit, wait until next day
+                # If we are already at or above today's limit
+                # wait until next day
                 if emails_sent_today >= daily_limit:
                     self.show_info_message(
                         'Daily Limit Reached',
@@ -448,10 +473,12 @@ class HomePage(ttk.Frame):
                 print(f"{chunk_size=}")
 
                 # Slice the data for today's chunk
-                chunk_data = data.iloc[current_index: current_index + chunk_size]
+                chunk_data = data.iloc[current_index: current_index + chunk_size]  # noqa: E501
 
-                # We'll define a callback that runs after run_selenium_automation finishes
-                # but to keep the flow simpler, we can pass a callback that does nothing special:
+                # We'll define a callback that runs
+                # after run_selenium_automation finishes
+                # but to keep the flow simpler
+                # we can pass a callback that does nothing special:
                 def automation_callback(success, message):
                     if not success:
                         self.show_error_message('Automation Error', message)
@@ -465,23 +492,26 @@ class HomePage(ttk.Frame):
                     control_email_sending=control_email_sending,
                     run_id=run_id,
                     callback=automation_callback,
+                    email_subject=email_subject,
                 )
 
                 # Now we've used chunk_size rows for today
                 current_index += chunk_size
 
-                # Update "emails_sent_today" label (the DB is updated by run_selenium_automation)
+                # Update "emails_sent_today" label
+                # (the DB is updated by run_selenium_automation)
                 self.after(0, self.update_emails_sent_today)
                 time.sleep(0.1)
 
-                # If we still have more rows to go and we've used up today's limit, sleep
+                # If we still have more rows to go
+                # and we've used up today's limit, sleep
                 if current_index < total_rows:
                     # Check how many we have now (in case chunk < daily_limit)
                     self.after(0, self.update_emails_sent_today)
                     time.sleep(0.1)
                     if self.emails_sent_today_var.get() >= daily_limit:
                         print(
-                            "Today's limit is fully used. Waiting until next day...",
+                            "Today's limit is fully used. Waiting until next day...",  # noqa: E501
                         )
                         self.wait_until_next_day()
 
