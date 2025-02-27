@@ -16,6 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from src.agents.main import generate_personal_email
+from src.agents.subject_writer import generate_subject
 from src.database.handlers import log_email
 from src.database.handlers import log_run_end
 from src.inmail.utils import get_user_data_dir
@@ -41,6 +42,7 @@ def process_chunk_of_rows(
     prompt,
     reference_email,
     run_id,
+    email_subject,
 ):
     """
     Process a batch (chunk) of rows in one WebDriver session.
@@ -59,13 +61,12 @@ def process_chunk_of_rows(
         options.add_argument('--start-maximized')
         options.add_argument(f"--user-data-dir={get_user_data_dir()}")
 
-        # IMPORTANT: Remove or fix version_main to match your real browser version
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
             # e.g., version_main=110, or remove version_main entirely:
             version_main=133,
-            driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
+            driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',  # noqa: E501
         )
 
         # Optional: stealth, if you want to keep it
@@ -134,11 +135,18 @@ def process_chunk_of_rows(
                 logger.debug(f"Cleaned Text snippet: {cleaned_text[:100]}...")
 
                 # Generate the personal email
-                email, subject = generate_personal_email(
+                email = generate_personal_email(
                     page_summary=cleaned_text,
                     user_prompt=prompt,
                     email_instructions=reference_email,
                 )
+                if not email_subject:
+                    subject = generate_subject(email_body=email)
+                    logger.info(f"Email Subject by AI: {subject}")
+
+                else:
+                    subject = email_subject
+                    logger.info(f"Email Subject Default: {subject}")
 
                 # Extract profile ID from <code> elements
                 code_elements = driver.find_elements(By.TAG_NAME, 'code')
@@ -191,7 +199,7 @@ def process_chunk_of_rows(
                     )
                     add_email_button = driver.find_element(
                         By.XPATH,
-                        ".//button[@class='button-small-muted-tertiary contact-info__add']",
+                        ".//button[@class='button-small-muted-tertiary contact-info__add']",  # noqa: E501
                     )
                     add_email_button.click()
                     email_input = driver.find_element(
@@ -209,7 +217,7 @@ def process_chunk_of_rows(
                 # Open message composer
                 email_button = driver.find_element(
                     By.XPATH,
-                    "//button[contains(@class, 'artdeco-button') and contains(@data-live-test-component, 'message-icon-btn')]",
+                    "//button[contains(@class, 'artdeco-button') and contains(@data-live-test-component, 'message-icon-btn')]",  # noqa: E501
                 )
                 email_button.click()
                 time.sleep(random.uniform(4, 7))
@@ -217,17 +225,17 @@ def process_chunk_of_rows(
                 # Detect if it's InMail or Email
                 send_info = driver.find_element(
                     By.XPATH,
-                    "//div[contains(@class, 'single-message-composer__trigger-message')]",
+                    "//div[contains(@class, 'single-message-composer__trigger-message')]",  # noqa: E501
                 )
                 text_content = send_info.text.strip()
 
                 if 'Send immediately via InMail' in text_content:
                     logger.info(
-                        'Detected: Send immediately via InMail -> switching to Email',
+                        'Detected: Send immediately via InMail -> switching to Email',  # noqa: E501
                     )
                     settings_button = driver.find_element(
                         By.XPATH,
-                        "//button[contains(@class, 'single-message-composer__trigger-message-gear-icon')]",
+                        "//button[contains(@class, 'single-message-composer__trigger-message-gear-icon')]",  # noqa: E501
                     )
                     settings_button.click()
                     time.sleep(random.uniform(3, 6))
@@ -237,7 +245,7 @@ def process_chunk_of_rows(
                         EC.visibility_of_element_located(
                             (
                                 By.XPATH,
-                                "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",
+                                "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",  # noqa: E501
                             ),
                         ),
                     )
@@ -254,7 +262,7 @@ def process_chunk_of_rows(
                         EC.element_to_be_clickable(
                             (
                                 By.XPATH,
-                                ".//button[.//span[contains(normalize-space(), 'Save')]]",
+                                ".//button[.//span[contains(normalize-space(), 'Save')]]",  # noqa: E501
                             ),
                         ),
                     )
@@ -265,11 +273,11 @@ def process_chunk_of_rows(
                     try:
                         error_message_element = driver.find_element(
                             By.XPATH,
-                            "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",
+                            "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",  # noqa: E501
                         )
                         if error_message_element.is_displayed():
                             logger.warning(
-                                'Error: No recipient email found. Switching to InMail instead.',
+                                'Error: No recipient email found. Switching to InMail instead.',  # noqa: E501
                             )
                             # Possibly skip or handle differently
                             driver.refresh()
@@ -290,7 +298,7 @@ def process_chunk_of_rows(
                 # Fill in subject
                 subject_input = driver.find_element(
                     By.CSS_SELECTOR,
-                    "input[aria-label='Message subject'][placeholder='Add a subject']",
+                    "input[aria-label='Message subject'][placeholder='Add a subject']",  # noqa: E501
                 )
                 subject_input.click()
                 subject_input.send_keys(subject)
@@ -464,7 +472,10 @@ def run_selenium_automation(
         )
         logger.info(f"Run ID: {run_id} - Automation completed successfully.")
         if callback:
-            callback(success=True, message='Automation completed successfully.')
+            callback(
+                success=True,
+                message='Automation completed successfully.',
+            )
 
     except KeyboardInterrupt:
         run_status = 'Interrupted'
@@ -513,8 +524,9 @@ def run_selenium_automation_with_retries(
     reference_email: str = None,
     run_id: int = None,
     callback=None,
-    batch_size: int = 50,       # How many rows per batch
-    max_retries: int = 2,      # How many times to retry a failing batch
+    batch_size: int = 50,  # How many rows per batch
+    max_retries: int = 2,  # How many times to retry a failing batch
+    email_subject: str = None,  # Optional: subject for emails
 ):
     logger.info(f"Run ID: {run_id} - Automation started (with retries).")
     run_status = 'Running'
@@ -529,9 +541,11 @@ def run_selenium_automation_with_retries(
             end_index = min(start_index + batch_size, total_rows)
             batch_df = data.iloc[start_index:end_index]
 
-            logger.info(f"Processing batch rows {
-                        start_index
-                        } to {end_index - 1}")
+            logger.info(
+                f"Processing batch rows {
+                    start_index
+                } to {end_index - 1}",
+            )
 
             # Attempt to process this batch up to max_retries times
             attempts = 0
@@ -547,8 +561,10 @@ def run_selenium_automation_with_retries(
                         prompt=prompt,
                         reference_email=reference_email,
                         run_id=run_id,
+                        email_subject=email_subject,
                     )
-                    # If we get here, the batch was processed without raising a fatal error
+                    # If we get here, the batch was processed
+                    # without raising a fatal error
                     batch_success = True
 
                 except WebDriverException as wde:
@@ -562,10 +578,11 @@ def run_selenium_automation_with_retries(
 
                     # If it's the last attempt, decide whether to skip or abort
                     if attempts == max_retries:
-                        logger.error(f"Batch {
-                                     start_index
-                                     }-{end_index-1} failed after {max_retries} attempts. Skipping.")
-                        # Optionally, you could `break` the entire loop or `return`
+                        logger.error(
+                            f"Batch {start_index}-{end_index-1} failed after {max_retries} attempts. Skipping.",  # noqa: E501
+                        )
+                        # Optionally, you could `break`
+                        # the entire loop or `return`
                         # if you want to stop the run entirely.
 
                 except Exception as e:
@@ -576,7 +593,8 @@ def run_selenium_automation_with_retries(
                         f"attempt {attempts}/{max_retries}: {e}",
                     )
                     logger.debug(traceback.format_exc())
-                    # Same logic: decide if you want to skip or break on final attempt.
+                    # Same logic: decide if you want
+                    # to skip or break on final attempt.
                     if attempts == max_retries:
                         logger.error(
                             f"Batch {start_index}-{
@@ -594,9 +612,6 @@ def run_selenium_automation_with_retries(
             'All batches processed (with potential skips after max_retries).',
         )
 
-        # Mark the run as completed in your DB
-        # log_run_end(run_id, status=run_status, error_message="Run completed with retries.")
-
         # Callback if needed
         if callback:
             callback(success=True, message='Run completed with retries.')
@@ -605,7 +620,6 @@ def run_selenium_automation_with_retries(
         run_status = 'Interrupted'
         error_message = 'Run was interrupted by the user (KeyboardInterrupt).'
         logger.warning(error_message)
-        # log_run_end(run_id, status=run_status, error_message=error_message)
         if callback:
             callback(success=False, message=error_message)
 
@@ -614,7 +628,6 @@ def run_selenium_automation_with_retries(
         error_message = f"An unexpected error occurred: {e}"
         logger.error(error_message)
         logger.debug(traceback.format_exc())
-        # log_run_end(run_id, status=run_status, error_message=error_message)
         if callback:
             callback(success=False, message=error_message)
 
@@ -622,7 +635,6 @@ def run_selenium_automation_with_retries(
         if run_id and run_status not in ['Completed', 'Failed', 'Interrupted']:
             run_status = 'Failed'
             error_message = 'Run ended unexpectedly.'
-            # log_run_end(run_id, status=run_status, error_message=error_message)
             if callback:
                 callback(success=False, message=error_message)
 
@@ -666,8 +678,6 @@ def run_selenium_automation_old(
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
         options.add_argument(f"--user-data-dir={get_user_data_dir()}")
-        # options.add_argument(r"--user-data-dir=C:\Users\Robin\AppData\Local\Google\Chrome\User Data")
-        # options.add_argument(r"--profile-directory=Profile 151")
 
         # Initialize the WebDriver
         try:
@@ -675,7 +685,7 @@ def run_selenium_automation_old(
             driver = uc.Chrome(
                 options=options,
                 version_main=133,
-                driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
+                driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',  # noqa: E501
             )
 
             from selenium_stealth import stealth
@@ -724,13 +734,11 @@ def run_selenium_automation_old(
                 options.add_argument('--no-sandbox')
                 options.add_argument('--start-maximized')
                 options.add_argument(f"--user-data-dir={get_user_data_dir()}")
-                # options.add_argument(r"--user-data-dir=C:\Users\Robin\AppData\Local\Google\Chrome\User Data")
-                # options.add_argument(r"--profile-directory=Profile 151")
 
                 driver = uc.Chrome(
                     options=options,
                     version_main=131,
-                    driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
+                    driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',  # noqa: E501
                 )
 
                 from selenium_stealth import stealth
@@ -910,7 +918,7 @@ def run_selenium_automation_old(
                         EC.visibility_of_element_located(
                             (
                                 By.XPATH,
-                                "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",
+                                "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",  # noqa: E501
                             ),
                         ),
                     )
@@ -933,10 +941,12 @@ def run_selenium_automation_old(
                         email_label,
                     )
 
-                    # Pause a bit to ensure everything settles (you may adjust or remove this if unnecessary)
+                    # Pause a bit to ensure everything settles
+                    # (you may adjust or remove this if unnecessary)
                     time.sleep(random.uniform(1, 2))
 
-                    # Click the label (using JavaScript click to avoid potential overlay issues)
+                    # Click the label
+                    # using JavaScript click to avoid potential overlay issues
                     driver.execute_script('arguments[0].click();', email_label)
                     logger.info('Clicked on the email label')
                     # Optionally, wait a moment if needed
@@ -948,7 +958,7 @@ def run_selenium_automation_old(
                         EC.element_to_be_clickable(
                             (
                                 By.XPATH,
-                                ".//button[.//span[contains(normalize-space(), 'Save')]]",
+                                ".//button[.//span[contains(normalize-space(), 'Save')]]",  # noqa: E501
                             ),
                         ),
                     )
