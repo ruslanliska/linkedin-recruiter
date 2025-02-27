@@ -2,7 +2,6 @@ from src.agents.email_writer import DEFAULT_EMAIL_INSTRUCTION
 from src.agents.email_writer import DEFAULT_USER_PROMPT
 from src.agents.email_writer import generate_email
 from src.agents.linkedin_info import generate_page_summary
-from src.agents.subject_writer import generate_subject
 
 
 def generate_personal_email(
@@ -22,5 +21,5 @@ def generate_personal_email(
         user_prompt=user_prompt,
         email_instructions=email_instructions,
     )
-    subject = generate_subject(email_body=email)
-    return email, subject
+
+    return email
