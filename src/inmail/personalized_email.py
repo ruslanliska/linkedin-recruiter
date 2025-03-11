@@ -782,11 +782,7 @@ def run_selenium_automation_old(
                     raise ValueError('Profile ID extraction failed.')
 
                 # Navigate to the messaging composer
-                logger.debug(
-                    f"Navigate to https://www.linkedin.com/talent/profile/{
-                        profile_id
-                    }",
-                )
+                logger.debug(f"Navigate to https://www.linkedin.com/talent/profile/{profile_id}")  # noqa: E501
                 driver.get(
                     f"https://www.linkedin.com/talent/profile/{profile_id}",
                 )
