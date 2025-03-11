@@ -520,11 +520,7 @@ def run_selenium_automation_with_retries(
             end_index = min(start_index + batch_size, total_rows)
             batch_df = data.iloc[start_index:end_index]
 
-            logger.info(
-                f"Processing batch rows {
-                    start_index
-                } to {end_index - 1}",
-            )
+            logger.info(f"Processing batch rows {start_index} to {end_index - 1}")  # noqa: E501
 
             # Attempt to process this batch up to max_retries times
             attempts = 0
