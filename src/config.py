@@ -24,6 +24,7 @@ def get_env_path() -> Path:
 class AppSettings(BaseSettings):
     OPENAI_API_KEY: str = Field(default='ggg')
     CHECK: str = Field(default='check')
+    DRIVER_PATH: str = Field(default=None)
 
     model_config = SettingsConfigDict(
         env_file=get_env_path(),
