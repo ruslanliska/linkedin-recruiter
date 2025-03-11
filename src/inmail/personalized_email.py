@@ -104,11 +104,7 @@ def process_chunk_of_rows(
                     profile_email_address = f"{first_name}.{
                         last_name
                     }@{company_slug}.com"
-                    logger.info(
-                        f"Guessed profile_email_address={
-                            profile_email_address
-                        }",
-                    )
+                    logger.info(f"Guessed profile_email_address={profile_email_address}")  # noqa: E501
 
                 # Navigate directly to the profile
                 # (You can remove these forced reloads if not strictly needed)
