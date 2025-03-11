@@ -92,11 +92,7 @@ def process_chunk_of_rows(
                 email_status = None
                 error_message = None
                 linkedin_profile = row['Person Linkedin Url']
-                logger.info(
-                    f"Processing row {index}: linkedin_profile={
-                        linkedin_profile
-                    }",
-                )
+                logger.info(f"Processing row {index}: linkedin_profile={linkedin_profile}")  # noqa: E501
 
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
