@@ -560,12 +560,7 @@ def run_selenium_automation_with_retries(
                     # Same logic: decide if you want
                     # to skip or break on final attempt.
                     if attempts == max_retries:
-                        logger.error(
-                            f"Batch {start_index}-{
-                                end_index -
-                                1
-                            } failed after {max_retries} attempts.",
-                        )
+                        logger.error(f"Batch {start_index}-{end_index - 1} failed after {max_retries} attempts.")  # noqa: E501
 
             # Move on to the next batch, even if this batch ultimately failed
             start_index = end_index
