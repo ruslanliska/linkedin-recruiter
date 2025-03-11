@@ -17,6 +17,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from src.agents.main import generate_personal_email
 from src.agents.subject_writer import generate_subject
+from src.config import settings
 from src.database.handlers import log_email
 from src.database.handlers import log_run_end
 from src.inmail.utils import get_user_data_dir
@@ -66,7 +67,7 @@ def process_chunk_of_rows(
             options=options,
             # e.g., version_main=110, or remove version_main entirely:
             version_main=133,
-            driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',  # noqa: E501
+            driver_executable_path=settings.DRIVER_PATH,
         )
 
         # Optional: stealth, if you want to keep it
@@ -685,7 +686,7 @@ def run_selenium_automation_old(
             driver = uc.Chrome(
                 options=options,
                 version_main=133,
-                driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',  # noqa: E501
+                driver_executable_path=settings.DRIVER_PATH,
             )
 
             from selenium_stealth import stealth
@@ -738,7 +739,7 @@ def run_selenium_automation_old(
                 driver = uc.Chrome(
                     options=options,
                     version_main=131,
-                    driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',  # noqa: E501
+                    driver_executable_path=settings.DRIVER_PATH,
                 )
 
                 from selenium_stealth import stealth
