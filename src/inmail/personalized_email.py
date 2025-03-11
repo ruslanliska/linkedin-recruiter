@@ -543,12 +543,7 @@ def run_selenium_automation_with_retries(
                     batch_success = True
 
                 except WebDriverException as wde:
-                    logger.warning(
-                        f"WebDriverException on batch {
-                            start_index
-                        }-{end_index - 1}, "
-                        f"attempt {attempts}/{max_retries}: {wde}",
-                    )
+                    logger.warning(f"WebDriverException on batch {start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {wde}")  # noqa: E501
                     logger.debug(traceback.format_exc())
 
                     # If it's the last attempt, decide whether to skip or abort
