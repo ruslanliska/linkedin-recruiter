@@ -337,11 +337,7 @@ class HomePage(ttk.Frame):
                     self.csv_data = data  # Store the data
                     # Get the last processed row (if any) for this file
                     self.last_row = get_last_processed_row_by_file(file_path)
-                    print(
-                        f"Last processed row for {
-                            file_path
-                        } is: {self.last_row=}",
-                    )
+                    print(f"Last processed row for {file_path} is: {self.last_row=}")  # noqa: E501
                     # Log the start of the run and get run_id
                     run_id = log_run_start(
                         file_name=file_path,
@@ -510,9 +506,7 @@ class HomePage(ttk.Frame):
                     self.after(0, self.update_emails_sent_today)
                     time.sleep(0.1)
                     if self.emails_sent_today_var.get() >= daily_limit:
-                        print(
-                            "Today's limit is fully used. Waiting until next day...",  # noqa: E501
-                        )
+                        print("Today's limit is fully used. Waiting until next day...")  # noqa: E501
                         self.wait_until_next_day()
 
             # All rows processed
