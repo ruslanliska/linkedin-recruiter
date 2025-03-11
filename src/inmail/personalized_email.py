@@ -147,9 +147,7 @@ def process_chunk_of_rows(
                     if 'identityDashProfilesByMemberIdentity' in code_content:
                         try:
                             data_json = json.loads(code_content)
-                            profile_urn = data_json['data']['data'][
-                                'identityDashProfilesByMemberIdentity'
-                            ]['*elements'][0]
+                            profile_urn = data_json['data']['data']['identityDashProfilesByMemberIdentity']['*elements'][0]  # noqa: E501
                             profile_id = profile_urn.split(':')[-1]
                             break
                         except (json.JSONDecodeError, KeyError) as e:
@@ -163,9 +161,7 @@ def process_chunk_of_rows(
                 logger.info(f"Extracted Profile ID: {profile_id}")
 
                 # Navigate to messaging composer
-                target_url = f"https://www.linkedin.com/talent/profile/{
-                    profile_id
-                }"
+                target_url = f"https://www.linkedin.com/talent/profile/{profile_id}"  # noqa: E501
                 logger.debug(f"Navigate to {target_url}")
                 driver.get(target_url)
                 time.sleep(random.uniform(10, 20))
