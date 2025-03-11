@@ -720,17 +720,11 @@ def run_selenium_automation_old(
                 logger.info(f"Processing row {index}: {linkedin_profile=}")
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
-                    logger.warning(
-                        f"Guessing email for row {
-                            index
-                        } due to missing email address.",
-                    )
+                    logger.warning(f"Guessing email for row {index} due to missing email address.")   # noqa: E501
                     first_name = row['First Name'].lower()
                     last_name = row['Last Name'].lower()
                     company_slug = slugify_company(row['Company'])
-                    profile_email_address = (
-                        f"{first_name}.{last_name}@{company_slug}.com"
-                    )
+                    profile_email_address = f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
                     logger.info(f"Guessed {profile_email_address=}")
 
                 # Force a hard reload
