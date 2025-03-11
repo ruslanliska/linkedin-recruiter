@@ -556,13 +556,7 @@ def run_selenium_automation_with_retries(
                         # if you want to stop the run entirely.
 
                 except Exception as e:
-                    logger.error(
-                        f"Unexpected exception on batch {
-                            start_index
-                        }-{end_index - 1}, "
-                        f"attempt {attempts}/{max_retries}: {e}",
-                    )
-                    logger.debug(traceback.format_exc())
+                    logger.error(f"Unexpected exception on batch {start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {e}")  # noqa: E501
                     # Same logic: decide if you want
                     # to skip or break on final attempt.
                     if attempts == max_retries:
