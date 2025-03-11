@@ -430,11 +430,7 @@ def run_selenium_automation(
             end_index = min(start_index + batch_size, total_rows)
             batch_df = data.iloc[start_index:end_index]
 
-            logger.info(
-                f"Processing batch rows {
-                    start_index
-                } to {end_index - 1}",
-            )
+            logger.info(f"Processing batch rows {start_index} to {end_index - 1}")  # noqa: E501
             process_chunk_of_rows(
                 batch_df=batch_df,
                 visible_mode=visible_mode,
