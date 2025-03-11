@@ -101,9 +101,7 @@ def process_chunk_of_rows(
                     first_name = row['First Name'].lower()
                     last_name = row['Last Name'].lower()
                     company_slug = slugify_company(row['Company'])
-                    profile_email_address = f"{first_name}.{
-                        last_name
-                    }@{company_slug}.com"
+                    profile_email_address = f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
                     logger.info(f"Guessed profile_email_address={profile_email_address}")  # noqa: E501
 
                 # Navigate directly to the profile
