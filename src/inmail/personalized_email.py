@@ -386,11 +386,7 @@ def process_chunk_of_rows(
                 # Per-row error
                 email_status = 'Failed'
                 error_message = str(e)
-                logger.error(
-                    f"Error processing profile {
-                        linkedin_profile
-                    }: {e}",
-                )
+                logger.error(f"Error processing profile {linkedin_profile}: {e}")  # noqa: E501
                 logger.debug(traceback.format_exc())
                 log_email(
                     run_id=run_id,
