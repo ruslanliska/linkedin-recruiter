@@ -1,0 +1,1 @@
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoExit -Command "cd C:\Users\{NAME}\linkedin_email_application\linkedin-recruiter; Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process; .\run.ps1''
