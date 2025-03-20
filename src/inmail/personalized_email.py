@@ -91,9 +91,8 @@ def process_chunk_of_rows(
                 error_message = None
                 linkedin_profile = row['Person Linkedin Url']
                 logger.info(
-                    f"Processing row {index}: linkedin_profile={
-                        linkedin_profile}",
-                )  # noqa: E501
+                    f"Processing row {index}: {linkedin_profile=}",
+                ) 
 
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
@@ -107,7 +106,8 @@ def process_chunk_of_rows(
                     )
                     logger.info(
                         f"Guessed profile_email_address={
-                            profile_email_address}",
+                            profile_email_address
+                        }",
                     )  # noqa: E501
 
                 # Navigate directly to the profile
@@ -561,7 +561,8 @@ def run_selenium_automation_with_retries(
                 except WebDriverException as wde:
                     logger.warning(
                         f"WebDriverException on batch {
-                            start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {wde}",
+                            start_index
+                        }-{end_index - 1}, attempt {attempts}/{max_retries}: {wde}",
                     )  # noqa: E501
                     logger.debug(traceback.format_exc())
 
@@ -577,14 +578,17 @@ def run_selenium_automation_with_retries(
                 except Exception as e:
                     logger.error(
                         f"Unexpected exception on batch {
-                            start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {e}",
+                            start_index
+                        }-{end_index - 1}, attempt {attempts}/{max_retries}: {e}",
                     )  # noqa: E501
                     # Same logic: decide if you want
                     # to skip or break on final attempt.
                     if attempts == max_retries:
                         logger.error(
-                            f"Batch {start_index}-{end_index -
-                                1} failed after {max_retries} attempts.",
+                            f"Batch {start_index}-{
+                                end_index -
+                                1
+                            } failed after {max_retries} attempts.",
                         )  # noqa: E501
 
             # Move on to the next batch, even if this batch ultimately failed
@@ -745,7 +749,8 @@ def run_selenium_automation_old(
                 if pd.isna(profile_email_address):
                     logger.warning(
                         f"Guessing email for row {
-                            index} due to missing email address.",
+                            index
+                        } due to missing email address.",
                     )  # noqa: E501
                     first_name = row['First Name'].lower()
                     last_name = row['Last Name'].lower()
@@ -812,7 +817,8 @@ def run_selenium_automation_old(
                 # Navigate to the messaging composer
                 logger.debug(
                     f"Navigate to https://www.linkedin.com/talent/profile/{
-                        profile_id}",
+                        profile_id
+                    }",
                 )  # noqa: E501
                 driver.get(
                     f"https://www.linkedin.com/talent/profile/{profile_id}",
