@@ -574,20 +574,11 @@ def run_selenium_automation_with_retries(
                         # if you want to stop the run entirely.
 
                 except Exception as e:
-                    logger.error(
-                        f"Unexpected exception on batch {
-                            start_index
-                        }-{end_index - 1}, attempt {attempts}/{max_retries}: {e}",
-                    )  # noqa: E501
+                    logger.error(f"Unexpected exception on batch {start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {e}",)  # noqa: E501
                     # Same logic: decide if you want
                     # to skip or break on final attempt.
                     if attempts == max_retries:
-                        logger.error(
-                            f"Batch {start_index}-{
-                                end_index -
-                                1
-                            } failed after {max_retries} attempts.",
-                        )  # noqa: E501
+                        logger.error(f"Batch {start_index}-{end_index - 1} failed after {max_retries} attempts.")  # noqa: E501
 
             # Move on to the next batch, even if this batch ultimately failed
             start_index = end_index
@@ -745,17 +736,11 @@ def run_selenium_automation_old(
                 logger.info(f"Processing row {index}: {linkedin_profile=}")
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
-                    logger.warning(
-                        f"Guessing email for row {
-                            index
-                        } due to missing email address.",
-                    )  # noqa: E501
+                    logger.warning(f"Guessing email for row {index} due to missing email address.",)  # noqa: E501
                     first_name = row['First Name'].lower()
                     last_name = row['Last Name'].lower()
                     company_slug = slugify_company(row['Company'])
-                    profile_email_address = (
-                        f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
-                    )
+                    profile_email_address = f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
                     logger.info(f"Guessed {profile_email_address=}")
 
                 # Force a hard reload
@@ -813,11 +798,7 @@ def run_selenium_automation_old(
                     raise ValueError('Profile ID extraction failed.')
 
                 # Navigate to the messaging composer
-                logger.debug(
-                    f"Navigate to https://www.linkedin.com/talent/profile/{
-                        profile_id
-                    }",
-                )  # noqa: E501
+                logger.debug(f"Navigate to https://www.linkedin.com/talent/profile/{profile_id}")  # noqa: E501
                 driver.get(
                     f"https://www.linkedin.com/talent/profile/{profile_id}",
                 )
