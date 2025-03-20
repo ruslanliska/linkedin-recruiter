@@ -61,12 +61,10 @@ def process_chunk_of_rows(
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
         options.add_argument(f"--user-data-dir={get_user_data_dir()}")
-
+        print(f"{settings.DRIVER_PATH=}")
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
-            # e.g., version_main=110, or remove version_main entirely:
-            version_main=133,
             driver_executable_path=settings.DRIVER_PATH,
         )
 
@@ -92,7 +90,10 @@ def process_chunk_of_rows(
                 email_status = None
                 error_message = None
                 linkedin_profile = row['Person Linkedin Url']
-                logger.info(f"Processing row {index}: linkedin_profile={linkedin_profile}")  # noqa: E501
+                logger.info(
+                    f"Processing row {index}: linkedin_profile={
+                        linkedin_profile}",
+                )  # noqa: E501
 
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
@@ -101,8 +102,13 @@ def process_chunk_of_rows(
                     first_name = row['First Name'].lower()
                     last_name = row['Last Name'].lower()
                     company_slug = slugify_company(row['Company'])
-                    profile_email_address = f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
-                    logger.info(f"Guessed profile_email_address={profile_email_address}")  # noqa: E501
+                    profile_email_address = (
+                        f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
+                    )
+                    logger.info(
+                        f"Guessed profile_email_address={
+                            profile_email_address}",
+                    )  # noqa: E501
 
                 # Navigate directly to the profile
                 # (You can remove these forced reloads if not strictly needed)
@@ -147,7 +153,11 @@ def process_chunk_of_rows(
                     if 'identityDashProfilesByMemberIdentity' in code_content:
                         try:
                             data_json = json.loads(code_content)
-                            profile_urn = data_json['data']['data']['identityDashProfilesByMemberIdentity']['*elements'][0]  # noqa: E501
+                            profile_urn = data_json['data']['data'][
+                                'identityDashProfilesByMemberIdentity'
+                            ]['*elements'][
+                                0
+                            ]  # noqa: E501
                             profile_id = profile_urn.split(':')[-1]
                             break
                         except (json.JSONDecodeError, KeyError) as e:
@@ -386,7 +396,9 @@ def process_chunk_of_rows(
                 # Per-row error
                 email_status = 'Failed'
                 error_message = str(e)
-                logger.error(f"Error processing profile {linkedin_profile}: {e}")  # noqa: E501
+                logger.error(
+                    f"Error processing profile {linkedin_profile}: {e}",
+                )  # noqa: E501
                 logger.debug(traceback.format_exc())
                 log_email(
                     run_id=run_id,
@@ -430,7 +442,9 @@ def run_selenium_automation(
             end_index = min(start_index + batch_size, total_rows)
             batch_df = data.iloc[start_index:end_index]
 
-            logger.info(f"Processing batch rows {start_index} to {end_index - 1}")  # noqa: E501
+            logger.info(
+                f"Processing batch rows {start_index} to {end_index - 1}",
+            )  # noqa: E501
             process_chunk_of_rows(
                 batch_df=batch_df,
                 visible_mode=visible_mode,
@@ -520,7 +534,9 @@ def run_selenium_automation_with_retries(
             end_index = min(start_index + batch_size, total_rows)
             batch_df = data.iloc[start_index:end_index]
 
-            logger.info(f"Processing batch rows {start_index} to {end_index - 1}")  # noqa: E501
+            logger.info(
+                f"Processing batch rows {start_index} to {end_index - 1}",
+            )  # noqa: E501
 
             # Attempt to process this batch up to max_retries times
             attempts = 0
@@ -543,7 +559,10 @@ def run_selenium_automation_with_retries(
                     batch_success = True
 
                 except WebDriverException as wde:
-                    logger.warning(f"WebDriverException on batch {start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {wde}")  # noqa: E501
+                    logger.warning(
+                        f"WebDriverException on batch {
+                            start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {wde}",
+                    )  # noqa: E501
                     logger.debug(traceback.format_exc())
 
                     # If it's the last attempt, decide whether to skip or abort
@@ -556,11 +575,17 @@ def run_selenium_automation_with_retries(
                         # if you want to stop the run entirely.
 
                 except Exception as e:
-                    logger.error(f"Unexpected exception on batch {start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {e}")  # noqa: E501
+                    logger.error(
+                        f"Unexpected exception on batch {
+                            start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {e}",
+                    )  # noqa: E501
                     # Same logic: decide if you want
                     # to skip or break on final attempt.
                     if attempts == max_retries:
-                        logger.error(f"Batch {start_index}-{end_index - 1} failed after {max_retries} attempts.")  # noqa: E501
+                        logger.error(
+                            f"Batch {start_index}-{end_index -
+                                1} failed after {max_retries} attempts.",
+                        )  # noqa: E501
 
             # Move on to the next batch, even if this batch ultimately failed
             start_index = end_index
@@ -643,7 +668,6 @@ def run_selenium_automation_old(
 
             driver = uc.Chrome(
                 options=options,
-                version_main=133,
                 driver_executable_path=settings.DRIVER_PATH,
             )
 
@@ -696,7 +720,6 @@ def run_selenium_automation_old(
 
                 driver = uc.Chrome(
                     options=options,
-                    version_main=131,
                     driver_executable_path=settings.DRIVER_PATH,
                 )
 
@@ -720,11 +743,16 @@ def run_selenium_automation_old(
                 logger.info(f"Processing row {index}: {linkedin_profile=}")
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
-                    logger.warning(f"Guessing email for row {index} due to missing email address.")   # noqa: E501
+                    logger.warning(
+                        f"Guessing email for row {
+                            index} due to missing email address.",
+                    )  # noqa: E501
                     first_name = row['First Name'].lower()
                     last_name = row['Last Name'].lower()
                     company_slug = slugify_company(row['Company'])
-                    profile_email_address = f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
+                    profile_email_address = (
+                        f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
+                    )
                     logger.info(f"Guessed {profile_email_address=}")
 
                 # Force a hard reload
@@ -782,7 +810,10 @@ def run_selenium_automation_old(
                     raise ValueError('Profile ID extraction failed.')
 
                 # Navigate to the messaging composer
-                logger.debug(f"Navigate to https://www.linkedin.com/talent/profile/{profile_id}")  # noqa: E501
+                logger.debug(
+                    f"Navigate to https://www.linkedin.com/talent/profile/{
+                        profile_id}",
+                )  # noqa: E501
                 driver.get(
                     f"https://www.linkedin.com/talent/profile/{profile_id}",
                 )
