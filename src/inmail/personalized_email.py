@@ -102,13 +102,11 @@ def process_chunk_of_rows(
                     last_name = row['Last Name'].lower()
                     company_slug = slugify_company(row['Company'])
                     profile_email_address = (
-                        f"{first_name}.{last_name}@{company_slug}.com"  # noqa: E501
-                    )
+                        f"{first_name}.{last_name}@{company_slug}.com"  
+                    ) 
                     logger.info(
-                        f"Guessed profile_email_address={
-                            profile_email_address
-                        }",
-                    )  # noqa: E501
+                        f"Guessed {profile_email_address=}",
+                    ) 
 
                 # Navigate directly to the profile
                 # (You can remove these forced reloads if not strictly needed)
