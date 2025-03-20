@@ -65,7 +65,7 @@ def process_chunk_of_rows(
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
-            driver_executable_path=settings.DRIVER_PATH,
+            driver_executable_path=r'C:\Users\RebeccaHannan\linkedin-automation\linkedin-recruiter\chromedriver.exe',
         )
 
         # Optional: stealth, if you want to keep it
@@ -92,7 +92,7 @@ def process_chunk_of_rows(
                 linkedin_profile = row['Person Linkedin Url']
                 logger.info(
                     f"Processing row {index}: {linkedin_profile=}",
-                ) 
+                )
 
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
@@ -102,11 +102,11 @@ def process_chunk_of_rows(
                     last_name = row['Last Name'].lower()
                     company_slug = slugify_company(row['Company'])
                     profile_email_address = (
-                        f"{first_name}.{last_name}@{company_slug}.com"  
-                    ) 
+                        f"{first_name}.{last_name}@{company_slug}.com"
+                    )
                     logger.info(
                         f"Guessed {profile_email_address=}",
-                    ) 
+                    )
 
                 # Navigate directly to the profile
                 # (You can remove these forced reloads if not strictly needed)
@@ -570,7 +570,7 @@ def run_selenium_automation_with_retries(
                         # if you want to stop the run entirely.
 
                 except Exception as e:
-                    logger.error(f"Unexpected exception on batch {start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {e}",)  # noqa: E501
+                    logger.error(f"Unexpected exception on batch {start_index}-{end_index - 1}, attempt {attempts}/{max_retries}: {e}")  # noqa: E501
                     # Same logic: decide if you want
                     # to skip or break on final attempt.
                     if attempts == max_retries:
@@ -657,7 +657,7 @@ def run_selenium_automation_old(
 
             driver = uc.Chrome(
                 options=options,
-                driver_executable_path=settings.DRIVER_PATH,
+                driver_executable_path=r'C:\Users\RebeccaHannan\linkedin-automation\linkedin-recruiter\chromedriver.exe',
             )
 
             from selenium_stealth import stealth
@@ -709,7 +709,7 @@ def run_selenium_automation_old(
 
                 driver = uc.Chrome(
                     options=options,
-                    driver_executable_path=settings.DRIVER_PATH,
+                    driver_executable_path=r'C:\Users\RebeccaHannan\linkedin-automation\linkedin-recruiter\chromedriver.exe',
                 )
 
                 from selenium_stealth import stealth
@@ -732,7 +732,7 @@ def run_selenium_automation_old(
                 logger.info(f"Processing row {index}: {linkedin_profile=}")
                 profile_email_address = row['Email']
                 if pd.isna(profile_email_address):
-                    logger.warning(f"Guessing email for row {index} due to missing email address.",)  # noqa: E501
+                    logger.warning(f"Guessing email for row {index} due to missing email address.")  # noqa: E501
                     first_name = row['First Name'].lower()
                     last_name = row['Last Name'].lower()
                     company_slug = slugify_company(row['Company'])
