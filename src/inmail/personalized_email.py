@@ -65,7 +65,7 @@ def process_chunk_of_rows(
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
-            driver_executable_path=r'C:\Users\RebeccaHannan\linkedin-automation\linkedin-recruiter\chromedriver.exe',
+            driver_executable_path=fr"{settings.DRIVER_PATH}",
         )
 
         # Optional: stealth, if you want to keep it
@@ -657,7 +657,7 @@ def run_selenium_automation_old(
 
             driver = uc.Chrome(
                 options=options,
-                driver_executable_path=r'C:\Users\RebeccaHannan\linkedin-automation\linkedin-recruiter\chromedriver.exe',
+                driver_executable_path=fr"{settings.DRIVER_PATH}",
             )
 
             from selenium_stealth import stealth
@@ -709,7 +709,7 @@ def run_selenium_automation_old(
 
                 driver = uc.Chrome(
                     options=options,
-                    driver_executable_path=r'C:\Users\RebeccaHannan\linkedin-automation\linkedin-recruiter\chromedriver.exe',
+                    driver_executable_path=fr"{settings.DRIVER_PATH}",
                 )
 
                 from selenium_stealth import stealth
