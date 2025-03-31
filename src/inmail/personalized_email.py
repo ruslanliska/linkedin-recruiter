@@ -724,6 +724,7 @@ def run_selenium_automation_old(
                     fix_hairline=True,
                 )
                 time.sleep(random.uniform(2, 10))
+                time.sleep(6000)
             try:
                 email = None
                 email_status = None
