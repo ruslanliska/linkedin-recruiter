@@ -81,6 +81,7 @@ def process_chunk_of_rows(
             fix_hairline=True,
         )
         time.sleep(random.uniform(2, 5))
+        time.sleep(6000)
 
         logger.info('ChromeDriver initialized successfully for this batch.')
 
