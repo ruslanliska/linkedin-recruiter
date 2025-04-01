@@ -128,6 +128,39 @@ def process_chunk_of_rows(
                 input_field.send_keys(title)
                 input_field.send_keys(Keys.ENTER)
                 time.sleep(random.uniform(1, 3))
+
+        if locations:
+            # Wait for the button to be clickable, then click it.
+            wait = WebDriverWait(driver, 5)
+            locator = (
+                By.CSS_SELECTOR, "button.facet-edit-button[data-view-name='search-facet-add'][aria-label='Add a Candidate geographic location']")
+
+            location_button = wait.until(EC.element_to_be_clickable(locator))
+            location_button.click()
+            logger.info('Location clicked')
+            for location in locations:
+                # Wait for the input to be visible
+                wait = WebDriverWait(driver, 2)
+                input_locator = (
+                    By.CSS_SELECTOR, "input.artdeco-typeahead__input.ts-common-typeahead__input[placeholder='enter a location…']")
+
+                location_field = wait.until(
+                    EC.visibility_of_element_located(input_locator))
+
+                # Type your location
+                location_field.send_keys(location)
+
+                # Optionally wait a moment for suggestions to appear
+                time.sleep(random.uniform(1, 3))
+
+                # Press arrow down
+                location_field.send_keys(Keys.ARROW_DOWN)
+
+                # Wait again if needed
+                time.sleep(random.uniform(1, 2))
+
+                # Press Enter
+                location_field.send_keys(Keys.ENTER)
         time.sleep(600)
 
         return
