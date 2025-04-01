@@ -44,7 +44,7 @@ class LinkedInAutomationApp(ttk.Window):
     def __init__(self):
         super().__init__(themename='superhero')  # Choose a theme
         self.title('InMail Automation')
-        self.geometry('900x700')
+        self.geometry('900x900')
 
         self.load_images()
         self.create_styles()
