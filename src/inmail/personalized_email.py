@@ -100,6 +100,34 @@ def process_chunk_of_rows(
 
         logger.info('Search opened')
         time.sleep(random.uniform(2, 5))
+
+        logger.info('Starting search')
+        if job_titles:
+            # Wait for the button to be clickable, then click it.
+            WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(
+                    (
+                        By.CSS_SELECTOR,
+                        "button.facet-edit-button[data-view-name='search-facet-add'][aria-label='Add Job titles or boolean']",
+                    ),
+                ),
+            ).click()
+            logger.info('Job title clicked')
+            for title in job_titles:
+                # Wait for the input to become visible, then send keys
+                wait = WebDriverWait(driver, 5)
+                input_field = wait.until(
+                    EC.visibility_of_element_located(
+                        (
+                            By.CSS_SELECTOR,
+                            "input.artdeco-typeahead__input.ts-common-typeahead__input[placeholder*='job title']",
+                        ),
+                    ),
+                )
+                input_field.clear()  # optional, if you want to clear existing text
+                input_field.send_keys(title)
+                input_field.send_keys(Keys.ENTER)
+                time.sleep(random.uniform(1, 3))
         time.sleep(600)
 
         return
