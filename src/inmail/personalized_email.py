@@ -188,21 +188,18 @@ def process_chunk_of_rows(
         #     time.sleep(600)
 
         try:
-            # Wait until the profile list container is present
+            # Wait until the profile list container is present using the updated class selector
             container = WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located(
-                    (
-                        By.XPATH,
-                        "//div[contains(@class, 'ember-view') and contains(@class, 'profile-list') and @data-test-paginated-list]",
-                    )
+                    (By.XPATH, "//div[contains(@class, 'profile-list-container-card')]")
                 )
             )
             # Optionally wait until it's visible
-            WebDriverWait(driver, 15).until(EC.visibility_of(container))
+            container = WebDriverWait(driver, 15).until(EC.visibility_of(container))
         except TimeoutException:
             print("Profile list container not found within the timeout period.")
         else:
-            # Locate child profile items; adjust the XPath as needed for your HTML structure.
+            # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
             profile_items = container.find_elements(By.XPATH, ".//li")
             for profile in profile_items:
                 # Process each profile item (for example, print its text)
