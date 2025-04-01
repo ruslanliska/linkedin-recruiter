@@ -95,8 +95,9 @@ def process_chunk_of_rows(
         print(f"{year_of_graduation=}")
         print(f"{industries=}")
         print(f"{keywords=}")
-        time.sleep(6000)
         logger.info('ChromeDriver initialized successfully for this batch.')
+        driver.get('https://www.linkedin.com/talent/search')
+        logger.debug('Search opened')
         return
 
         # === 2) Loop through all rows in this chunk ===
@@ -473,7 +474,6 @@ def run_selenium_automation_with_retries(
             year_of_graduation=year_of_graduation,
             industries=industries,
             keywords=keywords,
-            callback=callback,
         )
         # If we get here, the batch was processed
         # without raising a fatal error
