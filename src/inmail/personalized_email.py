@@ -70,7 +70,7 @@ def process_chunk_of_rows(
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
-            driver_executable_path=rf"{settings.DRIVER_PATH}",
+            driver_executable_path=r"C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe",
         )
 
         # Optional: stealth, if you want to keep it
