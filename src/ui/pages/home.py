@@ -584,7 +584,6 @@ class HomePage(ttk.Frame):
         print(f"{year_of_graduation=}")
         print(f"{industries=}")
         print(f"{keywords=}")
-        return
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
@@ -593,6 +592,14 @@ class HomePage(ttk.Frame):
                 prompt,
                 control_email_sending,
                 self.run_id,
+                job_titles,
+                locations,
+                skills_assessments,
+                companies,
+                schools,
+                year_of_graduation,
+                industries,
+                keywords,
             ),
             daemon=True,
         )
@@ -604,7 +611,14 @@ class HomePage(ttk.Frame):
         prompt,
         control_email_sending,
         run_id,
-        email_subject=None,
+        job_titles,
+        locations,
+        skills_assessments,
+        companies,
+        schools,
+        year_of_graduation,
+        industries,
+        keywords,
     ):
         """
         Process all rows in 'data' chunk by chunk.
@@ -614,7 +628,14 @@ class HomePage(ttk.Frame):
         We do NOT modify run_selenium_automation;
         we just pass in subsets of data.
         """
-
+        print(f"{job_titles=}")
+        print(f"{locations=}")
+        print(f"{skills_assessments=}")
+        print(f"{companies=}")
+        print(f"{schools=}")
+        print(f"{year_of_graduation=}")
+        print(f"{industries=}")
+        print(f"{keywords=}")
         try:
             # We'll define a callback that runs
             # after run_selenium_automation finishes
@@ -631,9 +652,15 @@ class HomePage(ttk.Frame):
                 control_email_sending=control_email_sending,
                 run_id=run_id,
                 callback=automation_callback,
-                email_subject=email_subject,
+                job_titles=job_titles,
+                locations=locations,
+                skills_assessments=skills_assessments,
+                companies=companies,
+                schools=schools,
+                year_of_graduation=year_of_graduation,
+                industries=industries,
+                keywords=keywords,
             )
-
         except Exception as e:
             self.show_error_message('Process Error', str(e))
         finally:
@@ -686,3 +713,6 @@ class HomePage(ttk.Frame):
     def show_error_message(self, title, message):
         """Show a messagebox error from the main thread."""
         self.after(0, lambda: messagebox.showerror(title, message))
+
+    def enable_start_button(self):
+        self.start_button.config(state='normal')
