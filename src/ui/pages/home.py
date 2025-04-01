@@ -163,31 +163,6 @@ class HomePage(ttk.Frame):
             pady=10,
             columnspan=4,
         )
-
-        # -----------------------------
-        # Row 4: Email Subject
-        # -----------------------------
-        label_subject = ttk.Label(
-            form,
-            text='Email Subject:',
-            font=('Helvetica', 12),
-        )
-        label_subject.grid(row=4, column=0, sticky='e', padx=5, pady=10)
-
-        self.subject_var = ttk.StringVar()
-        entry_subject = ttk.Entry(
-            form,
-            textvariable=self.subject_var,
-            width=50,
-        )
-        entry_subject.grid(
-            row=4,
-            column=1,
-            columnspan=4,
-            sticky='ew',
-            padx=5,
-            pady=10,
-        )
         # -----------------------------
         # Row 7: Job Titles
         # -----------------------------
@@ -504,6 +479,9 @@ class HomePage(ttk.Frame):
     def on_daily_limit_changed(self, *args):
         self.save_daily_limit()
 
+    def disable_start_button(self):
+        self.start_button.config(state='disabled')
+
     def start_process(self):
         """
         Start processing the entire CSV, respecting the daily limit.
@@ -512,7 +490,7 @@ class HomePage(ttk.Frame):
         print('Started')
         print(f"{self.__dict__=}")
         print(f"{self.job_titles_var.get()=}")
-        return
+        # return
 
         # Disable the Start and Upload buttons to prevent multiple clicks
         self.disable_start_button()
@@ -523,9 +501,6 @@ class HomePage(ttk.Frame):
         prompt = prompt_text if prompt_text else None
 
         control_email_sending = self.control_email_sending_var.get()
-        email_subject = (
-            self.subject_var.get() if self.subject_var.get() else None
-        )  # noqa: E501
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
@@ -534,7 +509,6 @@ class HomePage(ttk.Frame):
                 prompt,
                 control_email_sending,
                 self.run_id,
-                email_subject,
             ),
             daemon=True,
         )
