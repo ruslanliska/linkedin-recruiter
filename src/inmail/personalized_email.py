@@ -70,8 +70,9 @@ def process_chunk_of_rows(
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
-            driver_executable_path=r"C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe",
+            driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
         )
+        logger.info('Driver installed')
 
         # Optional: stealth, if you want to keep it
         from selenium_stealth import stealth
