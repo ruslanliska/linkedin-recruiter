@@ -171,13 +171,22 @@ def process_chunk_of_rows(
                 location_field.send_keys(Keys.ENTER)
             location_field.send_keys(Keys.ESCAPE)
 
-        results_text = driver.find_element(
-            By.CSS_SELECTOR, "span[data-live-test-profile-list-num-custom]"
-        ).text
-        import re
+        try:
+            # Wait for the results element to be present (up to 15 seconds)
+            results_element = WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "span[data-live-test-profile-list-num-custom]")
+                )
+            )
+            import re
 
-        num_results = int(re.search(r"\d+", results_text).group())
-        logger.info(f"Number of results: {num_results}")
+            results_text = results_element.text.strip()
+            num_results = int(re.search(r"\d+", results_text).group())
+            logger.info(f"Number of results: {num_results}")
+        except TimeoutException:
+            logger.error("Results element not found within the timeout period.")
+        finally:
+            time.sleep(600)
 
         try:
             # Wait until the profile list container is present
@@ -199,6 +208,9 @@ def process_chunk_of_rows(
             for profile in profile_items:
                 # Process each profile item (for example, print its text)
                 print(profile.text)
+        finally:
+            time.sleep(600)
+
         time.sleep(600)
 
         return
