@@ -229,6 +229,7 @@ def process_chunk_of_rows(
                 # Click the Next button
                 next_button.click()
                 page += 1
+                continue
 
             finally:
                 time.sleep(600)
