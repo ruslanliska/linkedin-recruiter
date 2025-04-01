@@ -23,7 +23,6 @@ class HomePage(ttk.Frame):
     def __init__(self, parent, upload_callback=None):
         super().__init__(parent)
         self.upload_callback = upload_callback
-        self.csv_data = None  # To store the loaded CSV data
         self.run_id = None  # To store the current run_id
 
         # Thread reference for Selenium automation
@@ -36,8 +35,20 @@ class HomePage(ttk.Frame):
         # Load daily limit and update emails sent today
         self.load_daily_limit()
         self.update_emails_sent_today()
-
+        self.job_titles_var = ttk.StringVar()
+        self.locations_var = ttk.StringVar()
+        self.skills_assessments_var = ttk.StringVar()
+        self.companies_var = ttk.StringVar()
+        self.schools_var = ttk.StringVar()
+        self.year_of_graduation_var = ttk.StringVar()
+        self.industries_var = ttk.StringVar()
+        self.keywords_var = ttk.StringVar()
         self.create_widgets()
+
+    def show_field_info(self):
+        messagebox.showinfo(
+            'Multiple Values', 'Separate multiple values with a semicolon (;).',
+        )
 
     def create_widgets(self):
         # Main frame for the form
@@ -74,15 +85,6 @@ class HomePage(ttk.Frame):
             width=40,
         )
         entry_file.grid(row=0, column=1, sticky='ew', padx=5, pady=10)
-
-        # Button to upload CSV
-        self.button_upload = ttk.Button(
-            form,
-            text='Browse',
-            command=self.upload_csv,
-            bootstyle='success-outline',
-        )
-        self.button_upload.grid(row=0, column=2, sticky='w', padx=5, pady=10)
 
         # -----------------------------
         # Daily Limit / Emails Sent
@@ -194,11 +196,216 @@ class HomePage(ttk.Frame):
 
         self.subject_var = ttk.StringVar()
         entry_subject = ttk.Entry(
-            form, textvariable=self.subject_var, width=50,
+            form,
+            textvariable=self.subject_var,
+            width=50,
         )
         entry_subject.grid(
-            row=4, column=1, columnspan=4,
-            sticky='ew', padx=5, pady=10,
+            row=4,
+            column=1,
+            columnspan=4,
+            sticky='ew',
+            padx=5,
+            pady=10,
+        )
+        # -----------------------------
+        # Row 7: Job Titles, Locations
+        # -----------------------------
+        label_job_titles = ttk.Label(
+            form,
+            text='Job Titles:',
+            font=('Helvetica', 12),
+        )
+        label_job_titles.grid(row=7, column=0, sticky='e', padx=5, pady=10)
+
+        entry_job_titles = ttk.Entry(
+            form,
+            textvariable=self.job_titles_var,
+            width=25,
+        )
+        entry_job_titles.grid(row=7, column=1, sticky='ew', padx=5, pady=10)
+
+        info_button_job_titles = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_job_titles.grid(
+            row=7, column=2, sticky='w', padx=5, pady=10,
+        )
+
+        label_locations = ttk.Label(
+            form,
+            text='Locations:',
+            font=('Helvetica', 12),
+        )
+        label_locations.grid(row=7, column=3, sticky='e', padx=5, pady=10)
+
+        entry_locations = ttk.Entry(
+            form,
+            textvariable=self.locations_var,
+            width=25,
+        )
+        entry_locations.grid(row=7, column=4, sticky='ew', padx=5, pady=10)
+
+        info_button_locations = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_locations.grid(
+            row=7, column=5, sticky='w', padx=5, pady=10,
+        )
+
+        # -----------------------------
+        # Row 8: Skills & Assessments, Companies
+        # -----------------------------
+        label_skills = ttk.Label(
+            form,
+            text='Skills and Assessments:',
+            font=('Helvetica', 12),
+        )
+        label_skills.grid(row=8, column=0, sticky='e', padx=5, pady=10)
+
+        entry_skills = ttk.Entry(
+            form,
+            textvariable=self.skills_assessments_var,
+            width=25,
+        )
+        entry_skills.grid(row=8, column=1, sticky='ew', padx=5, pady=10)
+
+        info_button_skills = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_skills.grid(row=8, column=2, sticky='w', padx=5, pady=10)
+
+        label_companies = ttk.Label(
+            form,
+            text='Companies:',
+            font=('Helvetica', 12),
+        )
+        label_companies.grid(row=8, column=3, sticky='e', padx=5, pady=10)
+
+        entry_companies = ttk.Entry(
+            form,
+            textvariable=self.companies_var,
+            width=25,
+        )
+        entry_companies.grid(row=8, column=4, sticky='ew', padx=5, pady=10)
+
+        info_button_companies = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_companies.grid(
+            row=8, column=5, sticky='w', padx=5, pady=10,
+        )
+
+        # -----------------------------
+        # Row 9: Schools, Year of graduation
+        # -----------------------------
+        label_schools = ttk.Label(
+            form,
+            text='Schools:',
+            font=('Helvetica', 12),
+        )
+        label_schools.grid(row=9, column=0, sticky='e', padx=5, pady=10)
+
+        entry_schools = ttk.Entry(
+            form,
+            textvariable=self.schools_var,
+            width=25,
+        )
+        entry_schools.grid(row=9, column=1, sticky='ew', padx=5, pady=10)
+
+        info_button_schools = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_schools.grid(row=9, column=2, sticky='w', padx=5, pady=10)
+
+        label_graduation = ttk.Label(
+            form,
+            text='Year of Graduation:',
+            font=('Helvetica', 12),
+        )
+        label_graduation.grid(row=9, column=3, sticky='e', padx=5, pady=10)
+
+        entry_graduation = ttk.Entry(
+            form,
+            textvariable=self.year_of_graduation_var,
+            width=25,
+        )
+        entry_graduation.grid(row=9, column=4, sticky='ew', padx=5, pady=10)
+
+        info_button_graduation = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_graduation.grid(
+            row=9, column=5, sticky='w', padx=5, pady=10,
+        )
+
+        # -----------------------------
+        # Row 10: Industries, Keywords
+        # -----------------------------
+        label_industries = ttk.Label(
+            form,
+            text='Industries:',
+            font=('Helvetica', 12),
+        )
+        label_industries.grid(row=10, column=0, sticky='e', padx=5, pady=10)
+
+        entry_industries = ttk.Entry(
+            form,
+            textvariable=self.industries_var,
+            width=25,
+        )
+        entry_industries.grid(row=10, column=1, sticky='ew', padx=5, pady=10)
+
+        info_button_industries = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_industries.grid(
+            row=10, column=2, sticky='w', padx=5, pady=10,
+        )
+
+        label_keywords = ttk.Label(
+            form,
+            text='Keywords:',
+            font=('Helvetica', 12),
+        )
+        label_keywords.grid(row=10, column=3, sticky='e', padx=5, pady=10)
+
+        entry_keywords = ttk.Entry(
+            form,
+            textvariable=self.keywords_var,
+            width=25,
+        )
+        entry_keywords.grid(row=10, column=4, sticky='ew', padx=5, pady=10)
+
+        info_button_keywords = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_keywords.grid(
+            row=10, column=5, sticky='w', padx=5, pady=10,
         )
 
         # -----------------------------
@@ -287,66 +494,15 @@ class HomePage(ttk.Frame):
     def on_daily_limit_changed(self, *args):
         self.save_daily_limit()
 
-    def upload_csv(self):
-        """Let user select a CSV and validate it."""
-        file_path = filedialog.askopenfilename(
-            filetypes=[('CSV files', '*.csv')],
-        )
-        print(f"{file_path=}")
-        if file_path:
-            self.file_path_var.set(file_path)
-            try:
-                data = pd.read_csv(file_path)
-
-                # We check required column(s); "Person Linkedin Url"
-                if 'Person Linkedin Url' in data.columns:
-                    messagebox.showinfo('Success', 'CSV file is valid.')
-                    self.csv_data = data  # Store the data
-                    # Get the last processed row (if any) for this file
-                    self.last_row = get_last_processed_row_by_file(file_path)
-                    print(f"Last processed row for {file_path} is: {self.last_row=}")  # noqa: E501
-                    # Log the start of the run and get run_id
-                    run_id = log_run_start(
-                        file_name=file_path,
-                        last_processed_row=self.last_row,
-                    )
-                    self.run_id = run_id
-
-                    # Call the upload callback if needed
-                    if self.upload_callback:
-                        self.upload_callback(data, run_id)
-                else:
-                    messagebox.showwarning(
-                        'Validation Error',
-                        "CSV must contain 'Person Linkedin Url' column.",
-                    )
-                    # Log the run as Error due to missing columns
-                    run_id = log_run_start(file_name=file_path)
-                    log_run_end(
-                        run_id,
-                        status='Error',
-                        error_message='Missing required columns.',
-                    )
-            except Exception as e:
-                messagebox.showerror(
-                    'Error',
-                    f"Failed to read CSV: {e}",
-                )
-                # Log the run as Error due to exception
-                run_id = log_run_start(file_name=file_path)
-                log_run_end(run_id, status='Error', error_message=str(e))
-
     def start_process(self):
         """
         Start processing the entire CSV, respecting the daily limit.
         We do not ask for partial runs or a start row anymore.
         """
-        if self.csv_data is None:
-            messagebox.showwarning(
-                'No CSV File',
-                'Please upload a CSV file before starting.',
-            )
-            return
+        print('Started')
+        print(f"{self.__dict__=}")
+        print(f"{self.job_titles_var.get()=}")
+        return
 
         # Disable the Start and Upload buttons to prevent multiple clicks
         self.disable_start_button()
@@ -357,12 +513,13 @@ class HomePage(ttk.Frame):
         prompt = prompt_text if prompt_text else None
 
         control_email_sending = self.control_email_sending_var.get()
-        email_subject = self.subject_var.get() if self.subject_var.get() else None  # noqa: E501
+        email_subject = (
+            self.subject_var.get() if self.subject_var.get() else None
+        )  # noqa: E501
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
             args=(
-                self.csv_data,  # the entire data
                 visible_mode,
                 prompt,
                 control_email_sending,
@@ -375,7 +532,6 @@ class HomePage(ttk.Frame):
 
     def run_selenium_thread(
         self,
-        data,
         visible_mode,
         prompt,
         control_email_sending,
@@ -390,87 +546,24 @@ class HomePage(ttk.Frame):
         We do NOT modify run_selenium_automation;
         we just pass in subsets of data.
         """
-        total_rows = len(data)
-        print(f"{self.last_row=}")
-        current_index = self.last_row + 1 if self.last_row != 0 else 0
-        print(f"{current_index=}")
-        print(f"{total_rows=}")
-        print(f"{current_index=}")
 
         try:
-            while current_index < total_rows:
-                # Refresh how many emails we've sent today
-                self.after(0, self.update_emails_sent_today)
-                # Wait a tiny bit to ensure emails_sent_today_var is updated
-                time.sleep(0.1)
+            # We'll define a callback that runs
+            # after run_selenium_automation finishes
+            # but to keep the flow simpler
+            # we can pass a callback that does nothing special:
+            def automation_callback(success, message):
+                if not success:
+                    self.show_error_message('Automation Error', message)
 
-                emails_sent_today = self.emails_sent_today_var.get()
-                daily_limit = self.daily_limit_var.get()
-
-                # If we are already at or above today's limit
-                # wait until next day
-                if emails_sent_today >= daily_limit:
-                    self.show_info_message(
-                        'Daily Limit Reached',
-                        f"You've reached today's limit of {daily_limit}. "
-                        'Waiting until next day to continue...',
-                    )
-                    self.wait_until_next_day()
-                    continue
-
-                # Figure out how many rows we can process "today"
-                chunk_size = daily_limit - emails_sent_today
-                print(f"{chunk_size=}")
-                remaining = total_rows - current_index
-                print(f"{remaining=}")
-                if chunk_size > remaining:
-                    chunk_size = remaining
-                print(f"{chunk_size=}")
-
-                # Slice the data for today's chunk
-                chunk_data = data.iloc[current_index: current_index + chunk_size]  # noqa: E501
-
-                # We'll define a callback that runs
-                # after run_selenium_automation finishes
-                # but to keep the flow simpler
-                # we can pass a callback that does nothing special:
-                def automation_callback(success, message):
-                    if not success:
-                        self.show_error_message('Automation Error', message)
-
-                # Pass the chunk to run_selenium_automation
-                run_selenium_automation_with_retries(
-                    data=chunk_data,
-                    visible_mode=visible_mode,
-                    prompt=prompt,
-                    control_email_sending=control_email_sending,
-                    run_id=run_id,
-                    callback=automation_callback,
-                    email_subject=email_subject,
-                )
-
-                # Now we've used chunk_size rows for today
-                current_index += chunk_size
-
-                # Update "emails_sent_today" label
-                # (the DB is updated by run_selenium_automation)
-                self.after(0, self.update_emails_sent_today)
-                time.sleep(0.1)
-
-                # If we still have more rows to go
-                # and we've used up today's limit, sleep
-                if current_index < total_rows:
-                    # Check how many we have now (in case chunk < daily_limit)
-                    self.after(0, self.update_emails_sent_today)
-                    time.sleep(0.1)
-                    if self.emails_sent_today_var.get() >= daily_limit:
-                        print("Today's limit is fully used. Waiting until next day...")  # noqa: E501
-                        self.wait_until_next_day()
-
-            # All rows processed
-            self.show_info_message(
-                'Process Completed',
-                f"Successfully processed all {total_rows} rows.",
+            # Pass the chunk to run_selenium_automation
+            run_selenium_automation_with_retries(
+                visible_mode=visible_mode,
+                prompt=prompt,
+                control_email_sending=control_email_sending,
+                run_id=run_id,
+                callback=automation_callback,
+                email_subject=email_subject,
             )
 
         except Exception as e:
@@ -517,14 +610,6 @@ class HomePage(ttk.Frame):
         print(f"{next_cet=}")
         print(f"{seconds_to_wait=}")
         time.sleep(seconds_to_wait)
-
-    def disable_start_button(self):
-        self.start_button.config(state='disabled')
-        self.button_upload.config(state='disabled')
-
-    def enable_start_button(self):
-        self.start_button.config(state='normal')
-        self.button_upload.config(state='normal')
 
     def show_info_message(self, title, message):
         """Show a messagebox info from the main thread."""
