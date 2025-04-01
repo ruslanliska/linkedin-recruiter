@@ -128,6 +128,8 @@ def process_chunk_of_rows(
                 input_field.send_keys(title)
                 input_field.send_keys(Keys.ENTER)
                 time.sleep(random.uniform(1, 3))
+            input_field.send_keys(Keys.ESCAPE)
+            
 
         if locations:
             # Wait for the button to be clickable, then click it.
