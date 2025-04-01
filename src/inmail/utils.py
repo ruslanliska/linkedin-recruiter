@@ -185,3 +185,25 @@ def slugify_company(company_name):
     # Lowercase and replace spaces and special characters with a dash
     slug = re.sub(r'[^\w\s-]', '', company_name).lower().replace(' ', '-')
     return slug
+
+
+def parse_results_count(results_text):
+    # Remove the extra text and whitespace
+    cleaned = results_text.upper().replace('RESULTS', '').strip()
+    # Remove any plus sign
+    cleaned = cleaned.replace('+', '')
+
+    multiplier = 1
+    # Check for thousands and millions suffixes
+    if 'K' in cleaned:
+        multiplier = 1000
+        cleaned = cleaned.replace('K', '')
+    elif 'M' in cleaned:
+        multiplier = 1000000
+        cleaned = cleaned.replace('M', '')
+
+    try:
+        value = float(cleaned) * multiplier
+    except ValueError:
+        value = 0
+    return int(value)
