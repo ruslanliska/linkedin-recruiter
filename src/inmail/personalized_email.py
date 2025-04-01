@@ -189,46 +189,49 @@ def process_chunk_of_rows(
             logger.error(
                 'Results element not found within the timeout period.',
             )
+        page = 1
 
-        try:
-            page = 1
-            # Wait until the profile list container is present using the updated class selector
-            container = WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located(
-                    (
-                        By.XPATH,
-                        "//div[contains(@class, 'profile-list-container-card')]",
+        for page in range(1, num_results):
+            logger.info(f"Processing page {page} of results")
+            try:
+                # Wait until the profile list container is present using the updated class selector
+                container = WebDriverWait(driver, 15).until(
+                    EC.presence_of_element_located(
+                        (
+                            By.XPATH,
+                            "//div[contains(@class, 'profile-list-container-card')]",
+                        ),
                     ),
-                ),
-            )
-            # Optionally wait until it's visible
-            container = WebDriverWait(driver, 15).until(
-                EC.visibility_of(container),
-            )
-        except TimeoutException:
-            print('Profile list container not found within the timeout period.')
-        else:
-            # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
-            profile_items = container.find_elements(By.XPATH, './/li')
-            for profile in profile_items:
-                # Process each profile item (for example, print its text)
-                print(profile.text)
+                )
+                # Optionally wait until it's visible
+                container = WebDriverWait(driver, 15).until(
+                    EC.visibility_of(container),
+                )
+            except TimeoutException:
+                print('Profile list container not found within the timeout period.')
+            else:
+                # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
+                profile_items = container.find_elements(By.XPATH, './/li')
+                for profile in profile_items:
+                    # Process each profile item (for example, print its text)
+                    print(profile.text)
 
-            # Wait for the Next button to be clickable (adjust timeout if needed)
-            next_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable(
-                    (
-                        By.CSS_SELECTOR,
-                        'a.pagination__quick-link--next[data-test-pagination-next]',
+                # Wait for the Next button to be clickable (adjust timeout if needed)
+                next_button = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable(
+                        (
+                            By.CSS_SELECTOR,
+                            'a.pagination__quick-link--next[data-test-pagination-next]',
+                        ),
                     ),
-                ),
-            )
+                )
 
-            # Click the Next button
-            next_button.click()
+                # Click the Next button
+                next_button.click()
+                page += 1
 
-        finally:
-            time.sleep(600)
+            finally:
+                time.sleep(600)
 
         time.sleep(600)
 
