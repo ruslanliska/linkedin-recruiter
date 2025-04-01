@@ -41,7 +41,6 @@ def process_chunk_of_rows(
     visible_mode,
     control_email_sending,
     prompt,
-    reference_email,
     run_id,
     email_subject,
 ):
@@ -134,7 +133,6 @@ def process_chunk_of_rows(
                 email = generate_personal_email(
                     page_summary=cleaned_text,
                     user_prompt=prompt,
-                    email_instructions=reference_email,
                 )
                 if not email_subject:
                     subject = generate_subject(email_body=email)
@@ -424,7 +422,6 @@ def run_selenium_automation(
     visible_mode: bool,
     control_email_sending: bool,
     prompt: str = None,
-    reference_email: str = None,
     run_id: int = None,
     callback=None,
     batch_size: int = 50,  # Adjust as needed
@@ -449,7 +446,6 @@ def run_selenium_automation(
                 visible_mode=visible_mode,
                 control_email_sending=control_email_sending,
                 prompt=prompt,
-                reference_email=reference_email,
                 run_id=run_id,
             )
 
@@ -513,7 +509,6 @@ def run_selenium_automation_with_retries(
     visible_mode: bool,
     control_email_sending: bool,
     prompt: str = None,
-    reference_email: str = None,
     run_id: int = None,
     callback=None,
     batch_size: int = 50,  # How many rows per batch
@@ -549,7 +544,6 @@ def run_selenium_automation_with_retries(
                         visible_mode=visible_mode,
                         control_email_sending=control_email_sending,
                         prompt=prompt,
-                        reference_email=reference_email,
                         run_id=run_id,
                         email_subject=email_subject,
                     )
@@ -618,7 +612,6 @@ def run_selenium_automation_old(
     visible_mode,
     control_email_sending,
     prompt: str = None,
-    reference_email: str = None,
     run_id: int = None,
     callback=None,
 ):
@@ -630,7 +623,6 @@ def run_selenium_automation_old(
     - visible_mode: bool indicating whether to run in visible mode.
     - control_email_sending: bool indicating whether to control email sending.
     - prompt: str containing the user prompt.
-    - reference_email: str containing the email instructions.
     - run_id: int containing the unique run identifier.
     - callback: function to call upon completion or error (optional).
     """
@@ -767,7 +759,6 @@ def run_selenium_automation_old(
                 email, subject = generate_personal_email(
                     page_summary=cleaned_text,
                     user_prompt=prompt,
-                    email_instructions=reference_email,
                 )
 
                 # Extract profile ID from <code> elements
