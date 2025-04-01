@@ -209,7 +209,7 @@ class HomePage(ttk.Frame):
             pady=10,
         )
         # -----------------------------
-        # Row 7: Job Titles, Locations
+        # Row 7: Job Titles
         # -----------------------------
         label_job_titles = ttk.Label(
             form,
@@ -221,9 +221,10 @@ class HomePage(ttk.Frame):
         entry_job_titles = ttk.Entry(
             form,
             textvariable=self.job_titles_var,
-            width=25,
+            width=40,  # Increase width if you prefer
         )
-        entry_job_titles.grid(row=7, column=1, sticky='ew', padx=5, pady=10)
+        entry_job_titles.grid(row=7, column=1, sticky='ew',
+                              padx=5, pady=10, columnspan=3)
 
         info_button_job_titles = ttk.Button(
             form,
@@ -232,22 +233,25 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_job_titles.grid(
-            row=7, column=2, sticky='w', padx=5, pady=10,
-        )
+            row=7, column=4, sticky='w', padx=5, pady=10)
 
+        # -----------------------------
+        # Row 8: Locations
+        # -----------------------------
         label_locations = ttk.Label(
             form,
             text='Locations:',
             font=('Helvetica', 12),
         )
-        label_locations.grid(row=7, column=3, sticky='e', padx=5, pady=10)
+        label_locations.grid(row=8, column=0, sticky='e', padx=5, pady=10)
 
         entry_locations = ttk.Entry(
             form,
             textvariable=self.locations_var,
-            width=25,
+            width=40,
         )
-        entry_locations.grid(row=7, column=4, sticky='ew', padx=5, pady=10)
+        entry_locations.grid(row=8, column=1, sticky='ew',
+                             padx=5, pady=10, columnspan=3)
 
         info_button_locations = ttk.Button(
             form,
@@ -256,25 +260,25 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_locations.grid(
-            row=7, column=5, sticky='w', padx=5, pady=10,
-        )
+            row=8, column=4, sticky='w', padx=5, pady=10)
 
         # -----------------------------
-        # Row 8: Skills & Assessments, Companies
+        # Row 9: Skills and Assessments
         # -----------------------------
         label_skills = ttk.Label(
             form,
             text='Skills and Assessments:',
             font=('Helvetica', 12),
         )
-        label_skills.grid(row=8, column=0, sticky='e', padx=5, pady=10)
+        label_skills.grid(row=9, column=0, sticky='e', padx=5, pady=10)
 
         entry_skills = ttk.Entry(
             form,
             textvariable=self.skills_assessments_var,
-            width=25,
+            width=40,
         )
-        entry_skills.grid(row=8, column=1, sticky='ew', padx=5, pady=10)
+        entry_skills.grid(row=9, column=1, sticky='ew',
+                          padx=5, pady=10, columnspan=3)
 
         info_button_skills = ttk.Button(
             form,
@@ -282,21 +286,25 @@ class HomePage(ttk.Frame):
             command=self.show_field_info,
             bootstyle='info-outline',
         )
-        info_button_skills.grid(row=8, column=2, sticky='w', padx=5, pady=10)
+        info_button_skills.grid(row=9, column=4, sticky='w', padx=5, pady=10)
 
+        # -----------------------------
+        # Row 10: Companies
+        # -----------------------------
         label_companies = ttk.Label(
             form,
             text='Companies:',
             font=('Helvetica', 12),
         )
-        label_companies.grid(row=8, column=3, sticky='e', padx=5, pady=10)
+        label_companies.grid(row=10, column=0, sticky='e', padx=5, pady=10)
 
         entry_companies = ttk.Entry(
             form,
             textvariable=self.companies_var,
-            width=25,
+            width=40,
         )
-        entry_companies.grid(row=8, column=4, sticky='ew', padx=5, pady=10)
+        entry_companies.grid(row=10, column=1, sticky='ew',
+                             padx=5, pady=10, columnspan=3)
 
         info_button_companies = ttk.Button(
             form,
@@ -305,25 +313,25 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_companies.grid(
-            row=8, column=5, sticky='w', padx=5, pady=10,
-        )
+            row=10, column=4, sticky='w', padx=5, pady=10)
 
         # -----------------------------
-        # Row 9: Schools, Year of graduation
+        # Row 11: Schools
         # -----------------------------
         label_schools = ttk.Label(
             form,
             text='Schools:',
             font=('Helvetica', 12),
         )
-        label_schools.grid(row=9, column=0, sticky='e', padx=5, pady=10)
+        label_schools.grid(row=11, column=0, sticky='e', padx=5, pady=10)
 
         entry_schools = ttk.Entry(
             form,
             textvariable=self.schools_var,
-            width=25,
+            width=40,
         )
-        entry_schools.grid(row=9, column=1, sticky='ew', padx=5, pady=10)
+        entry_schools.grid(row=11, column=1, sticky='ew',
+                           padx=5, pady=10, columnspan=3)
 
         info_button_schools = ttk.Button(
             form,
@@ -331,21 +339,25 @@ class HomePage(ttk.Frame):
             command=self.show_field_info,
             bootstyle='info-outline',
         )
-        info_button_schools.grid(row=9, column=2, sticky='w', padx=5, pady=10)
+        info_button_schools.grid(row=11, column=4, sticky='w', padx=5, pady=10)
 
+        # -----------------------------
+        # Row 12: Year of Graduation
+        # -----------------------------
         label_graduation = ttk.Label(
             form,
             text='Year of Graduation:',
             font=('Helvetica', 12),
         )
-        label_graduation.grid(row=9, column=3, sticky='e', padx=5, pady=10)
+        label_graduation.grid(row=12, column=0, sticky='e', padx=5, pady=10)
 
         entry_graduation = ttk.Entry(
             form,
             textvariable=self.year_of_graduation_var,
-            width=25,
+            width=40,
         )
-        entry_graduation.grid(row=9, column=4, sticky='ew', padx=5, pady=10)
+        entry_graduation.grid(row=12, column=1, sticky='ew',
+                              padx=5, pady=10, columnspan=3)
 
         info_button_graduation = ttk.Button(
             form,
@@ -354,25 +366,25 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_graduation.grid(
-            row=9, column=5, sticky='w', padx=5, pady=10,
-        )
+            row=12, column=4, sticky='w', padx=5, pady=10)
 
         # -----------------------------
-        # Row 10: Industries, Keywords
+        # Row 13: Industries
         # -----------------------------
         label_industries = ttk.Label(
             form,
             text='Industries:',
             font=('Helvetica', 12),
         )
-        label_industries.grid(row=10, column=0, sticky='e', padx=5, pady=10)
+        label_industries.grid(row=13, column=0, sticky='e', padx=5, pady=10)
 
         entry_industries = ttk.Entry(
             form,
             textvariable=self.industries_var,
-            width=25,
+            width=40,
         )
-        entry_industries.grid(row=10, column=1, sticky='ew', padx=5, pady=10)
+        entry_industries.grid(row=13, column=1, sticky='ew',
+                              padx=5, pady=10, columnspan=3)
 
         info_button_industries = ttk.Button(
             form,
@@ -381,22 +393,25 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_industries.grid(
-            row=10, column=2, sticky='w', padx=5, pady=10,
-        )
+            row=13, column=4, sticky='w', padx=5, pady=10)
 
+        # -----------------------------
+        # Row 14: Keywords
+        # -----------------------------
         label_keywords = ttk.Label(
             form,
             text='Keywords:',
             font=('Helvetica', 12),
         )
-        label_keywords.grid(row=10, column=3, sticky='e', padx=5, pady=10)
+        label_keywords.grid(row=14, column=0, sticky='e', padx=5, pady=10)
 
         entry_keywords = ttk.Entry(
             form,
             textvariable=self.keywords_var,
-            width=25,
+            width=40,
         )
-        entry_keywords.grid(row=10, column=4, sticky='ew', padx=5, pady=10)
+        entry_keywords.grid(row=14, column=1, sticky='ew',
+                            padx=5, pady=10, columnspan=3)
 
         info_button_keywords = ttk.Button(
             form,
@@ -405,8 +420,7 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_keywords.grid(
-            row=10, column=5, sticky='w', padx=5, pady=10,
-        )
+            row=14, column=4, sticky='w', padx=5, pady=10)
 
         # -----------------------------
         # Row 6: Control Email Sending Checkbox
