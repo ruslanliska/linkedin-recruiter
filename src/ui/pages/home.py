@@ -10,6 +10,7 @@ import pytz
 import ttkbootstrap as ttk
 
 from src.inmail.personalized_email import run_selenium_automation_with_retries
+from src.ui.pages.utils import proccess_search_variable
 
 DB_PATH = 'run_history.db'
 
@@ -179,7 +180,12 @@ class HomePage(ttk.Frame):
             width=40,  # Increase width if you prefer
         )
         entry_job_titles.grid(
-            row=7, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+            row=7,
+            column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
         )
 
         info_button_job_titles = ttk.Button(
@@ -189,7 +195,11 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_job_titles.grid(
-            row=7, column=4, sticky='w', padx=5, pady=10,
+            row=7,
+            column=4,
+            sticky='w',
+            padx=5,
+            pady=10,
         )
 
         # -----------------------------
@@ -208,7 +218,12 @@ class HomePage(ttk.Frame):
             width=40,
         )
         entry_locations.grid(
-            row=8, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+            row=8,
+            column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
         )
 
         info_button_locations = ttk.Button(
@@ -218,7 +233,11 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_locations.grid(
-            row=8, column=4, sticky='w', padx=5, pady=10,
+            row=8,
+            column=4,
+            sticky='w',
+            padx=5,
+            pady=10,
         )
 
         # -----------------------------
@@ -237,8 +256,12 @@ class HomePage(ttk.Frame):
             width=40,
         )
         entry_skills.grid(
-            row=9, column=1, sticky='ew',
-            padx=5, pady=10, columnspan=3,
+            row=9,
+            column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
         )
 
         info_button_skills = ttk.Button(
@@ -265,7 +288,12 @@ class HomePage(ttk.Frame):
             width=40,
         )
         entry_companies.grid(
-            row=10, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+            row=10,
+            column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
         )
 
         info_button_companies = ttk.Button(
@@ -275,7 +303,11 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_companies.grid(
-            row=10, column=4, sticky='w', padx=5, pady=10,
+            row=10,
+            column=4,
+            sticky='w',
+            padx=5,
+            pady=10,
         )
 
         # -----------------------------
@@ -294,8 +326,12 @@ class HomePage(ttk.Frame):
             width=40,
         )
         entry_schools.grid(
-            row=11, column=1, sticky='ew',
-            padx=5, pady=10, columnspan=3,
+            row=11,
+            column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
         )
 
         info_button_schools = ttk.Button(
@@ -322,7 +358,12 @@ class HomePage(ttk.Frame):
             width=40,
         )
         entry_graduation.grid(
-            row=12, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+            row=12,
+            column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
         )
 
         info_button_graduation = ttk.Button(
@@ -332,7 +373,11 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_graduation.grid(
-            row=12, column=4, sticky='w', padx=5, pady=10,
+            row=12,
+            column=4,
+            sticky='w',
+            padx=5,
+            pady=10,
         )
 
         # -----------------------------
@@ -351,7 +396,12 @@ class HomePage(ttk.Frame):
             width=40,
         )
         entry_industries.grid(
-            row=13, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+            row=13,
+            column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
         )
 
         info_button_industries = ttk.Button(
@@ -361,7 +411,11 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_industries.grid(
-            row=13, column=4, sticky='w', padx=5, pady=10,
+            row=13,
+            column=4,
+            sticky='w',
+            padx=5,
+            pady=10,
         )
 
         # -----------------------------
@@ -380,7 +434,12 @@ class HomePage(ttk.Frame):
             width=40,
         )
         entry_keywords.grid(
-            row=14, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+            row=14,
+            column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
         )
 
         info_button_keywords = ttk.Button(
@@ -390,7 +449,11 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_keywords.grid(
-            row=14, column=4, sticky='w', padx=5, pady=10,
+            row=14,
+            column=4,
+            sticky='w',
+            padx=5,
+            pady=10,
         )
 
         # -----------------------------
@@ -501,6 +564,27 @@ class HomePage(ttk.Frame):
         prompt = prompt_text if prompt_text else None
 
         control_email_sending = self.control_email_sending_var.get()
+        job_titles = proccess_search_variable(self.job_titles_var.get())
+        locations = proccess_search_variable(self.locations_var.get())
+        skills_assessments = proccess_search_variable(
+            self.skills_assessments_var.get(),
+        )
+        companies = proccess_search_variable(self.companies_var.get())
+        schools = proccess_search_variable(self.schools_var.get())
+        year_of_graduation = proccess_search_variable(
+            self.year_of_graduation_var.get(),
+        )
+        industries = proccess_search_variable(self.industries_var.get())
+        keywords = proccess_search_variable(self.keywords_var.get())
+        print(f"{job_titles=}")
+        print(f"{locations=}")
+        print(f"{skills_assessments=}")
+        print(f"{companies=}")
+        print(f"{schools=}")
+        print(f"{year_of_graduation=}")
+        print(f"{industries=}")
+        print(f"{keywords=}")
+        return
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
