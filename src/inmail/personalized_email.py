@@ -181,12 +181,11 @@ def process_chunk_of_rows(
             import re
 
             results_text = results_element.text.strip()
-            num_results = int(re.search(r"\d+", results_text).group())
-            logger.info(f"Number of results: {num_results}")
+            logger.info(f"Number of results: {results_text}")
         except TimeoutException:
             logger.error("Results element not found within the timeout period.")
-        finally:
-            time.sleep(600)
+        # finally:
+        #     time.sleep(600)
 
         try:
             # Wait until the profile list container is present
