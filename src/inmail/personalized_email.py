@@ -169,7 +169,7 @@ def process_chunk_of_rows(
 
                 # Press Enter
                 location_field.send_keys(Keys.ENTER)
-            input_field.send_keys(Keys.ESCAPE)
+            location_field.send_keys(Keys.ESCAPE)
 
         results_text = driver.find_element(
             By.CSS_SELECTOR, "span[data-live-test-profile-list-num-custom]"
