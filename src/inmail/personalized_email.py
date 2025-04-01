@@ -228,11 +228,11 @@ def process_chunk_of_rows(
 
                 # Click the Next button
                 next_button.click()
-                page += 1
+                logger.info('Next page')
                 continue
 
-            finally:
-                time.sleep(600)
+            # finally:
+            #     time.sleep(600)
 
         time.sleep(600)
 
