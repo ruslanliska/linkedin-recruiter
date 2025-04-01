@@ -202,39 +202,6 @@ class HomePage(ttk.Frame):
         )
 
         # -----------------------------
-        # Row 5: Reference Email (ScrolledText)
-        # -----------------------------
-        label_reference_email = ttk.Label(
-            form,
-            text='Reference Email:',
-            font=('Helvetica', 12),
-        )
-        label_reference_email.grid(
-            row=5,
-            column=0,
-            sticky='ne',
-            padx=5,
-            pady=10,
-        )
-
-        self.reference_email_text = ScrolledText(
-            form,
-            wrap='word',
-            width=50,
-            height=10,
-            font=('Helvetica', 12),
-        )
-        self.reference_email_text.grid(
-            row=5,
-            column=1,
-            sticky='nsew',
-            padx=5,
-            pady=10,
-            columnspan=4,
-        )
-        self.reference_email_text.configure(state='normal')
-
-        # -----------------------------
         # Row 6: Control Email Sending Checkbox
         # -----------------------------
         label_control_email_sending = ttk.Label(
@@ -389,12 +356,6 @@ class HomePage(ttk.Frame):
         prompt_text = self.prompt_text.get('1.0', 'end').strip()
         prompt = prompt_text if prompt_text else None
 
-        reference_email_text = self.reference_email_text.get(
-            '1.0',
-            'end',
-        ).strip()
-        reference_email = reference_email_text if reference_email_text else None  # noqa: E501
-
         control_email_sending = self.control_email_sending_var.get()
         email_subject = self.subject_var.get() if self.subject_var.get() else None  # noqa: E501
         # We run everything in a separate thread
@@ -404,7 +365,6 @@ class HomePage(ttk.Frame):
                 self.csv_data,  # the entire data
                 visible_mode,
                 prompt,
-                reference_email,
                 control_email_sending,
                 self.run_id,
                 email_subject,
@@ -418,7 +378,6 @@ class HomePage(ttk.Frame):
         data,
         visible_mode,
         prompt,
-        reference_email,
         control_email_sending,
         run_id,
         email_subject=None,
@@ -484,7 +443,6 @@ class HomePage(ttk.Frame):
                     data=chunk_data,
                     visible_mode=visible_mode,
                     prompt=prompt,
-                    reference_email=reference_email,
                     control_email_sending=control_email_sending,
                     run_id=run_id,
                     callback=automation_callback,
