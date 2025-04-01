@@ -35,8 +35,9 @@ logger = logging.getLogger(__name__)
 socket.setdefaulttimeout(60)  # Set global timeout to 60 seconds
 logger = logging.getLogger(__name__)
 
-def process_profile(driver):
-    
+
+def process_profile(driver): ...
+
 
 def process_chunk_of_rows(
     visible_mode,
@@ -178,12 +179,14 @@ def process_chunk_of_rows(
         num_results = int(re.search(r"\d+", results_text).group())
         logger.info(f"Number of results: {num_results}")
 
-
         try:
             # Wait until the profile list container is present
             container = WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located(
-                    (By.XPATH, "//div[contains(@class, 'ember-view') and contains(@class, 'profile-list') and @data-test-paginated-list]")
+                    (
+                        By.XPATH,
+                        "//div[contains(@class, 'ember-view') and contains(@class, 'profile-list') and @data-test-paginated-list]",
+                    )
                 )
             )
             # Optionally wait until it's visible
@@ -199,7 +202,11 @@ def process_chunk_of_rows(
         time.sleep(600)
 
         return
-
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"Error in batch processing: {error_message}")
+        traceback.print_exc()
+        raise e
         # === 2) Loop through all rows in this chunk ===
         for index, row in batch_df.iterrows():
             try:
