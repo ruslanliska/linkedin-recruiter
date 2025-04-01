@@ -41,7 +41,6 @@ def process_chunk_of_rows(
     control_email_sending,
     prompt,
     run_id,
-    email_subject,
     job_titles: list[str] = None,
     locations: list[str] = None,
     skills_assessments: list[str] = None,
