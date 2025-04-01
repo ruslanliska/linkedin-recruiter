@@ -3,17 +3,12 @@ import threading
 import time
 from datetime import datetime
 from datetime import timedelta
-from tkinter import filedialog
 from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 
-import pandas as pd
 import pytz
 import ttkbootstrap as ttk
 
-from src.database.handlers import get_last_processed_row_by_file
-from src.database.handlers import log_run_end
-from src.database.handlers import log_run_start
 from src.inmail.personalized_email import run_selenium_automation_with_retries
 
 DB_PATH = 'run_history.db'
@@ -47,7 +42,8 @@ class HomePage(ttk.Frame):
 
     def show_field_info(self):
         messagebox.showinfo(
-            'Multiple Values', 'Separate multiple values with a semicolon (;).',
+            'Multiple Values',
+            'Separate multiple values with a semicolon (;).',
         )
 
     def create_widgets(self):
@@ -69,22 +65,6 @@ class HomePage(ttk.Frame):
                 form.columnconfigure(col_index, weight=1)
             else:
                 form.columnconfigure(col_index, weight=0)
-
-        # -----------------------------
-        # Row 0: CSV File Selection
-        # -----------------------------
-        label_file = ttk.Label(form, text='CSV File:', font=('Helvetica', 12))
-        label_file.grid(row=0, column=0, sticky='e', padx=5, pady=10)
-
-        # Entry to display selected file path
-        self.file_path_var = ttk.StringVar(value='')
-        entry_file = ttk.Entry(
-            form,
-            textvariable=self.file_path_var,
-            state='readonly',
-            width=40,
-        )
-        entry_file.grid(row=0, column=1, sticky='ew', padx=5, pady=10)
 
         # -----------------------------
         # Daily Limit / Emails Sent
@@ -223,8 +203,9 @@ class HomePage(ttk.Frame):
             textvariable=self.job_titles_var,
             width=40,  # Increase width if you prefer
         )
-        entry_job_titles.grid(row=7, column=1, sticky='ew',
-                              padx=5, pady=10, columnspan=3)
+        entry_job_titles.grid(
+            row=7, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+        )
 
         info_button_job_titles = ttk.Button(
             form,
@@ -233,7 +214,8 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_job_titles.grid(
-            row=7, column=4, sticky='w', padx=5, pady=10)
+            row=7, column=4, sticky='w', padx=5, pady=10,
+        )
 
         # -----------------------------
         # Row 8: Locations
@@ -250,8 +232,9 @@ class HomePage(ttk.Frame):
             textvariable=self.locations_var,
             width=40,
         )
-        entry_locations.grid(row=8, column=1, sticky='ew',
-                             padx=5, pady=10, columnspan=3)
+        entry_locations.grid(
+            row=8, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+        )
 
         info_button_locations = ttk.Button(
             form,
@@ -260,7 +243,8 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_locations.grid(
-            row=8, column=4, sticky='w', padx=5, pady=10)
+            row=8, column=4, sticky='w', padx=5, pady=10,
+        )
 
         # -----------------------------
         # Row 9: Skills and Assessments
@@ -277,8 +261,10 @@ class HomePage(ttk.Frame):
             textvariable=self.skills_assessments_var,
             width=40,
         )
-        entry_skills.grid(row=9, column=1, sticky='ew',
-                          padx=5, pady=10, columnspan=3)
+        entry_skills.grid(
+            row=9, column=1, sticky='ew',
+            padx=5, pady=10, columnspan=3,
+        )
 
         info_button_skills = ttk.Button(
             form,
@@ -303,8 +289,9 @@ class HomePage(ttk.Frame):
             textvariable=self.companies_var,
             width=40,
         )
-        entry_companies.grid(row=10, column=1, sticky='ew',
-                             padx=5, pady=10, columnspan=3)
+        entry_companies.grid(
+            row=10, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+        )
 
         info_button_companies = ttk.Button(
             form,
@@ -313,7 +300,8 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_companies.grid(
-            row=10, column=4, sticky='w', padx=5, pady=10)
+            row=10, column=4, sticky='w', padx=5, pady=10,
+        )
 
         # -----------------------------
         # Row 11: Schools
@@ -330,8 +318,10 @@ class HomePage(ttk.Frame):
             textvariable=self.schools_var,
             width=40,
         )
-        entry_schools.grid(row=11, column=1, sticky='ew',
-                           padx=5, pady=10, columnspan=3)
+        entry_schools.grid(
+            row=11, column=1, sticky='ew',
+            padx=5, pady=10, columnspan=3,
+        )
 
         info_button_schools = ttk.Button(
             form,
@@ -356,8 +346,9 @@ class HomePage(ttk.Frame):
             textvariable=self.year_of_graduation_var,
             width=40,
         )
-        entry_graduation.grid(row=12, column=1, sticky='ew',
-                              padx=5, pady=10, columnspan=3)
+        entry_graduation.grid(
+            row=12, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+        )
 
         info_button_graduation = ttk.Button(
             form,
@@ -366,7 +357,8 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_graduation.grid(
-            row=12, column=4, sticky='w', padx=5, pady=10)
+            row=12, column=4, sticky='w', padx=5, pady=10,
+        )
 
         # -----------------------------
         # Row 13: Industries
@@ -383,8 +375,9 @@ class HomePage(ttk.Frame):
             textvariable=self.industries_var,
             width=40,
         )
-        entry_industries.grid(row=13, column=1, sticky='ew',
-                              padx=5, pady=10, columnspan=3)
+        entry_industries.grid(
+            row=13, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+        )
 
         info_button_industries = ttk.Button(
             form,
@@ -393,7 +386,8 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_industries.grid(
-            row=13, column=4, sticky='w', padx=5, pady=10)
+            row=13, column=4, sticky='w', padx=5, pady=10,
+        )
 
         # -----------------------------
         # Row 14: Keywords
@@ -410,8 +404,9 @@ class HomePage(ttk.Frame):
             textvariable=self.keywords_var,
             width=40,
         )
-        entry_keywords.grid(row=14, column=1, sticky='ew',
-                            padx=5, pady=10, columnspan=3)
+        entry_keywords.grid(
+            row=14, column=1, sticky='ew', padx=5, pady=10, columnspan=3,
+        )
 
         info_button_keywords = ttk.Button(
             form,
@@ -420,7 +415,8 @@ class HomePage(ttk.Frame):
             bootstyle='info-outline',
         )
         info_button_keywords.grid(
-            row=14, column=4, sticky='w', padx=5, pady=10)
+            row=14, column=4, sticky='w', padx=5, pady=10,
+        )
 
         # -----------------------------
         # Row 6: Control Email Sending Checkbox
