@@ -97,7 +97,11 @@ def process_chunk_of_rows(
         print(f"{keywords=}")
         logger.info('ChromeDriver initialized successfully for this batch.')
         driver.get('https://www.linkedin.com/talent/search')
-        logger.debug('Search opened')
+
+        logger.info('Search opened')
+        time.sleep(random.uniform(2, 5))
+        time.sleep(600)
+
         return
 
         # === 2) Loop through all rows in this chunk ===
