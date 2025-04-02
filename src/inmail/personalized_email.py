@@ -197,199 +197,193 @@ def process_chunk_of_rows(
             time.sleep(random.uniform(3, 5))
             current_link = driver.current_url
             print('Current URL:', current_link)
-            try:
-                # Wait until the profile list container is present using the updated class selector
-                container = WebDriverWait(driver, 15).until(
-                    EC.presence_of_element_located(
-                        (
-                            By.XPATH,
-                            "//div[contains(@class, 'profile-list-container-card')]",
-                        ),
-                    ),
-                )
-                # Optionally wait until it's visible
-                container = WebDriverWait(driver, 15).until(
-                    EC.visibility_of(container),
-                )
-            except TimeoutException:
-                print('Profile list container not found within the timeout period.')
-            else:
 
-                time.sleep(random.uniform(3, 5))
+            # for profile in profile_items:
+            for profile_index in range(25):
+                driver.get(current_link)
+                time.sleep(random.uniform(6, 10))
+                
+                print('Opened search result')
+                try:
+                    # Wait until the profile list container is present using the updated class selector
+                    container = WebDriverWait(driver, 15).until(
+                        EC.presence_of_element_located(
+                            (
+                                By.XPATH,
+                                "//div[contains(@class, 'profile-list-container-card')]",
+                            ),
+                        ),
+                    )
+                    # Optionally wait until it's visible
+                    container = WebDriverWait(driver, 15).until(
+                        EC.visibility_of(container),
+                    )
+                except TimeoutException:
+                    print('Profile list container not found within the timeout period.')
+                print(f"{profile_index=}")
+                # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
+                # Set the increment and pause duration.
+                increment = 30  # pixels per scroll
+                pause = 0.01  # seconds between scrolls
+
+                # Get the initial scroll height
+                last_height = driver.execute_script(
+                    'return document.body.scrollHeight',
+                )
+
+                while True:
+                    # Scroll down by the increment
+                    driver.execute_script(
+                        'window.scrollBy(0, arguments[0]);',
+                        increment,
+                    )
+                    time.sleep(pause)
+
+                    # Optionally, check if new content loaded by comparing heights.
+                    new_height = driver.execute_script(
+                        'return document.body.scrollHeight',
+                    )
+                    if new_height != last_height:
+                        last_height = new_height
+
+                    # Break condition: for example, if you reached near the bottom.
+                    # Here, we stop if we've scrolled within 100 pixels of the bottom.
+                    current_scroll = driver.execute_script(
+                        'return window.pageYOffset;',
+                    )
+                    if (
+                        current_scroll
+                        + driver.execute_script('return window.innerHeight;')
+                        >= last_height - 100
+                    ):
+                        break
+
+                print('Finished scrolling.')
+                time.sleep(random.uniform(2, 6))
+                driver.execute_script("window.scrollTo(0, 0);")
 
                 profile_items = container.find_elements(
                     By.XPATH,
                     ".//li[.//a[@data-test-link-to-profile-link='true']]",
                 )
-                # for profile in profile_items:
-                for profile_index in range(25):
-                    driver.get(current_link)
-                    time.sleep(random.uniform(6, 10))
-                    print('Opened search result')
-                    print(f"{profile_index=}")
-                    # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
-                    # Set the increment and pause duration.
-                    increment = 30  # pixels per scroll
-                    pause = 0.01  # seconds between scrolls
+                print(f"{len(profile_items)=}")
 
-                    # Get the initial scroll height
-                    last_height = driver.execute_script(
-                        'return document.body.scrollHeight',
-                    )
+                profile = profile_items[profile_index]
+                print(f"{profile.text=}")
+                # Process each profile item (for example, print its text)
+                try:
+                    # Hover over the profile item so that any hidden buttons become visible
+                    ActionChains(driver).move_to_element(profile).perform()
+                    time.sleep(1)  # Allow UI to update
 
-                    while True:
-                        # Scroll down by the increment
-                        driver.execute_script(
-                            'window.scrollBy(0, arguments[0]);',
-                            increment,
-                        )
-                        time.sleep(pause)
-
-                        # Optionally, check if new content loaded by comparing heights.
-                        new_height = driver.execute_script(
-                            'return document.body.scrollHeight',
-                        )
-                        if new_height != last_height:
-                            last_height = new_height
-
-                        # Break condition: for example, if you reached near the bottom.
-                        # Here, we stop if we've scrolled within 100 pixels of the bottom.
-                        current_scroll = driver.execute_script(
-                            'return window.pageYOffset;',
-                        )
-                        if (
-                            current_scroll
-                            + driver.execute_script('return window.innerHeight;')
-                            >= last_height - 100
-                        ):
-                            break
-
-                    print('Finished scrolling.')
-                    time.sleep(random.uniform(2, 6))
-                    driver.execute_script("window.scrollTo(0, 0);")
-
-                    profile_items = container.find_elements(
-                        By.XPATH,
-                        ".//li[.//a[@data-test-link-to-profile-link='true']]",
-                    )
-                    print(f"{len(profile_items)=}")
-
-                    profile = profile_items[profile_index]
-                    print(f"{profile.text=}")
-                    # Process each profile item (for example, print its text)
+                    # Attempt to locate the Message button within this profile.
                     try:
-                        # Hover over the profile item so that any hidden buttons become visible
-                        ActionChains(driver).move_to_element(profile).perform()
-                        time.sleep(1)  # Allow UI to update
-
-                        # Attempt to locate the Message button within this profile.
-                        try:
-                            message_button = profile.find_element(
-                                By.XPATH,
-                                ".//button[contains(., 'Message')]",
-                            )
-                        except Exception as inner_ex:
-                            print(
-                                'Message button not found in profile:',
-                                profile.text,
-                            )
-                        #     # continue  # Skip this profile if button not found
-
-                        # # Wait until the button is clickable (if necessary)
-                        WebDriverWait(driver, 10).until(
-                            EC.element_to_be_clickable(message_button),
+                        message_button = profile.find_element(
+                            By.XPATH,
+                            ".//button[contains(., 'Message')]",
                         )
-
-                        # Try a normal click; if that fails, use JavaScript to click
-                        try:
-                            message_button.click()
-                        except Exception as click_ex:
-                            driver.execute_script(
-                                'arguments[0].click();',
-                                message_button,
-                            )
-                        print('Message clicked')
-                        print(f"{profile.text=}")
-                        print(f"{profile_index=}")
-                        time.sleep(5)
-                        # Locate the element using a CSS selector
-                        recipient_profile_elem = driver.find_element(
-                            By.CSS_SELECTOR,
-                            'div.recipient-profile',
+                    except Exception as inner_ex:
+                        print(
+                            'Message button not found in profile:',
+                            profile.text,
                         )
-                        # Within that container, locate and click the "Public profile" button
-                        public_profile_button = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR,
-                            'button.topcard-condensed__bing-button',
+                    #     # continue  # Skip this profile if button not found
+
+                    # # Wait until the button is clickable (if necessary)
+                    WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable(message_button),
+                    )
+
+                    # Try a normal click; if that fails, use JavaScript to click
+                    try:
+                        message_button.click()
+                    except Exception as click_ex:
+                        driver.execute_script(
+                            'arguments[0].click();',
+                            message_button,
                         )
-                        public_profile_button.click()
+                    print('Message clicked')
+                    print(f"{profile.text=}")
+                    print(f"{profile_index=}")
+                    time.sleep(5)
+                    # Locate the element using a CSS selector
+                    recipient_profile_elem = driver.find_element(
+                        By.CSS_SELECTOR,
+                        'div.recipient-profile',
+                    )
+                    # Within that container, locate and click the "Public profile" button
+                    public_profile_button = recipient_profile_elem.find_element(
+                        By.CSS_SELECTOR,
+                        'button.topcard-condensed__bing-button',
+                    )
+                    public_profile_button.click()
 
-                        # Now wait for the hovercard anchor to appear.
-                        # We can target it by its stable attribute: data-test-public-profile-link
-                        profile_link_elem = WebDriverWait(driver, 10).until(
-                            EC.presence_of_element_located(
-                                (By.CSS_SELECTOR,
-                                 'a[data-test-public-profile-link]'),
-                            ),
-                        )
-
-                        # Extract the href
-                        profile_href = profile_link_elem.get_attribute('href')
-                        print('Profile URL:', profile_href)
-                        name_elem = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR,
-                            'div.artdeco-entity-lockup__title',
-                        )
-                        name = name_elem.text.strip()
-                        print('Name:', name)
-
-                        # Extract the company name from the container
-                        company_elem = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR,
-                            'a.position-item__company-link',
-                        )
-                        company_name = company_elem.text.strip()
-                        print('Company Name:', company_name)
-
-                        # Extract its text (Selenium automatically returns visible text)
-                        all_text = recipient_profile_elem.text
-                        print('Extracted text:')
-                        print(all_text)
-                        print('To profile')
-                        driver.get(profile_href)
-                        print('profile opened')
-
-                        # Wait until the cancel button (ancestor of the li-icon) is clickable
-                        # dismiss_button = WebDriverWait(driver, 10).until(
-                        #     EC.element_to_be_clickable(
-                        #         (By.XPATH, "//button[@aria-label='Dismiss']"),
-                        #     ),
-                        # )
-                        # dismiss_button.click()
-                        # print('dismiss_button clicked')
-                        print('To continue next profile')
-                        time.sleep(10)
-
-                        continue
-                    except Exception as e:
-                        print('Error processing profile:', e)
-                        continue
-
-                # Wait for the Next button to be clickable (adjust timeout if needed)
-                next_button = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable(
-                        (
-                            By.CSS_SELECTOR,
-                            'a.pagination__quick-link--next[data-test-pagination-next]',
+                    # Now wait for the hovercard anchor to appear.
+                    # We can target it by its stable attribute: data-test-public-profile-link
+                    profile_link_elem = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located(
+                            (By.CSS_SELECTOR,
+                                'a[data-test-public-profile-link]'),
                         ),
-                    ),
-                )
+                    )
 
-                # Click the Next button
-                next_button.click()
-                time.sleep(random.uniform(6, 10))
-                logger.info('Next page')
-                continue
+                    # Extract the href
+                    profile_href = profile_link_elem.get_attribute('href')
+                    print('Profile URL:', profile_href)
+                    name_elem = recipient_profile_elem.find_element(
+                        By.CSS_SELECTOR,
+                        'div.artdeco-entity-lockup__title',
+                    )
+                    name = name_elem.text.strip()
+                    print('Name:', name)
+
+                    # Extract the company name from the container
+                    company_elem = recipient_profile_elem.find_element(
+                        By.CSS_SELECTOR,
+                        'a.position-item__company-link',
+                    )
+                    company_name = company_elem.text.strip()
+                    print('Company Name:', company_name)
+
+                    # Extract its text (Selenium automatically returns visible text)
+                    all_text = recipient_profile_elem.text
+                    print('Extracted text:')
+                    print(all_text)
+                    print('To profile')
+                    driver.get(profile_href)
+                    print('profile opened')
+
+                    # Wait until the cancel button (ancestor of the li-icon) is clickable
+                    # dismiss_button = WebDriverWait(driver, 10).until(
+                    #     EC.element_to_be_clickable(
+                    #         (By.XPATH, "//button[@aria-label='Dismiss']"),
+                    #     ),
+                    # )
+                    # dismiss_button.click()
+                    # print('dismiss_button clicked')
+                    print('To continue next profile')
+                    time.sleep(10)
+
+                    continue
+                except Exception as e:
+                    print('Error processing profile:', e)
+                    continue
+
+            # Wait for the Next button to be clickable (adjust timeout if needed)
+            next_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(
+                    (
+                        By.CSS_SELECTOR,
+                        'a.pagination__quick-link--next[data-test-pagination-next]',
+                    ),
+                ),
+            )
+
+            # Click the Next button
+            next_button.click()
+            time.sleep(random.uniform(6, 10))
+            logger.info('Next page')
+            continue
 
             # finally:
             #     time.sleep(600)
