@@ -266,6 +266,7 @@ def process_chunk_of_rows(
 
                     print('Finished scrolling.')
                     time.sleep(random.uniform(2, 6))
+                    driver.execute_script("window.scrollTo(0, 0);")
 
                     profile_items = container.find_elements(
                         By.XPATH,
