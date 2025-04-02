@@ -214,48 +214,59 @@ def process_chunk_of_rows(
             except TimeoutException:
                 print('Profile list container not found within the timeout period.')
             else:
-                # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
-                # Set the increment and pause duration.
-                increment = 20  # pixels per scroll
-                pause = 0.01  # seconds between scrolls
 
-                # Get the initial scroll height
-                last_height = driver.execute_script(
-                    'return document.body.scrollHeight')
-
-                while True:
-                    # Scroll down by the increment
-                    driver.execute_script(
-                        'window.scrollBy(0, arguments[0]);', increment,
-                    )
-                    time.sleep(pause)
-
-                    # Optionally, check if new content loaded by comparing heights.
-                    new_height = driver.execute_script(
-                        'return document.body.scrollHeight',
-                    )
-                    if new_height != last_height:
-                        last_height = new_height
-
-                    # Break condition: for example, if you reached near the bottom.
-                    # Here, we stop if we've scrolled within 100 pixels of the bottom.
-                    current_scroll = driver.execute_script(
-                        'return window.pageYOffset;')
-                    if (
-                        current_scroll
-                        + driver.execute_script('return window.innerHeight;')
-                        >= last_height - 100
-                    ):
-                        break
-
-                print('Finished scrolling.')
                 time.sleep(random.uniform(3, 5))
 
                 profile_items = container.find_elements(
                     By.XPATH,
                     ".//li[.//a[@data-test-link-to-profile-link='true']]",
                 )
-                for profile in profile_items:
+                # for profile in profile_items:
+                for profile_index in range(25):
+                    # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
+                    # Set the increment and pause duration.
+                    increment = 30  # pixels per scroll
+                    pause = 0.01  # seconds between scrolls
+
+                    # Get the initial scroll height
+                    last_height = driver.execute_script(
+                        'return document.body.scrollHeight')
+
+                    while True:
+                        # Scroll down by the increment
+                        driver.execute_script(
+                            'window.scrollBy(0, arguments[0]);',
+                            increment,
+                        )
+                        time.sleep(pause)
+
+                        # Optionally, check if new content loaded by comparing heights.
+                        new_height = driver.execute_script(
+                            'return document.body.scrollHeight',
+                        )
+                        if new_height != last_height:
+                            last_height = new_height
+
+                        # Break condition: for example, if you reached near the bottom.
+                        # Here, we stop if we've scrolled within 100 pixels of the bottom.
+                        current_scroll = driver.execute_script(
+                            'return window.pageYOffset;')
+                        if (
+                            current_scroll
+                            + driver.execute_script('return window.innerHeight;')
+                            >= last_height - 100
+                        ):
+                            break
+
+                    print('Finished scrolling.')
+                    profile_items = container.find_elements(
+                        By.XPATH,
+                        ".//li[.//a[@data-test-link-to-profile-link='true']]",
+                    )
+                    print(f"{len(profile_items)=}")
+                    profile = profile_items[profile_index]
+                    print(f'{profile.text=}')
+                    continue
                     print(f"{profile.text=}")
                     # Process each profile item (for example, print its text)
                     try:
@@ -317,14 +328,16 @@ def process_chunk_of_rows(
                         profile_href = profile_link_elem.get_attribute('href')
                         print('Profile URL:', profile_href)
                         name_elem = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR, 'div.artdeco-entity-lockup__title',
+                            By.CSS_SELECTOR,
+                            'div.artdeco-entity-lockup__title',
                         )
                         name = name_elem.text.strip()
                         print('Name:', name)
 
                         # Extract the company name from the container
                         company_elem = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR, 'a.position-item__company-link',
+                            By.CSS_SELECTOR,
+                            'a.position-item__company-link',
                         )
                         company_name = company_elem.text.strip()
                         print('Company Name:', company_name)
@@ -336,7 +349,6 @@ def process_chunk_of_rows(
                         print('To profile')
                         driver.get(profile_href)
                         print('profile opened')
-                        
 
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
                         # dismiss_button = WebDriverWait(driver, 10).until(
