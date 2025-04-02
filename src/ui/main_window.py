@@ -2,12 +2,15 @@
 import logging
 import os
 import sys
+from time import time
 from tkinter import messagebox
 
 import ttkbootstrap as ttk
 from PIL import Image
 from PIL import ImageTk
 
+from src.config import settings
+from src.inmail.utils import get_user_data_dir
 from src.ui.pages.history import HistoryPage
 from src.ui.pages.home import HomePage
 
@@ -20,6 +23,7 @@ logging.basicConfig(
         logging.FileHandler('application.log'),  # Log to a file
     ],
 )
+logger = logging.getLogger(__name__)
 
 
 def get_resource_path(relative_path):
@@ -119,6 +123,14 @@ class LinkedInAutomationApp(ttk.Window):
             style='Custom.TButton',
         )
         button_history.pack(pady=(2, 5), fill='x', padx=10)
+        button_chrome = ttk.Button(
+            self.menu_frame,
+            text=' Open Chrome',
+            command=lambda: self.open_chrome(),
+            bootstyle='success',  # green button style
+            style='Custom.TButton',
+        )
+        button_chrome.pack(pady=(5, 2), fill='x', padx=10, side='bottom')
 
     def create_pages(self):
         self.pages = {}
@@ -166,3 +178,42 @@ class LinkedInAutomationApp(ttk.Window):
             # Wait for the automation thread to finish
 
             self.destroy()
+
+    def open_chrome_profile(self):
+        import undetected_chromedriver as uc
+
+        # Set up Selenium WebDriver options
+        options = uc.ChromeOptions()
+
+        logger.info(f"Chrome directory: {get_user_data_dir()}")
+
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--start-maximized')
+        options.add_argument(f"--user-data-dir={get_user_data_dir()}")
+
+        try:
+
+            driver = uc.Chrome(
+                options=options,
+                driver_executable_path=rf"{settings.DRIVER_PATH}",
+            )
+
+            from selenium_stealth import stealth
+
+            stealth(
+                driver,
+                languages=['en-US', 'en'],
+                vendor='Google Inc.',
+                platform='Win32',
+                webgl_vendor='Intel Inc.',
+                renderer='Intel Iris OpenGL Engine',
+                fix_hairline=True,
+            )
+            time.sleep(1200)
+
+            logger.info('ChromeDriver initialized successfully.')
+        except Exception as e:
+            logger.error(
+                f"Failed to initialize ChromeDriver automatically: {e}",
+            )
