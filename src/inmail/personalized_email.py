@@ -217,29 +217,29 @@ def process_chunk_of_rows(
                         # Hover over the profile item so that any hidden buttons become visible
                         ActionChains(driver).move_to_element(profile).perform()
                         time.sleep(1)  # Allow UI to update
-                        print("Message clicked")
 
                         # Attempt to locate the Message button within this profile.
-                        # try:
-                        #     message_button = profile.find_element(
-                        #         By.XPATH, ".//button[contains(., 'Message')]"
-                        #     )
-                        # except Exception as inner_ex:
-                        #     print("Message button not found in profile:", profile.text)
+                        try:
+                            message_button = profile.find_element(
+                                By.XPATH, ".//button[contains(., 'Message')]"
+                            )
+                        except Exception as inner_ex:
+                            print("Message button not found in profile:", profile.text)
                         #     # continue  # Skip this profile if button not found
 
                         # # Wait until the button is clickable (if necessary)
-                        # WebDriverWait(driver, 10).until(
-                        #     EC.element_to_be_clickable(message_button)
-                        # )
+                        WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable(message_button)
+                        )
 
                         # Try a normal click; if that fails, use JavaScript to click
-                        # try:
-                        #     message_button.click()
-                        # except Exception as click_ex:
-                        #     driver.execute_script(
-                        #         "arguments[0].click();", message_button
-                        #     )
+                        try:
+                            message_button.click()
+                        except Exception as click_ex:
+                            driver.execute_script(
+                                "arguments[0].click();", message_button
+                            )
+                        print("Message clicked")
 
                         # Wait for the hover card container to be present in the DOM
                         hovercard = WebDriverWait(driver, 15).until(
