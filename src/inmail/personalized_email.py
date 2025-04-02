@@ -202,7 +202,7 @@ def process_chunk_of_rows(
             for profile_index in range(25):
                 driver.get(current_link)
                 time.sleep(random.uniform(6, 10))
-                
+
                 print('Opened search result')
                 try:
                     # Wait until the profile list container is present using the updated class selector
@@ -260,7 +260,7 @@ def process_chunk_of_rows(
 
                 print('Finished scrolling.')
                 time.sleep(random.uniform(2, 6))
-                driver.execute_script("window.scrollTo(0, 0);")
+                driver.execute_script('window.scrollTo(0, 0);')
 
                 profile_items = container.find_elements(
                     By.XPATH,
@@ -322,8 +322,10 @@ def process_chunk_of_rows(
                     # We can target it by its stable attribute: data-test-public-profile-link
                     profile_link_elem = WebDriverWait(driver, 10).until(
                         EC.presence_of_element_located(
-                            (By.CSS_SELECTOR,
-                                'a[data-test-public-profile-link]'),
+                            (
+                                By.CSS_SELECTOR,
+                                'a[data-test-public-profile-link]',
+                            ),
                         ),
                     )
 
@@ -334,7 +336,7 @@ def process_chunk_of_rows(
                         By.CSS_SELECTOR,
                         'div.artdeco-entity-lockup__title',
                     )
-                    name = name_elem.text.strip()
+                    name = name_elem.text.strip().split()
                     print('Name:', name)
 
                     # Extract the company name from the container
@@ -344,6 +346,14 @@ def process_chunk_of_rows(
                     )
                     company_name = company_elem.text.strip()
                     print('Company Name:', company_name)
+                    company_slug = slugify_company(company_name)
+                    profile_email_address = (
+                        f"{name[0].strip()}.{name[1].strip()
+                                             }@{company_name}.com"
+                    )
+                    logger.info(
+                        f"Guessed {profile_email_address=}",
+                    )
 
                     # Extract its text (Selenium automatically returns visible text)
                     all_text = recipient_profile_elem.text
@@ -353,14 +363,6 @@ def process_chunk_of_rows(
                     driver.get(profile_href)
                     print('profile opened')
 
-                    # Wait until the cancel button (ancestor of the li-icon) is clickable
-                    # dismiss_button = WebDriverWait(driver, 10).until(
-                    #     EC.element_to_be_clickable(
-                    #         (By.XPATH, "//button[@aria-label='Dismiss']"),
-                    #     ),
-                    # )
-                    # dismiss_button.click()
-                    # print('dismiss_button clicked')
                     print('To continue next profile')
                     time.sleep(10)
 
@@ -384,11 +386,6 @@ def process_chunk_of_rows(
             time.sleep(random.uniform(6, 10))
             logger.info('Next page')
             continue
-
-            # finally:
-            #     time.sleep(600)
-
-        time.sleep(600)
 
         return
     except Exception as e:
