@@ -215,8 +215,30 @@ def process_chunk_of_rows(
                 print('Profile list container not found within the timeout period.')
             else:
                 # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
-                driver.execute_script("window.scrollBy({top: window.innerHeight, left: 0, behavior: 'smooth'});")
-                print('Scroll performed')
+                # Set the increment and pause duration.
+                increment = 10  # pixels per scroll
+                pause = 0.1     # seconds between scrolls
+
+                # Get the initial scroll height
+                last_height = driver.execute_script("return document.body.scrollHeight")
+
+                while True:
+                    # Scroll down by the increment
+                    driver.execute_script("window.scrollBy(0, arguments[0]);", increment)
+                    time.sleep(pause)
+                    
+                    # Optionally, check if new content loaded by comparing heights.
+                    new_height = driver.execute_script("return document.body.scrollHeight")
+                    if new_height != last_height:
+                        last_height = new_height
+
+                    # Break condition: for example, if you reached near the bottom.
+                    # Here, we stop if we've scrolled within 100 pixels of the bottom.
+                    current_scroll = driver.execute_script("return window.pageYOffset;")
+                    if current_scroll + driver.execute_script("return window.innerHeight;") >= last_height - 100:
+                        break
+
+                print("Finished scrolling.")
                 time.sleep(random.uniform(3, 5))
 
                 profile_items = container.find_elements(
