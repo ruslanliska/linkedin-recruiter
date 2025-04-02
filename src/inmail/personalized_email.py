@@ -240,14 +240,6 @@ def process_chunk_of_rows(
                                 "arguments[0].click();", message_button
                             )
 
-                        # Wait for the element to be present; for example, targeting the personal info content
-                        element = WebDriverWait(driver, 15).until(
-                            EC.presence_of_element_located(
-                                (By.CSS_SELECTOR, "div.personal-info__content")
-                            )
-                        )
-
-                        # Get the visible text from the element
                         # Wait for the hover card container to be present in the DOM
                         hovercard = WebDriverWait(driver, 15).until(
                             EC.presence_of_element_located(
