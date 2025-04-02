@@ -249,6 +249,7 @@ def process_chunk_of_rows(
                             )
                         print('Message clicked')
                         print(f"{profile.text=}")
+                        time.sleep(5)
                         # Locate the element using a CSS selector
                         recipient_profile_elem = driver.find_element(
                             By.CSS_SELECTOR, 'div.recipient-profile',
