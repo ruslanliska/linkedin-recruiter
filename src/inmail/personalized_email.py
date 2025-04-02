@@ -241,7 +241,18 @@ def process_chunk_of_rows(
                                 "arguments[0].click();", message_button
                             )
 
-                        time.sleep(600)  # Pause briefly after clicking
+                        # Wait for the element to be present; for example, targeting the personal info content
+                        element = WebDriverWait(driver, 15).until(
+                            EC.presence_of_element_located(
+                                (By.CSS_SELECTOR, "div.personal-info__content")
+                            )
+                        )
+
+                        # Get the visible text from the element
+                        text = element.text
+                        print("Extracted text:", text)
+                        time.sleep(15)  # Pause briefly after clicking
+                        continue
                     except Exception as e:
                         print("Error processing profile:", e)
                 # Wait for the Next button to be clickable (adjust timeout if needed)
