@@ -266,10 +266,8 @@ def process_chunk_of_rows(
                     By.XPATH,
                     ".//li[.//a[@data-test-link-to-profile-link='true']]",
                 )
-                print(f"{len(profile_items)=}")
 
                 profile = profile_items[profile_index]
-                print(f"{profile.text=}")
                 # Process each profile item (for example, print its text)
                 try:
                     # Hover over the profile item so that any hidden buttons become visible
@@ -283,7 +281,7 @@ def process_chunk_of_rows(
                             ".//button[contains(., 'Message')]",
                         )
                     except Exception as inner_ex:
-                        print(
+                        logger.error(
                             'Message button not found in profile:',
                             profile.text,
                         )
@@ -303,8 +301,7 @@ def process_chunk_of_rows(
                             message_button,
                         )
                     print('Message clicked')
-                    print(f"{profile.text=}")
-                    print(f"{profile_index=}")
+                    logger.info(f"{profile_index=}")
                     time.sleep(5)
                     # Locate the element using a CSS selector
                     recipient_profile_elem = driver.find_element(
@@ -331,13 +328,13 @@ def process_chunk_of_rows(
 
                     # Extract the href
                     profile_href = profile_link_elem.get_attribute('href')
-                    print('Profile URL:', profile_href)
+                    logger.info('Profile URL:', profile_href)
                     name_elem = recipient_profile_elem.find_element(
                         By.CSS_SELECTOR,
                         'div.artdeco-entity-lockup__title',
                     )
                     name = name_elem.text.strip().split()
-                    print('Name:', name)
+                    logger.info('Name:', name)
 
                     # Extract the company name from the container
                     company_elem = recipient_profile_elem.find_element(
@@ -345,23 +342,20 @@ def process_chunk_of_rows(
                         'a.position-item__company-link',
                     )
                     company_name = company_elem.text.strip()
-                    print('Company Name:', company_name)
+                    logger.info('Company Name:', company_name)
                     company_slug = slugify_company(company_name)
-                    profile_email_address = (
-                        f"{name[0].strip()}.{name[1].strip()
-                                             }@{company_name}.com"
-                    )
+                    profile_email_address = f"{
+                        name[0].strip()}.{name[1].strip()}@{company_name}.com".lower()
                     logger.info(
                         f"Guessed {profile_email_address=}",
                     )
 
                     # Extract its text (Selenium automatically returns visible text)
                     all_text = recipient_profile_elem.text
-                    print('Extracted text:')
-                    print(all_text)
-                    print('To profile')
+                    logger.info('Extracted text:')
+                    logger.info('To profile')
                     driver.get(profile_href)
-                    print('profile opened')
+                    logger.info('profile opened')
 
                     print('To continue next profile')
                     time.sleep(10)
