@@ -223,6 +223,10 @@ def process_chunk_of_rows(
                 )
                 # for profile in profile_items:
                 for profile_index in range(25):
+                    driver.get(current_link)
+                    time.sleep(random.uniform(6, 10))
+                    print('Opened search result')
+                    print(f"{profile_index=}")
                     # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
                     # Set the increment and pause duration.
                     increment = 30  # pixels per scroll
@@ -230,7 +234,8 @@ def process_chunk_of_rows(
 
                     # Get the initial scroll height
                     last_height = driver.execute_script(
-                        'return document.body.scrollHeight')
+                        'return document.body.scrollHeight',
+                    )
 
                     while True:
                         # Scroll down by the increment
@@ -250,7 +255,8 @@ def process_chunk_of_rows(
                         # Break condition: for example, if you reached near the bottom.
                         # Here, we stop if we've scrolled within 100 pixels of the bottom.
                         current_scroll = driver.execute_script(
-                            'return window.pageYOffset;')
+                            'return window.pageYOffset;',
+                        )
                         if (
                             current_scroll
                             + driver.execute_script('return window.innerHeight;')
@@ -259,13 +265,16 @@ def process_chunk_of_rows(
                             break
 
                     print('Finished scrolling.')
+                    time.sleep(random.uniform(2, 6))
+
                     profile_items = container.find_elements(
                         By.XPATH,
                         ".//li[.//a[@data-test-link-to-profile-link='true']]",
                     )
                     print(f"{len(profile_items)=}")
+
                     profile = profile_items[profile_index]
-                    print(f'{profile.text=}')
+                    print(f"{profile.text=}")
                     # Process each profile item (for example, print its text)
                     try:
                         # Hover over the profile item so that any hidden buttons become visible
@@ -357,8 +366,7 @@ def process_chunk_of_rows(
                         # )
                         # dismiss_button.click()
                         # print('dismiss_button clicked')
-                        # print('To continue next profile')
-                        driver.get(current_link)
+                        print('To continue next profile')
                         time.sleep(10)
 
                         continue
