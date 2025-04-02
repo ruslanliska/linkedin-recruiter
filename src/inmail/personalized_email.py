@@ -342,9 +342,10 @@ def process_chunk_of_rows(
                         'a.position-item__company-link',
                     )
                     company_name = company_elem.text.strip()
-                    logger.info('Company Name:', company_name)
+                    logger.info(f'Company Name: {company_name}')
                     company_slug = slugify_company(company_name)
-                    profile_email_address = f"{name[0].strip()}.{name[1].strip()}@{company_name}.com".lower()
+                    profile_email_address = f"{
+                        name[0].strip()}.{name[1].strip()}@{company_slug}.com".lower()
                     logger.info(
                         f"Guessed {profile_email_address=}",
                     )
@@ -371,7 +372,8 @@ def process_chunk_of_rows(
                             text_from_desired_tags.append(tag_text)
 
                     cleaned_text = '\n'.join(text_from_desired_tags)
-                    logger.info(f"Cleaned Text snippet: {cleaned_text[:100]}...")
+                    logger.info(f"Cleaned Text snippet: {
+                                cleaned_text[:100]}...")
                     # Generate the personal email
                     email = generate_personal_email(
                         page_summary=cleaned_text,
@@ -379,7 +381,7 @@ def process_chunk_of_rows(
                     )
                     subject = generate_subject(email_body=email)
                     logger.info(f"Email Subject by AI: {subject}")
-                     # Extract profile ID from <code> elements
+                    # Extract profile ID from <code> elements
                     code_elements = driver.find_elements(By.TAG_NAME, 'code')
                     profile_id = None
                     for code_element in code_elements:
@@ -478,10 +480,12 @@ def process_chunk_of_rows(
                         # Click the Email radio label
                         email_label = WebDriverWait(modal, 10).until(
                             EC.element_to_be_clickable(
-                                (By.XPATH, ".//label[normalize-space(.)='Email']"),
+                                (By.XPATH,
+                                 ".//label[normalize-space(.)='Email']"),
                             ),
                         )
-                        driver.execute_script('arguments[0].click();', email_label)
+                        driver.execute_script(
+                            'arguments[0].click();', email_label)
                         time.sleep(random.uniform(1, 2))
 
                         save_button = WebDriverWait(modal, 10).until(
@@ -492,7 +496,8 @@ def process_chunk_of_rows(
                                 ),
                             ),
                         )
-                        driver.execute_script('arguments[0].click();', save_button)
+                        driver.execute_script(
+                            'arguments[0].click();', save_button)
                         time.sleep(random.uniform(2, 4))
 
                         # Check for error
@@ -554,7 +559,6 @@ def process_chunk_of_rows(
                         email_status = 'Sent'
                         logger.info('Message sent successfully.')
                         time.sleep(random.uniform(4, 7))
-
 
                     print('To continue next profile')
                     time.sleep(10)
