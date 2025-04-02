@@ -225,7 +225,7 @@ def process_chunk_of_rows(
                             )
                         except Exception as inner_ex:
                             print("Message button not found in profile:", profile.text)
-                            continue  # Skip this profile if button not found
+                            # continue  # Skip this profile if button not found
 
                         # Wait until the button is clickable (if necessary)
                         WebDriverWait(driver, 10).until(
