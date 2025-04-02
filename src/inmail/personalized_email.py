@@ -240,33 +240,15 @@ def process_chunk_of_rows(
                                 "arguments[0].click();", message_button
                             )
                         print("Message clicked")
+                        print(f'{profile.text=}')
+                        # Locate the element using a CSS selector
+                        recipient_profile_elem = driver.find_element(By.CSS_SELECTOR, "div.recipient-profile")
 
-                        try:
-                            hovercard = WebDriverWait(driver, 15).until(
-                                EC.presence_of_element_located((By.ID, "artdeco-hoverable-artdeco-gen-99"))
-                            )
-                            link_element = hovercard.find_element(
-                                By.CSS_SELECTOR, "div.artdeco-hoverable-content__content a"
-                            )
-                            profile_href = link_element.get_attribute("href")
-                            print("Profile URL:", profile_href)
-                        except Exception as e:
-                            print("Error while locating the profile link:", e)
-                        response = requests.get(profile_href)
-                        if response.status_code == 200:
-                            soup = BeautifulSoup(response.text, "html.parser")
+                        # Extract its text (Selenium automatically returns visible text)
+                        all_text = recipient_profile_elem.text
+                        print("Extracted text:")
+                        print(all_text)
 
-                            desired_tags = ["main"]
-                            text_from_desired_tags = []
-                            for tag in soup.find_all(desired_tags):
-                                tag_text = tag.get_text(separator=" ", strip=True)
-                                if tag_text:
-                                    text_from_desired_tags.append(tag_text)
-
-                            cleaned_text = "\n".join(text_from_desired_tags)
-                            print(f"Cleaned Text snippet: {cleaned_text[:100]}...")
-                        else:
-                            print("Failed to fetch the page:", response.status_code)
                         time.sleep(15)  # Pause briefly after clicking
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
                         dismiss_button = WebDriverWait(driver, 10).until(
