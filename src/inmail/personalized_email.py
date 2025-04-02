@@ -254,6 +254,14 @@ def process_chunk_of_rows(
                         recipient_profile_elem = driver.find_element(
                             By.CSS_SELECTOR, 'div.recipient-profile',
                         )
+                        name_elem = recipient_profile_elem.find_element(By.CSS_SELECTOR, "div.artdeco-entity-lockup__title")
+                        name = name_elem.text.strip()
+                        print("Name:", name)
+
+                        # Extract the company name from the container
+                        company_elem = recipient_profile_elem.find_element(By.CSS_SELECTOR, "a.position-item__company-link")
+                        company_name = company_elem.text.strip()
+                        print("Company Name:", company_name)
 
                         # Extract its text (Selenium automatically returns visible text)
                         all_text = recipient_profile_elem.text
