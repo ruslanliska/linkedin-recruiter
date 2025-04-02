@@ -126,7 +126,7 @@ class LinkedInAutomationApp(ttk.Window):
         button_chrome = ttk.Button(
             self.menu_frame,
             text=' Open Chrome',
-            command=lambda: self.open_chrome(),
+            command=lambda: self.open_chrome_profile(),
             bootstyle='success',  # green button style
             style='Custom.TButton',
         )
