@@ -291,33 +291,32 @@ def process_chunk_of_rows(
                         if not profile_href or not profile_href.startswith("http"):
                             print("Invalid URL:", profile_href)
                         else:
+                            # Save the current (original) window handle.
                             original_window = driver.current_window_handle
-                            print("Original window handle:", original_window)
 
-                            # Open the URL in a new tab using JavaScript
+                            # Open the profile URL in a new tab.
                             driver.execute_script("window.open(arguments[0], '_blank');", profile_href)
                             print("Executed window.open with URL:", profile_href)
 
-                            # Wait for the new window/tab to open
-                            WebDriverWait(driver, 10).until(lambda d: len(d.window_handles) == 2)
-                            print("Window handles after opening new tab:", driver.window_handles)
+                            # Wait until a new window is available.
+                            WebDriverWait(driver, 20).until(lambda d: len(d.window_handles) > 1)
+                            print("Window handles:", driver.window_handles)
 
-                            # Identify the new window handle and switch to it
+                            # Identify and switch to the new window.
                             new_window = [handle for handle in driver.window_handles if handle != original_window][0]
                             driver.switch_to.window(new_window)
-                            print("Switched to new window handle:", new_window)
+                            print("Switched to new tab. Current URL:", driver.current_url)
 
-                            # Optionally wait for the new tab to load; adjust condition as needed
-                            WebDriverWait(driver, 10).until(EC.title_contains("LinkedIn"))
+                            # Wait until the new page is fully loaded.
+                            WebDriverWait(driver, 20).until(lambda d: d.execute_script("return document.readyState") == "complete")
                             print("New tab title:", driver.title)
 
-                            # Pause to observe new tab actions
-                            time.sleep(2)
+                            time.sleep(2)  # Pause to observe the new tab if needed
 
-                            # Close the new tab and switch back to the original window
+                            # Close the new tab and return to the original window.
                             driver.close()
                             driver.switch_to.window(original_window)
-                            print("Switched back to original window:", original_window)
+                            print("Switched back to original window. Current URL:", driver.current_url)
 
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
                         dismiss_button = WebDriverWait(driver, 10).until(
