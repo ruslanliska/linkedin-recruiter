@@ -300,7 +300,7 @@ def process_chunk_of_rows(
                             'arguments[0].click();',
                             message_button,
                         )
-                    print('Message clicked')
+                    logger.info('Message clicked')
                     logger.info(f"{profile_index=}")
                     time.sleep(5)
                     # Locate the element using a CSS selector
@@ -344,8 +344,7 @@ def process_chunk_of_rows(
                     company_name = company_elem.text.strip()
                     logger.info('Company Name:', company_name)
                     company_slug = slugify_company(company_name)
-                    profile_email_address = f"{
-                        name[0].strip()}.{name[1].strip()}@{company_name}.com".lower()
+                    profile_email_address = f"{name[0].strip()}.{name[1].strip()}@{company_name}.com".lower()
                     logger.info(
                         f"Guessed {profile_email_address=}",
                     )
@@ -355,7 +354,207 @@ def process_chunk_of_rows(
                     logger.info('Extracted text:')
                     logger.info('To profile')
                     driver.get(profile_href)
-                    logger.info('profile opened')
+                    logger.info('Profile opened')
+
+                    time.sleep(random.uniform(4, 7))
+                    # Extract main content from the page
+                    from bs4 import BeautifulSoup
+
+                    full_html = driver.page_source
+                    soup = BeautifulSoup(full_html, 'html.parser')
+
+                    desired_tags = ['main']
+                    text_from_desired_tags = []
+                    for tag in soup.find_all(desired_tags):
+                        tag_text = tag.get_text(separator=' ', strip=True)
+                        if tag_text:
+                            text_from_desired_tags.append(tag_text)
+
+                    cleaned_text = '\n'.join(text_from_desired_tags)
+                    logger.info(f"Cleaned Text snippet: {cleaned_text[:100]}...")
+                    # Generate the personal email
+                    email = generate_personal_email(
+                        page_summary=cleaned_text,
+                        user_prompt=prompt,
+                    )
+                    subject = generate_subject(email_body=email)
+                    logger.info(f"Email Subject by AI: {subject}")
+                     # Extract profile ID from <code> elements
+                    code_elements = driver.find_elements(By.TAG_NAME, 'code')
+                    profile_id = None
+                    for code_element in code_elements:
+                        code_content = code_element.get_attribute('innerHTML')
+                        if 'identityDashProfilesByMemberIdentity' in code_content:
+                            try:
+                                data_json = json.loads(code_content)
+                                profile_urn = data_json['data']['data'][
+                                    'identityDashProfilesByMemberIdentity'
+                                ]['*elements'][
+                                    0
+                                ]  # noqa: E501
+                                profile_id = profile_urn.split(':')[-1]
+                                break
+                            except (json.JSONDecodeError, KeyError) as e:
+                                logger.warning(f"JSON parsing error: {e}")
+                                continue
+
+                    if not profile_id:
+                        logger.warning('Profile ID not found.')
+                        raise ValueError('Profile ID extraction failed.')
+
+                    logger.info(f"Extracted Profile ID: {profile_id}")
+                    # Navigate to messaging composer
+                    target_url = f"https://www.linkedin.com/talent/profile/{profile_id}"  # noqa: E501
+                    logger.debug(f"Navigate to {target_url}")
+                    driver.get(target_url)
+                    time.sleep(random.uniform(10, 20))
+                    # Wait for the contact info element
+                    contact_info = driver.find_element(
+                        By.CLASS_NAME,
+                        'contact-info',
+                    )
+                    # Check if email is saved
+                    try:
+                        existing_email = contact_info.find_element(
+                            By.XPATH,
+                            './/span[@data-test-contact-email-address]',
+                        )
+                        logger.debug(f"Email found: {existing_email.text}")
+                    except NoSuchElementException:
+                        # If no email, add it
+                        logger.debug(
+                            "No email found. Looking for 'Add email' button...",
+                        )
+                        add_email_button = driver.find_element(
+                            By.XPATH,
+                            ".//button[@class='button-small-muted-tertiary contact-info__add']",  # noqa: E501
+                        )
+                        add_email_button.click()
+                        email_input = driver.find_element(
+                            By.XPATH,
+                            ".//input[@type='email']",
+                        )
+                        email_input.send_keys(profile_email_address)
+                        email_input.send_keys(Keys.ENTER)
+                        logger.debug('Email saved')
+                        time.sleep(random.uniform(4, 7))
+
+                    driver.refresh()
+                    time.sleep(random.uniform(4, 7))
+                    # Open message composer
+                    email_button = driver.find_element(
+                        By.XPATH,
+                        "//button[contains(@class, 'artdeco-button') and contains(@data-live-test-component, 'message-icon-btn')]",  # noqa: E501
+                    )
+                    email_button.click()
+                    time.sleep(random.uniform(4, 7))
+
+                    # Detect if it's InMail or Email
+                    send_info = driver.find_element(
+                        By.XPATH,
+                        "//div[contains(@class, 'single-message-composer__trigger-message')]",  # noqa: E501
+                    )
+                    text_content = send_info.text.strip()
+                    if 'Send immediately via InMail' in text_content:
+                        logger.info(
+                            'Detected: Send immediately via InMail -> switching to Email',  # noqa: E501
+                        )
+                        settings_button = driver.find_element(
+                            By.XPATH,
+                            "//button[contains(@class, 'single-message-composer__trigger-message-gear-icon')]",  # noqa: E501
+                        )
+                        settings_button.click()
+                        time.sleep(random.uniform(3, 6))
+
+                        # Wait for the modal, switch to Email
+                        modal = WebDriverWait(driver, 10).until(
+                            EC.visibility_of_element_located(
+                                (
+                                    By.XPATH,
+                                    "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",  # noqa: E501
+                                ),
+                            ),
+                        )
+                        # Click the Email radio label
+                        email_label = WebDriverWait(modal, 10).until(
+                            EC.element_to_be_clickable(
+                                (By.XPATH, ".//label[normalize-space(.)='Email']"),
+                            ),
+                        )
+                        driver.execute_script('arguments[0].click();', email_label)
+                        time.sleep(random.uniform(1, 2))
+
+                        save_button = WebDriverWait(modal, 10).until(
+                            EC.element_to_be_clickable(
+                                (
+                                    By.XPATH,
+                                    ".//button[.//span[contains(normalize-space(), 'Save')]]",  # noqa: E501
+                                ),
+                            ),
+                        )
+                        driver.execute_script('arguments[0].click();', save_button)
+                        time.sleep(random.uniform(2, 4))
+
+                        # Check for error
+                        try:
+                            error_message_element = driver.find_element(
+                                By.XPATH,
+                                "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",  # noqa: E501
+                            )
+                            if error_message_element.is_displayed():
+                                logger.warning(
+                                    'Error: No recipient email found. Switching to InMail instead.',  # noqa: E501
+                                )
+                                # Possibly skip or handle differently
+                                driver.refresh()
+                                time.sleep(random.uniform(4, 7))
+
+                                continue
+                        except NoSuchElementException:
+                            pass
+
+                    elif 'Send immediately via Email' in text_content:
+                        logger.info('Detected: Send immediately via Email')
+
+                    else:
+                        logger.warning(
+                            'Unknown message mode text. Proceed carefully.',
+                        )
+
+                    # Fill in subject
+                    subject_input = driver.find_element(
+                        By.CSS_SELECTOR,
+                        "input[aria-label='Message subject'][placeholder='Add a subject']",  # noqa: E501
+                    )
+                    subject_input.click()
+                    subject_input.send_keys(subject)
+
+                    # Fill in the message body
+                    editor = driver.find_element(
+                        By.CSS_SELECTOR,
+                        ".ql-editor[contenteditable='true']",
+                    )
+                    editor.click()
+
+                    chunk_size = 20
+                    for i in range(0, len(email), chunk_size):
+                        editor.send_keys(email[i: i + chunk_size])
+
+                    # Send
+                    send_button = driver.find_element(
+                        By.CSS_SELECTOR,
+                        'button[data-live-test-messaging-submit-btn]',
+                    )
+                    if send_button.get_attribute('disabled'):
+                        email_status = 'Failed'
+                        error_message = 'Send button disabled.'
+                        logger.warning('Send button is disabled.')
+                    else:
+                        send_button.click()
+                        email_status = 'Sent'
+                        logger.info('Message sent successfully.')
+                        time.sleep(random.uniform(4, 7))
+
 
                     print('To continue next profile')
                     time.sleep(10)
@@ -387,332 +586,6 @@ def process_chunk_of_rows(
         logger.error(f"Error in batch processing: {error_message}")
         traceback.print_exc()
         raise e
-        # === 2) Loop through all rows in this chunk ===
-        for index, row in batch_df.iterrows():
-            try:
-                email_status = None
-                error_message = None
-                linkedin_profile = row['Person Linkedin Url']
-                logger.info(
-                    f"Processing row {index}: {linkedin_profile=}",
-                )
-
-                profile_email_address = row['Email']
-                if pd.isna(profile_email_address):
-                    # Guess the email if missing
-                    logger.warning(f"Guessing email for row {index}")
-                    first_name = row['First Name'].lower()
-                    last_name = row['Last Name'].lower()
-                    company_slug = slugify_company(row['Company'])
-                    profile_email_address = (
-                        f"{first_name}.{last_name}@{company_slug}.com"
-                    )
-                    logger.info(
-                        f"Guessed {profile_email_address=}",
-                    )
-
-                # Navigate directly to the profile
-                # (You can remove these forced reloads if not strictly needed)
-                driver.get(linkedin_profile)
-                time.sleep(random.uniform(4, 7))
-
-                # Extract main content from the page
-                from bs4 import BeautifulSoup
-
-                full_html = driver.page_source
-                soup = BeautifulSoup(full_html, 'html.parser')
-
-                desired_tags = ['main']
-                text_from_desired_tags = []
-                for tag in soup.find_all(desired_tags):
-                    tag_text = tag.get_text(separator=' ', strip=True)
-                    if tag_text:
-                        text_from_desired_tags.append(tag_text)
-
-                cleaned_text = '\n'.join(text_from_desired_tags)
-                logger.debug(f"Cleaned Text snippet: {cleaned_text[:100]}...")
-
-                # Generate the personal email
-                email = generate_personal_email(
-                    page_summary=cleaned_text,
-                    user_prompt=prompt,
-                )
-                if not email_subject:
-                    subject = generate_subject(email_body=email)
-                    logger.info(f"Email Subject by AI: {subject}")
-
-                else:
-                    subject = email_subject
-                    logger.info(f"Email Subject Default: {subject}")
-
-                # Extract profile ID from <code> elements
-                code_elements = driver.find_elements(By.TAG_NAME, 'code')
-                profile_id = None
-                for code_element in code_elements:
-                    code_content = code_element.get_attribute('innerHTML')
-                    if 'identityDashProfilesByMemberIdentity' in code_content:
-                        try:
-                            data_json = json.loads(code_content)
-                            profile_urn = data_json['data']['data'][
-                                'identityDashProfilesByMemberIdentity'
-                            ]['*elements'][
-                                0
-                            ]  # noqa: E501
-                            profile_id = profile_urn.split(':')[-1]
-                            break
-                        except (json.JSONDecodeError, KeyError) as e:
-                            logger.warning(f"JSON parsing error: {e}")
-                            continue
-
-                if not profile_id:
-                    logger.warning('Profile ID not found.')
-                    raise ValueError('Profile ID extraction failed.')
-
-                logger.info(f"Extracted Profile ID: {profile_id}")
-
-                # Navigate to messaging composer
-                target_url = f"https://www.linkedin.com/talent/profile/{profile_id}"  # noqa: E501
-                logger.debug(f"Navigate to {target_url}")
-                driver.get(target_url)
-                time.sleep(random.uniform(10, 20))
-
-                # Wait for the contact info element
-                contact_info = driver.find_element(
-                    By.CLASS_NAME,
-                    'contact-info',
-                )
-
-                # Check if email is saved
-                try:
-                    existing_email = contact_info.find_element(
-                        By.XPATH,
-                        './/span[@data-test-contact-email-address]',
-                    )
-                    logger.debug(f"Email found: {existing_email.text}")
-                except NoSuchElementException:
-                    # If no email, add it
-                    logger.debug(
-                        "No email found. Looking for 'Add email' button...",
-                    )
-                    add_email_button = driver.find_element(
-                        By.XPATH,
-                        ".//button[@class='button-small-muted-tertiary contact-info__add']",  # noqa: E501
-                    )
-                    add_email_button.click()
-                    email_input = driver.find_element(
-                        By.XPATH,
-                        ".//input[@type='email']",
-                    )
-                    email_input.send_keys(profile_email_address)
-                    email_input.send_keys(Keys.ENTER)
-                    logger.debug('Email saved')
-                    time.sleep(random.uniform(4, 7))
-
-                driver.refresh()
-                time.sleep(random.uniform(4, 7))
-
-                # Open message composer
-                email_button = driver.find_element(
-                    By.XPATH,
-                    "//button[contains(@class, 'artdeco-button') and contains(@data-live-test-component, 'message-icon-btn')]",  # noqa: E501
-                )
-                email_button.click()
-                time.sleep(random.uniform(4, 7))
-
-                # Detect if it's InMail or Email
-                send_info = driver.find_element(
-                    By.XPATH,
-                    "//div[contains(@class, 'single-message-composer__trigger-message')]",  # noqa: E501
-                )
-                text_content = send_info.text.strip()
-
-                if 'Send immediately via InMail' in text_content:
-                    logger.info(
-                        'Detected: Send immediately via InMail -> switching to Email',  # noqa: E501
-                    )
-                    settings_button = driver.find_element(
-                        By.XPATH,
-                        "//button[contains(@class, 'single-message-composer__trigger-message-gear-icon')]",  # noqa: E501
-                    )
-                    settings_button.click()
-                    time.sleep(random.uniform(3, 6))
-
-                    # Wait for the modal, switch to Email
-                    modal = WebDriverWait(driver, 10).until(
-                        EC.visibility_of_element_located(
-                            (
-                                By.XPATH,
-                                "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",  # noqa: E501
-                            ),
-                        ),
-                    )
-                    # Click the Email radio label
-                    email_label = WebDriverWait(modal, 10).until(
-                        EC.element_to_be_clickable(
-                            (By.XPATH, ".//label[normalize-space(.)='Email']"),
-                        ),
-                    )
-                    driver.execute_script('arguments[0].click();', email_label)
-                    time.sleep(random.uniform(1, 2))
-
-                    save_button = WebDriverWait(modal, 10).until(
-                        EC.element_to_be_clickable(
-                            (
-                                By.XPATH,
-                                ".//button[.//span[contains(normalize-space(), 'Save')]]",  # noqa: E501
-                            ),
-                        ),
-                    )
-                    driver.execute_script('arguments[0].click();', save_button)
-                    time.sleep(random.uniform(2, 4))
-
-                    # Check for error
-                    try:
-                        error_message_element = driver.find_element(
-                            By.XPATH,
-                            "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",  # noqa: E501
-                        )
-                        if error_message_element.is_displayed():
-                            logger.warning(
-                                'Error: No recipient email found. Switching to InMail instead.',  # noqa: E501
-                            )
-                            # Possibly skip or handle differently
-                            driver.refresh()
-                            time.sleep(random.uniform(4, 7))
-
-                            continue
-                    except NoSuchElementException:
-                        pass
-
-                elif 'Send immediately via Email' in text_content:
-                    logger.info('Detected: Send immediately via Email')
-
-                else:
-                    logger.warning(
-                        'Unknown message mode text. Proceed carefully.',
-                    )
-
-                # Fill in subject
-                subject_input = driver.find_element(
-                    By.CSS_SELECTOR,
-                    "input[aria-label='Message subject'][placeholder='Add a subject']",  # noqa: E501
-                )
-                subject_input.click()
-                subject_input.send_keys(subject)
-
-                # Fill in the message body
-                editor = driver.find_element(
-                    By.CSS_SELECTOR,
-                    ".ql-editor[contenteditable='true']",
-                )
-                editor.click()
-
-                chunk_size = 20
-                for i in range(0, len(email), chunk_size):
-                    editor.send_keys(email[i: i + chunk_size])
-
-                # If control_email_sending, wait for user key press
-                if control_email_sending:
-                    inject_key_listeners(driver)
-                    try:
-                        pressed_key = wait_for_key_signal(
-                            driver,
-                            timeout=300,
-                        )  # 5 min
-                        logger.info(f"Key pressed: {pressed_key}")
-                        if pressed_key == 'Enter':
-                            logger.info('User pressed Enter -> sending email.')
-                        elif pressed_key == 'Backspace':
-                            logger.info('User pressed Backspace -> skipping.')
-                            email_status = 'Skipped'
-                            log_email(
-                                run_id=run_id,
-                                linkedin_profile_url=linkedin_profile,
-                                email_text=email,
-                                email_status=email_status,
-                                error_message='User skipped sending.',
-                                row_number=index,
-                            )
-                            continue
-                        else:
-                            logger.warning('Unrecognized key press.')
-                            email_status = 'Failed'
-                            error_message = 'Unrecognized key press.'
-                            log_email(
-                                run_id=run_id,
-                                linkedin_profile_url=linkedin_profile,
-                                email_text=email,
-                                email_status=email_status,
-                                error_message=error_message,
-                                row_number=index,
-                            )
-                            continue
-                    except TimeoutException:
-                        logger.error('Timeout waiting for user input.')
-                        email_status = 'Failed'
-                        error_message = 'Timeout waiting for user input.'
-                        log_email(
-                            run_id=run_id,
-                            linkedin_profile_url=linkedin_profile,
-                            email_text=email,
-                            email_status=email_status,
-                            error_message=error_message,
-                            row_number=index,
-                        )
-                        continue
-
-                # Send
-                send_button = driver.find_element(
-                    By.CSS_SELECTOR,
-                    'button[data-live-test-messaging-submit-btn]',
-                )
-                if send_button.get_attribute('disabled'):
-                    email_status = 'Failed'
-                    error_message = 'Send button disabled.'
-                    logger.warning('Send button is disabled.')
-                else:
-                    send_button.click()
-                    email_status = 'Sent'
-                    logger.info('Message sent successfully.')
-                    time.sleep(random.uniform(4, 7))
-
-                # Log email result
-                log_email(
-                    run_id=run_id,
-                    linkedin_profile_url=linkedin_profile,
-                    email_text=email,
-                    email_status=email_status,
-                    error_message=error_message,
-                    row_number=index,
-                )
-
-                # Optional: reload or navigate to next.
-                # If you do not need a reload here, you can remove it.
-                driver.refresh()
-                logger.info('Page refreshed.')
-                time.sleep(random.uniform(15, 60))
-
-            except Exception as e:
-                # Per-row error
-                email_status = 'Failed'
-                error_message = str(e)
-                logger.error(
-                    f"Error processing profile {linkedin_profile}: {e}",
-                )  # noqa: E501
-                logger.debug(traceback.format_exc())
-                log_email(
-                    run_id=run_id,
-                    linkedin_profile_url=linkedin_profile,
-                    email_text='',  # or email if defined
-                    email_status=email_status,
-                    error_message=error_message,
-                    row_number=index,
-                )
-                # Attempt reload and continue
-                driver.refresh()
-                logger.info('Page refreshed.')
-                time.sleep(random.uniform(3, 6))
-                continue
 
     finally:
         if driver:
