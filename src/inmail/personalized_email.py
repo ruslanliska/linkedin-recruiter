@@ -63,29 +63,29 @@ def process_chunk_of_rows(
         # === 1) Initialize WebDriver once for this batch ===
         options = uc.ChromeOptions()
         if not visible_mode:
-            options.add_argument('--headless')
+            options.add_argument("--headless")
 
-        options.add_argument('--disable-gpu')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--start-maximized')
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--start-maximized")
         options.add_argument(f"--user-data-dir={get_user_data_dir()}")
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
-            driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
+            driver_executable_path=r"C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe",
         )
-        logger.info('Driver installed')
+        logger.info("Driver installed")
 
         # Optional: stealth, if you want to keep it
         from selenium_stealth import stealth
 
         stealth(
             driver,
-            languages=['en-US', 'en'],
-            vendor='Google Inc.',
-            platform='Win32',
-            webgl_vendor='Intel Inc.',
-            renderer='Intel Iris OpenGL Engine',
+            languages=["en-US", "en"],
+            vendor="Google Inc.",
+            platform="Win32",
+            webgl_vendor="Intel Inc.",
+            renderer="Intel Iris OpenGL Engine",
             fix_hairline=True,
         )
         time.sleep(random.uniform(2, 5))
@@ -96,13 +96,13 @@ def process_chunk_of_rows(
         print(f"{schools=}")
         print(f"{industries=}")
         print(f"{keywords=}")
-        logger.info('ChromeDriver initialized successfully for this batch.')
-        driver.get('https://www.linkedin.com/talent/search')
+        logger.info("ChromeDriver initialized successfully for this batch.")
+        driver.get("https://www.linkedin.com/talent/search")
 
-        logger.info('Search opened')
+        logger.info("Search opened")
         time.sleep(random.uniform(2, 5))
 
-        logger.info('Starting search')
+        logger.info("Starting search")
         if job_titles:
             # Wait for the button to be clickable, then click it.
             WebDriverWait(driver, 10).until(
@@ -113,7 +113,7 @@ def process_chunk_of_rows(
                     ),
                 ),
             ).click()
-            logger.info('Job title clicked')
+            logger.info("Job title clicked")
             for title in job_titles:
                 # Wait for the input to become visible, then send keys
                 wait = WebDriverWait(driver, 5)
@@ -141,7 +141,7 @@ def process_chunk_of_rows(
 
             location_button = wait.until(EC.element_to_be_clickable(locator))
             location_button.click()
-            logger.info('Location clicked')
+            logger.info("Location clicked")
             for location in locations:
                 # Wait for the input to be visible
                 wait = WebDriverWait(driver, 2)
@@ -176,7 +176,7 @@ def process_chunk_of_rows(
                 EC.presence_of_element_located(
                     (
                         By.CSS_SELECTOR,
-                        'span[data-live-test-profile-list-num-custom]',
+                        "span[data-live-test-profile-list-num-custom]",
                     ),
                 ),
             )
@@ -185,7 +185,7 @@ def process_chunk_of_rows(
             logger.info(f"Number of results: {num_results}")
         except TimeoutException:
             logger.error(
-                'Results element not found within the timeout period.',
+                "Results element not found within the timeout period.",
             )
         page = 1
 
@@ -206,48 +206,57 @@ def process_chunk_of_rows(
                     EC.visibility_of(container),
                 )
             except TimeoutException:
-                print('Profile list container not found within the timeout period.')
+                print("Profile list container not found within the timeout period.")
             else:
                 # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
-                profile_items = container.find_elements(By.XPATH, './/li')
+                profile_items = container.find_elements(By.XPATH, ".//li")
                 for profile in profile_items:
                     # Process each profile item (for example, print its text)
                     print(profile.text)
                     print(profile)
                     try:
-                        # Hover over the profile item so the message button becomes visible
+                        # Hover over the profile item so that any hidden buttons become visible
                         ActionChains(driver).move_to_element(profile).perform()
-                        time.sleep(1)  # Wait a moment for the UI to update
-                        
-                        # Now locate the message button within this profile
-                        message_button = profile.find_element(By.CSS_SELECTOR, "button[data-live-test-component='message-icon-btn']")
-                        
-                        # Wait until it's clickable
-                        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-live-test-component='message-icon-btn']")))
-                        
-                        # Try a normal click; if intercepted, fallback to JS click
+                        time.sleep(1)  # Allow UI to update
+
+                        # Attempt to locate the Message button within this profile.
+                        try:
+                            message_button = profile.find_element(
+                                By.XPATH, ".//button[contains(., 'Message')]"
+                            )
+                        except Exception as inner_ex:
+                            print("Message button not found in profile:", profile.text)
+                            continue  # Skip this profile if button not found
+
+                        # Wait until the button is clickable (if necessary)
+                        WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable(message_button)
+                        )
+
+                        # Try a normal click; if that fails, use JavaScript to click
                         try:
                             message_button.click()
-                        except Exception:
-                            driver.execute_script("arguments[0].click();", message_button)
-                        
-                        time.sleep(1)  # Wait after clicking (adjust as needed)
-                    except Exception as e:
-                        print(f"Could not click the message button in a profile: {e}")
+                        except Exception as click_ex:
+                            driver.execute_script(
+                                "arguments[0].click();", message_button
+                            )
 
+                        time.sleep(600)  # Pause briefly after clicking
+                    except Exception as e:
+                        print("Error processing profile:", e)
                 # Wait for the Next button to be clickable (adjust timeout if needed)
                 next_button = WebDriverWait(driver, 10).until(
                     EC.element_to_be_clickable(
                         (
                             By.CSS_SELECTOR,
-                            'a.pagination__quick-link--next[data-test-pagination-next]',
+                            "a.pagination__quick-link--next[data-test-pagination-next]",
                         ),
                     ),
                 )
 
                 # Click the Next button
                 next_button.click()
-                logger.info('Next page')
+                logger.info("Next page")
                 continue
 
             # finally:
@@ -266,18 +275,18 @@ def process_chunk_of_rows(
             try:
                 email_status = None
                 error_message = None
-                linkedin_profile = row['Person Linkedin Url']
+                linkedin_profile = row["Person Linkedin Url"]
                 logger.info(
                     f"Processing row {index}: {linkedin_profile=}",
                 )
 
-                profile_email_address = row['Email']
+                profile_email_address = row["Email"]
                 if pd.isna(profile_email_address):
                     # Guess the email if missing
                     logger.warning(f"Guessing email for row {index}")
-                    first_name = row['First Name'].lower()
-                    last_name = row['Last Name'].lower()
-                    company_slug = slugify_company(row['Company'])
+                    first_name = row["First Name"].lower()
+                    last_name = row["Last Name"].lower()
+                    company_slug = slugify_company(row["Company"])
                     profile_email_address = (
                         f"{first_name}.{last_name}@{company_slug}.com"
                     )
@@ -294,16 +303,16 @@ def process_chunk_of_rows(
                 from bs4 import BeautifulSoup
 
                 full_html = driver.page_source
-                soup = BeautifulSoup(full_html, 'html.parser')
+                soup = BeautifulSoup(full_html, "html.parser")
 
-                desired_tags = ['main']
+                desired_tags = ["main"]
                 text_from_desired_tags = []
                 for tag in soup.find_all(desired_tags):
-                    tag_text = tag.get_text(separator=' ', strip=True)
+                    tag_text = tag.get_text(separator=" ", strip=True)
                     if tag_text:
                         text_from_desired_tags.append(tag_text)
 
-                cleaned_text = '\n'.join(text_from_desired_tags)
+                cleaned_text = "\n".join(text_from_desired_tags)
                 logger.debug(f"Cleaned Text snippet: {cleaned_text[:100]}...")
 
                 # Generate the personal email
@@ -320,27 +329,27 @@ def process_chunk_of_rows(
                     logger.info(f"Email Subject Default: {subject}")
 
                 # Extract profile ID from <code> elements
-                code_elements = driver.find_elements(By.TAG_NAME, 'code')
+                code_elements = driver.find_elements(By.TAG_NAME, "code")
                 profile_id = None
                 for code_element in code_elements:
-                    code_content = code_element.get_attribute('innerHTML')
-                    if 'identityDashProfilesByMemberIdentity' in code_content:
+                    code_content = code_element.get_attribute("innerHTML")
+                    if "identityDashProfilesByMemberIdentity" in code_content:
                         try:
                             data_json = json.loads(code_content)
-                            profile_urn = data_json['data']['data'][
-                                'identityDashProfilesByMemberIdentity'
-                            ]['*elements'][
+                            profile_urn = data_json["data"]["data"][
+                                "identityDashProfilesByMemberIdentity"
+                            ]["*elements"][
                                 0
                             ]  # noqa: E501
-                            profile_id = profile_urn.split(':')[-1]
+                            profile_id = profile_urn.split(":")[-1]
                             break
                         except (json.JSONDecodeError, KeyError) as e:
                             logger.warning(f"JSON parsing error: {e}")
                             continue
 
                 if not profile_id:
-                    logger.warning('Profile ID not found.')
-                    raise ValueError('Profile ID extraction failed.')
+                    logger.warning("Profile ID not found.")
+                    raise ValueError("Profile ID extraction failed.")
 
                 logger.info(f"Extracted Profile ID: {profile_id}")
 
@@ -353,14 +362,14 @@ def process_chunk_of_rows(
                 # Wait for the contact info element
                 contact_info = driver.find_element(
                     By.CLASS_NAME,
-                    'contact-info',
+                    "contact-info",
                 )
 
                 # Check if email is saved
                 try:
                     existing_email = contact_info.find_element(
                         By.XPATH,
-                        './/span[@data-test-contact-email-address]',
+                        ".//span[@data-test-contact-email-address]",
                     )
                     logger.debug(f"Email found: {existing_email.text}")
                 except NoSuchElementException:
@@ -379,7 +388,7 @@ def process_chunk_of_rows(
                     )
                     email_input.send_keys(profile_email_address)
                     email_input.send_keys(Keys.ENTER)
-                    logger.debug('Email saved')
+                    logger.debug("Email saved")
                     time.sleep(random.uniform(4, 7))
 
                 driver.refresh()
@@ -400,9 +409,9 @@ def process_chunk_of_rows(
                 )
                 text_content = send_info.text.strip()
 
-                if 'Send immediately via InMail' in text_content:
+                if "Send immediately via InMail" in text_content:
                     logger.info(
-                        'Detected: Send immediately via InMail -> switching to Email',  # noqa: E501
+                        "Detected: Send immediately via InMail -> switching to Email",  # noqa: E501
                     )
                     settings_button = driver.find_element(
                         By.XPATH,
@@ -426,7 +435,7 @@ def process_chunk_of_rows(
                             (By.XPATH, ".//label[normalize-space(.)='Email']"),
                         ),
                     )
-                    driver.execute_script('arguments[0].click();', email_label)
+                    driver.execute_script("arguments[0].click();", email_label)
                     time.sleep(random.uniform(1, 2))
 
                     save_button = WebDriverWait(modal, 10).until(
@@ -437,7 +446,7 @@ def process_chunk_of_rows(
                             ),
                         ),
                     )
-                    driver.execute_script('arguments[0].click();', save_button)
+                    driver.execute_script("arguments[0].click();", save_button)
                     time.sleep(random.uniform(2, 4))
 
                     # Check for error
@@ -448,7 +457,7 @@ def process_chunk_of_rows(
                         )
                         if error_message_element.is_displayed():
                             logger.warning(
-                                'Error: No recipient email found. Switching to InMail instead.',  # noqa: E501
+                                "Error: No recipient email found. Switching to InMail instead.",  # noqa: E501
                             )
                             # Possibly skip or handle differently
                             driver.refresh()
@@ -458,12 +467,12 @@ def process_chunk_of_rows(
                     except NoSuchElementException:
                         pass
 
-                elif 'Send immediately via Email' in text_content:
-                    logger.info('Detected: Send immediately via Email')
+                elif "Send immediately via Email" in text_content:
+                    logger.info("Detected: Send immediately via Email")
 
                 else:
                     logger.warning(
-                        'Unknown message mode text. Proceed carefully.',
+                        "Unknown message mode text. Proceed carefully.",
                     )
 
                 # Fill in subject
@@ -483,7 +492,7 @@ def process_chunk_of_rows(
 
                 chunk_size = 20
                 for i in range(0, len(email), chunk_size):
-                    editor.send_keys(email[i: i + chunk_size])
+                    editor.send_keys(email[i : i + chunk_size])
 
                 # If control_email_sending, wait for user key press
                 if control_email_sending:
@@ -494,24 +503,24 @@ def process_chunk_of_rows(
                             timeout=300,
                         )  # 5 min
                         logger.info(f"Key pressed: {pressed_key}")
-                        if pressed_key == 'Enter':
-                            logger.info('User pressed Enter -> sending email.')
-                        elif pressed_key == 'Backspace':
-                            logger.info('User pressed Backspace -> skipping.')
-                            email_status = 'Skipped'
+                        if pressed_key == "Enter":
+                            logger.info("User pressed Enter -> sending email.")
+                        elif pressed_key == "Backspace":
+                            logger.info("User pressed Backspace -> skipping.")
+                            email_status = "Skipped"
                             log_email(
                                 run_id=run_id,
                                 linkedin_profile_url=linkedin_profile,
                                 email_text=email,
                                 email_status=email_status,
-                                error_message='User skipped sending.',
+                                error_message="User skipped sending.",
                                 row_number=index,
                             )
                             continue
                         else:
-                            logger.warning('Unrecognized key press.')
-                            email_status = 'Failed'
-                            error_message = 'Unrecognized key press.'
+                            logger.warning("Unrecognized key press.")
+                            email_status = "Failed"
+                            error_message = "Unrecognized key press."
                             log_email(
                                 run_id=run_id,
                                 linkedin_profile_url=linkedin_profile,
@@ -522,9 +531,9 @@ def process_chunk_of_rows(
                             )
                             continue
                     except TimeoutException:
-                        logger.error('Timeout waiting for user input.')
-                        email_status = 'Failed'
-                        error_message = 'Timeout waiting for user input.'
+                        logger.error("Timeout waiting for user input.")
+                        email_status = "Failed"
+                        error_message = "Timeout waiting for user input."
                         log_email(
                             run_id=run_id,
                             linkedin_profile_url=linkedin_profile,
@@ -538,16 +547,16 @@ def process_chunk_of_rows(
                 # Send
                 send_button = driver.find_element(
                     By.CSS_SELECTOR,
-                    'button[data-live-test-messaging-submit-btn]',
+                    "button[data-live-test-messaging-submit-btn]",
                 )
-                if send_button.get_attribute('disabled'):
-                    email_status = 'Failed'
-                    error_message = 'Send button disabled.'
-                    logger.warning('Send button is disabled.')
+                if send_button.get_attribute("disabled"):
+                    email_status = "Failed"
+                    error_message = "Send button disabled."
+                    logger.warning("Send button is disabled.")
                 else:
                     send_button.click()
-                    email_status = 'Sent'
-                    logger.info('Message sent successfully.')
+                    email_status = "Sent"
+                    logger.info("Message sent successfully.")
                     time.sleep(random.uniform(4, 7))
 
                 # Log email result
@@ -563,12 +572,12 @@ def process_chunk_of_rows(
                 # Optional: reload or navigate to next.
                 # If you do not need a reload here, you can remove it.
                 driver.refresh()
-                logger.info('Page refreshed.')
+                logger.info("Page refreshed.")
                 time.sleep(random.uniform(15, 60))
 
             except Exception as e:
                 # Per-row error
-                email_status = 'Failed'
+                email_status = "Failed"
                 error_message = str(e)
                 logger.error(
                     f"Error processing profile {linkedin_profile}: {e}",
@@ -577,21 +586,21 @@ def process_chunk_of_rows(
                 log_email(
                     run_id=run_id,
                     linkedin_profile_url=linkedin_profile,
-                    email_text='',  # or email if defined
+                    email_text="",  # or email if defined
                     email_status=email_status,
                     error_message=error_message,
                     row_number=index,
                 )
                 # Attempt reload and continue
                 driver.refresh()
-                logger.info('Page refreshed.')
+                logger.info("Page refreshed.")
                 time.sleep(random.uniform(3, 6))
                 continue
 
     finally:
         if driver:
             driver.quit()
-            logger.info('WebDriver has been closed for this batch.')
+            logger.info("WebDriver has been closed for this batch.")
 
 
 def run_selenium_automation_with_retries(
@@ -609,7 +618,7 @@ def run_selenium_automation_with_retries(
     keywords: list[str] = None,
 ):
     logger.info(f"Run ID: {run_id} - Automation started (with retries).")
-    run_status = 'Running'
+    run_status = "Running"
     error_message = None
     print(f"{job_titles=}")
     print(f"{locations=}")
@@ -641,14 +650,14 @@ def run_selenium_automation_with_retries(
         logger.debug(traceback.format_exc())
 
     except KeyboardInterrupt:
-        run_status = 'Interrupted'
-        error_message = 'Run was interrupted by the user (KeyboardInterrupt).'
+        run_status = "Interrupted"
+        error_message = "Run was interrupted by the user (KeyboardInterrupt)."
         logger.warning(error_message)
         if callback:
             callback(success=False, message=error_message)
 
     except Exception as e:
-        run_status = 'Failed'
+        run_status = "Failed"
         error_message = f"An unexpected error occurred: {e}"
         logger.error(error_message)
         logger.debug(traceback.format_exc())
@@ -656,8 +665,8 @@ def run_selenium_automation_with_retries(
             callback(success=False, message=error_message)
 
     finally:
-        if run_id and run_status not in ['Completed', 'Failed', 'Interrupted']:
-            run_status = 'Failed'
-            error_message = 'Run ended unexpectedly.'
+        if run_id and run_status not in ["Completed", "Failed", "Interrupted"]:
+            run_status = "Failed"
+            error_message = "Run ended unexpectedly."
             if callback:
                 callback(success=False, message=error_message)
