@@ -312,7 +312,6 @@ def process_chunk_of_rows(
                             print("New tab title:", driver.title)
 
                             # Pause to observe new tab actions
-                            import time
                             time.sleep(2)
 
                             # Close the new tab and switch back to the original window
