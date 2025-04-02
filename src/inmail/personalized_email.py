@@ -287,6 +287,27 @@ def process_chunk_of_rows(
                         print(all_text)
                         print('To pause')
                         time.sleep(10)  # Pause briefly after clicking
+                        # Save the current window handle
+                        original_window = driver.current_window_handle
+
+                        # Open the URL in a new tab using JavaScript
+                        driver.execute_script("window.open(arguments[0], '_blank');", profile_href)
+
+                        # Wait for the new window/tab to open (ensuring there are two windows)
+                        WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(2))
+
+                        # Identify the new window handle and switch to it
+                        new_window = [handle for handle in driver.window_handles if handle != original_window][0]
+                        driver.switch_to.window(new_window)
+
+                        # Now you can perform any actions in the new tab
+                        print("New tab title:", driver.title)
+                        time.sleep(2)  # Do your operations here
+
+                        # Close the new tab and switch back to the original tab
+                        driver.close()
+                        driver.switch_to.window(original_window)
+
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
                         dismiss_button = WebDriverWait(driver, 10).until(
                             EC.element_to_be_clickable(
