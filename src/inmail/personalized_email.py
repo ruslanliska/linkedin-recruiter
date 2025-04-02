@@ -212,7 +212,9 @@ def process_chunk_of_rows(
                 print('Profile list container not found within the timeout period.')
             else:
                 # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
-                profile_items = container.find_elements(By.XPATH, './/li')
+                profile_items = container.find_elements(
+                    By.XPATH, ".//li[.//a[@data-test-link-to-profile-link='true']]"
+                )
                 for profile in profile_items:
                     print(f"{profile.text=}")
                     continue
