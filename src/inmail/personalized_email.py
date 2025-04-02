@@ -254,9 +254,27 @@ def process_chunk_of_rows(
                         recipient_profile_elem = driver.find_element(
                             By.CSS_SELECTOR, 'div.recipient-profile',
                         )
+                        # Within that container, locate and click the "Public profile" button
+                        public_profile_button = recipient_profile_elem.find_element(
+                            By.CSS_SELECTOR, "button.topcard-condensed__bing-button"
+                        )
+                        public_profile_button.click()
+
+                        # Now wait for the hovercard anchor to appear.
+                        # We can target it by its stable attribute: data-test-public-profile-link
+                        profile_link_elem = WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located(
+                                (By.CSS_SELECTOR, "a[data-test-public-profile-link]")
+                            )
+                        )
+
+                        # Extract the href
+                        profile_href = profile_link_elem.get_attribute("href")
+                        print("Profile URL:", profile_href)
                         name_elem = recipient_profile_elem.find_element(By.CSS_SELECTOR, "div.artdeco-entity-lockup__title")
                         name = name_elem.text.strip()
                         print("Name:", name)
+
 
                         # Extract the company name from the container
                         company_elem = recipient_profile_elem.find_element(By.CSS_SELECTOR, "a.position-item__company-link")
@@ -267,8 +285,8 @@ def process_chunk_of_rows(
                         all_text = recipient_profile_elem.text
                         print('Extracted text:')
                         print(all_text)
-
-                        time.sleep(15)  # Pause briefly after clicking
+                        print('To pause')
+                        time.sleep(10)  # Pause briefly after clicking
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
                         dismiss_button = WebDriverWait(driver, 10).until(
                             EC.element_to_be_clickable(
@@ -277,6 +295,7 @@ def process_chunk_of_rows(
                         )
                         dismiss_button.click()
                         print('dismiss_button clicked')
+                        print('To continue next profile')
 
                         continue
                     except Exception as e:
