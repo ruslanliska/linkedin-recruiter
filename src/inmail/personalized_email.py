@@ -194,6 +194,9 @@ def process_chunk_of_rows(
 
         for page in range(1, num_results):
             logger.info(f"Processing page {page} of results")
+            time.sleep(random.uniform(3, 5))
+            current_link = driver.current_url
+            print('Current URL:', current_link)
             try:
                 # Wait until the profile list container is present using the updated class selector
                 container = WebDriverWait(driver, 15).until(
@@ -217,6 +220,7 @@ def process_chunk_of_rows(
                 )
                 for profile in profile_items:
                     print(f"{profile.text=}")
+                    continue
                     # Process each profile item (for example, print its text)
                     try:
                         # Hover over the profile item so that any hidden buttons become visible
@@ -256,7 +260,7 @@ def process_chunk_of_rows(
                         )
                         # Within that container, locate and click the "Public profile" button
                         public_profile_button = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR, "button.topcard-condensed__bing-button"
+                            By.CSS_SELECTOR, 'button.topcard-condensed__bing-button',
                         )
                         public_profile_button.click()
 
@@ -264,22 +268,24 @@ def process_chunk_of_rows(
                         # We can target it by its stable attribute: data-test-public-profile-link
                         profile_link_elem = WebDriverWait(driver, 10).until(
                             EC.presence_of_element_located(
-                                (By.CSS_SELECTOR, "a[data-test-public-profile-link]")
-                            )
+                                (By.CSS_SELECTOR,
+                                 'a[data-test-public-profile-link]'),
+                            ),
                         )
 
                         # Extract the href
-                        profile_href = profile_link_elem.get_attribute("href")
-                        print("Profile URL:", profile_href)
-                        name_elem = recipient_profile_elem.find_element(By.CSS_SELECTOR, "div.artdeco-entity-lockup__title")
+                        profile_href = profile_link_elem.get_attribute('href')
+                        print('Profile URL:', profile_href)
+                        name_elem = recipient_profile_elem.find_element(
+                            By.CSS_SELECTOR, 'div.artdeco-entity-lockup__title')
                         name = name_elem.text.strip()
-                        print("Name:", name)
-
+                        print('Name:', name)
 
                         # Extract the company name from the container
-                        company_elem = recipient_profile_elem.find_element(By.CSS_SELECTOR, "a.position-item__company-link")
+                        company_elem = recipient_profile_elem.find_element(
+                            By.CSS_SELECTOR, 'a.position-item__company-link')
                         company_name = company_elem.text.strip()
-                        print("Company Name:", company_name)
+                        print('Company Name:', company_name)
 
                         # Extract its text (Selenium automatically returns visible text)
                         all_text = recipient_profile_elem.text
@@ -288,35 +294,42 @@ def process_chunk_of_rows(
                         print('To pause')
                         time.sleep(10)  # Pause briefly after clicking
                         # Save the current window handle
-                        if not profile_href or not profile_href.startswith("http"):
-                            print("Invalid URL:", profile_href)
+                        if not profile_href or not profile_href.startswith('http'):
+                            print('Invalid URL:', profile_href)
                         else:
                             # Save the current (original) window handle.
                             original_window = driver.current_window_handle
 
                             # Open the profile URL in a new tab.
-                            driver.execute_script("window.open(arguments[0], '_blank');", profile_href)
-                            print("Executed window.open with URL:", profile_href)
+                            driver.execute_script(
+                                "window.open(arguments[0], '_blank');", profile_href)
+                            print('Executed window.open with URL:', profile_href)
 
                             # Wait until a new window is available.
-                            WebDriverWait(driver, 20).until(lambda d: len(d.window_handles) > 1)
-                            print("Window handles:", driver.window_handles)
+                            WebDriverWait(driver, 20).until(
+                                lambda d: len(d.window_handles) > 1)
+                            print('Window handles:', driver.window_handles)
 
                             # Identify and switch to the new window.
-                            new_window = [handle for handle in driver.window_handles if handle != original_window][0]
+                            new_window = [
+                                handle for handle in driver.window_handles if handle != original_window][0]
                             driver.switch_to.window(new_window)
-                            print("Switched to new tab. Current URL:", driver.current_url)
+                            print('Switched to new tab. Current URL:',
+                                  driver.current_url)
 
                             # Wait until the new page is fully loaded.
-                            WebDriverWait(driver, 20).until(lambda d: d.execute_script("return document.readyState") == "complete")
-                            print("New tab title:", driver.title)
+                            WebDriverWait(driver, 20).until(lambda d: d.execute_script(
+                                'return document.readyState') == 'complete')
+                            print('New tab title:', driver.title)
 
-                            time.sleep(2)  # Pause to observe the new tab if needed
+                            # Pause to observe the new tab if needed
+                            time.sleep(2)
 
                             # Close the new tab and return to the original window.
                             driver.close()
                             driver.switch_to.window(original_window)
-                            print("Switched back to original window. Current URL:", driver.current_url)
+                            print(
+                                'Switched back to original window. Current URL:', driver.current_url)
 
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
                         dismiss_button = WebDriverWait(driver, 10).until(
@@ -345,6 +358,7 @@ def process_chunk_of_rows(
 
                 # Click the Next button
                 next_button.click()
+                time.sleep(random.uniform(6, 10))
                 logger.info('Next page')
                 continue
 
