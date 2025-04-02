@@ -215,6 +215,10 @@ def process_chunk_of_rows(
                 print('Profile list container not found within the timeout period.')
             else:
                 # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
+                driver.execute_script("window.scrollBy({top: window.innerHeight, left: 0, behavior: 'smooth'});")
+                print('Scroll performed')
+                time.sleep(random.uniform(3, 5))
+
                 profile_items = container.find_elements(
                     By.XPATH, ".//li[.//a[@data-test-link-to-profile-link='true']]",
                 )
