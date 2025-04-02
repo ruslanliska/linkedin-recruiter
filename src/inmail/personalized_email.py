@@ -215,6 +215,8 @@ def process_chunk_of_rows(
                 for profile in profile_items:
                     # Process each profile item (for example, print its text)
                     print(profile.text)
+                    print(profile)
+                    time.sleep(600)
 
                 # Wait for the Next button to be clickable (adjust timeout if needed)
                 next_button = WebDriverWait(driver, 10).until(
