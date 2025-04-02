@@ -50,7 +50,6 @@ def process_chunk_of_rows(
     skills_assessments: list[str] = None,
     companies: list[str] = None,
     schools: list[str] = None,
-    year_of_graduation: list[str] = None,
     industries: list[str] = None,
     keywords: list[str] = None,
 ):
@@ -95,7 +94,6 @@ def process_chunk_of_rows(
         print(f"{skills_assessments=}")
         print(f"{companies=}")
         print(f"{schools=}")
-        print(f"{year_of_graduation=}")
         print(f"{industries=}")
         print(f"{keywords=}")
         logger.info('ChromeDriver initialized successfully for this batch.')
@@ -588,7 +586,6 @@ def run_selenium_automation_with_retries(
     skills_assessments: list[str] = None,
     companies: list[str] = None,
     schools: list[str] = None,
-    year_of_graduation: list[str] = None,
     industries: list[str] = None,
     keywords: list[str] = None,
 ):
@@ -600,7 +597,6 @@ def run_selenium_automation_with_retries(
     print(f"{skills_assessments=}")
     print(f"{companies=}")
     print(f"{schools=}")
-    print(f"{year_of_graduation=}")
     print(f"{industries=}")
     print(f"{keywords=}")
     try:
@@ -615,7 +611,6 @@ def run_selenium_automation_with_retries(
             skills_assessments=skills_assessments,
             companies=companies,
             schools=schools,
-            year_of_graduation=year_of_graduation,
             industries=industries,
             keywords=keywords,
         )

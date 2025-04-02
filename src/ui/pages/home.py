@@ -36,7 +36,6 @@ class HomePage(ttk.Frame):
         self.skills_assessments_var = ttk.StringVar()
         self.companies_var = ttk.StringVar()
         self.schools_var = ttk.StringVar()
-        self.year_of_graduation_var = ttk.StringVar()
         self.industries_var = ttk.StringVar()
         self.keywords_var = ttk.StringVar()
         self.create_widgets()
@@ -343,44 +342,6 @@ class HomePage(ttk.Frame):
         info_button_schools.grid(row=11, column=4, sticky='w', padx=5, pady=10)
 
         # -----------------------------
-        # Row 12: Year of Graduation
-        # -----------------------------
-        label_graduation = ttk.Label(
-            form,
-            text='Year of Graduation:',
-            font=('Helvetica', 12),
-        )
-        label_graduation.grid(row=12, column=0, sticky='e', padx=5, pady=10)
-
-        entry_graduation = ttk.Entry(
-            form,
-            textvariable=self.year_of_graduation_var,
-            width=40,
-        )
-        entry_graduation.grid(
-            row=12,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_graduation = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_graduation.grid(
-            row=12,
-            column=4,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-
-        # -----------------------------
         # Row 13: Industries
         # -----------------------------
         label_industries = ttk.Label(
@@ -571,9 +532,6 @@ class HomePage(ttk.Frame):
         )
         companies = proccess_search_variable(self.companies_var.get())
         schools = proccess_search_variable(self.schools_var.get())
-        year_of_graduation = proccess_search_variable(
-            self.year_of_graduation_var.get(),
-        )
         industries = proccess_search_variable(self.industries_var.get())
         keywords = proccess_search_variable(self.keywords_var.get())
         print(f"{job_titles=}")
@@ -581,7 +539,6 @@ class HomePage(ttk.Frame):
         print(f"{skills_assessments=}")
         print(f"{companies=}")
         print(f"{schools=}")
-        print(f"{year_of_graduation=}")
         print(f"{industries=}")
         print(f"{keywords=}")
         # We run everything in a separate thread
@@ -597,7 +554,6 @@ class HomePage(ttk.Frame):
                 skills_assessments,
                 companies,
                 schools,
-                year_of_graduation,
                 industries,
                 keywords,
             ),
@@ -616,7 +572,6 @@ class HomePage(ttk.Frame):
         skills_assessments,
         companies,
         schools,
-        year_of_graduation,
         industries,
         keywords,
     ):
@@ -633,7 +588,6 @@ class HomePage(ttk.Frame):
         print(f"{skills_assessments=}")
         print(f"{companies=}")
         print(f"{schools=}")
-        print(f"{year_of_graduation=}")
         print(f"{industries=}")
         print(f"{keywords=}")
         try:
@@ -657,7 +611,6 @@ class HomePage(ttk.Frame):
                 skills_assessments=skills_assessments,
                 companies=companies,
                 schools=schools,
-                year_of_graduation=year_of_graduation,
                 industries=industries,
                 keywords=keywords,
             )
