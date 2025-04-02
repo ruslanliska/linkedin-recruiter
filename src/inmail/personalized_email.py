@@ -215,34 +215,26 @@ def process_chunk_of_rows(
                     print(profile.text)
                     print(profile)
                     try:
-                        # Within each profile, locate the message button using its attribute
-                        message_button = profile.find_element(
-                            By.CSS_SELECTOR, "button[data-live-test-component='message-icon-btn']",
-                        )
-
-                        # Scroll the button into view if needed
-                        driver.execute_script(
-                            'arguments[0].scrollIntoView(true);', message_button,
-                        )
-
-                        # Wait until the button is clickable
-                        WebDriverWait(driver, 10).until(
-                            EC.element_to_be_clickable(
-                                (By.CSS_SELECTOR,
-                                 "button[data-live-test-component='message-icon-btn']"),
-                            ),
-                        )
-
-                        # Click the button
-                        message_button.click()
-                        logger.info('Message button clicked')
-                        # Optionally, wait a moment for any subsequent actions (like a modal popup) to load
+                        # Locate the message button within the profile
+                        message_button = profile.find_element(By.CSS_SELECTOR, "button[data-live-test-component='message-icon-btn']")
+                        
+                        # Scroll the button into view
+                        driver.execute_script("arguments[0].scrollIntoView(true);", message_button)
+                        
+                        # Wait for the button to be clickable
+                        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-live-test-component='message-icon-btn']")))
+                        
+                        # Attempt a normal click
+                        try:
+                            message_button.click()
+                        except Exception as click_ex:
+                            # If intercepted, use JS click as a fallback
+                            driver.execute_script("arguments[0].click();", message_button)
+                        
+                        # Optionally, wait after clicking before processing the next profile
                         time.sleep(600)
                     except Exception as e:
-                        print(
-                            f"Could not click the message button in a profile: {
-                                e}",
-                        )
+                        print(f"Could not click the message button in a profile: {e}")
 
                 # Wait for the Next button to be clickable (adjust timeout if needed)
                 next_button = WebDriverWait(driver, 10).until(
