@@ -405,7 +405,7 @@ def process_chunk_of_rows(
                     logger.info(f"Extracted Profile ID: {profile_id}")
                     # Navigate to messaging composer
                     target_url = f"https://www.linkedin.com/talent/profile/{profile_id}"  # noqa: E501
-                    logger.debug(f"Navigate to {target_url}")
+                    logger.info(f"Navigate to {target_url}")
                     driver.get(target_url)
                     time.sleep(random.uniform(10, 20))
                     # Wait for the contact info element
@@ -419,10 +419,10 @@ def process_chunk_of_rows(
                             By.XPATH,
                             './/span[@data-test-contact-email-address]',
                         )
-                        logger.debug(f"Email found: {existing_email.text}")
+                        logger.info(f"Email found: {existing_email.text}")
                     except NoSuchElementException:
                         # If no email, add it
-                        logger.debug(
+                        logger.info(
                             "No email found. Looking for 'Add email' button...",
                         )
                         add_email_button = driver.find_element(
@@ -436,7 +436,7 @@ def process_chunk_of_rows(
                         )
                         email_input.send_keys(profile_email_address)
                         email_input.send_keys(Keys.ENTER)
-                        logger.debug('Email saved')
+                        logger.info('Email saved')
                         time.sleep(random.uniform(4, 7))
 
                     driver.refresh()
@@ -550,7 +550,7 @@ def process_chunk_of_rows(
                         error_message = 'Send button disabled.'
                         logger.warning('Send button is disabled.')
                     else:
-                        send_button.click()
+                        # send_button.click()
                         email_status = 'Sent'
                         logger.info('Message sent successfully.')
                         time.sleep(random.uniform(4, 7))
