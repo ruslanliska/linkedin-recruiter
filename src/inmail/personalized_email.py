@@ -248,10 +248,22 @@ def process_chunk_of_rows(
                         )
 
                         # Get the visible text from the element
-                        url = element.text
-                        print("Extracted url:", url)
-                        response = requests.get(url)
+                        # Wait for the hover card container to be present in the DOM
+                        hovercard = WebDriverWait(driver, 15).until(
+                            EC.presence_of_element_located(
+                                (By.ID, "artdeco-hoverable-artdeco-gen-99")
+                            )
+                        )
 
+                        # Locate the content container and then the anchor element within it
+                        link_element = hovercard.find_element(
+                            By.CSS_SELECTOR, "div.artdeco-hoverable-content__content a"
+                        )
+
+                        # Get the href attribute from the anchor element
+                        profile_href = link_element.get_attribute("href")
+                        print("Profile URL:", profile_href)
+                        response = requests.get(profile_href)
                         if response.status_code == 200:
                             soup = BeautifulSoup(response.text, "html.parser")
 
@@ -269,7 +281,9 @@ def process_chunk_of_rows(
                         time.sleep(15)  # Pause briefly after clicking
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
                         dismiss_button = WebDriverWait(driver, 10).until(
-                            EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Dismiss']"))
+                            EC.element_to_be_clickable(
+                                (By.XPATH, "//button[@aria-label='Dismiss']")
+                            )
                         )
                         dismiss_button.click()
                         print("dismiss_button clicked")
