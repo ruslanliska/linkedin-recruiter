@@ -216,37 +216,47 @@ def process_chunk_of_rows(
             else:
                 # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
                 # Set the increment and pause duration.
-                increment = 10  # pixels per scroll
-                pause = 0.1     # seconds between scrolls
+                increment = 20  # pixels per scroll
+                pause = 0.01  # seconds between scrolls
 
                 # Get the initial scroll height
-                last_height = driver.execute_script("return document.body.scrollHeight")
+                last_height = driver.execute_script(
+                    'return document.body.scrollHeight')
 
                 while True:
                     # Scroll down by the increment
-                    driver.execute_script("window.scrollBy(0, arguments[0]);", increment)
+                    driver.execute_script(
+                        'window.scrollBy(0, arguments[0]);', increment,
+                    )
                     time.sleep(pause)
-                    
+
                     # Optionally, check if new content loaded by comparing heights.
-                    new_height = driver.execute_script("return document.body.scrollHeight")
+                    new_height = driver.execute_script(
+                        'return document.body.scrollHeight',
+                    )
                     if new_height != last_height:
                         last_height = new_height
 
                     # Break condition: for example, if you reached near the bottom.
                     # Here, we stop if we've scrolled within 100 pixels of the bottom.
-                    current_scroll = driver.execute_script("return window.pageYOffset;")
-                    if current_scroll + driver.execute_script("return window.innerHeight;") >= last_height - 100:
+                    current_scroll = driver.execute_script(
+                        'return window.pageYOffset;')
+                    if (
+                        current_scroll
+                        + driver.execute_script('return window.innerHeight;')
+                        >= last_height - 100
+                    ):
                         break
 
-                print("Finished scrolling.")
+                print('Finished scrolling.')
                 time.sleep(random.uniform(3, 5))
 
                 profile_items = container.find_elements(
-                    By.XPATH, ".//li[.//a[@data-test-link-to-profile-link='true']]",
+                    By.XPATH,
+                    ".//li[.//a[@data-test-link-to-profile-link='true']]",
                 )
                 for profile in profile_items:
                     print(f"{profile.text=}")
-                    continue
                     # Process each profile item (for example, print its text)
                     try:
                         # Hover over the profile item so that any hidden buttons become visible
@@ -256,7 +266,8 @@ def process_chunk_of_rows(
                         # Attempt to locate the Message button within this profile.
                         try:
                             message_button = profile.find_element(
-                                By.XPATH, ".//button[contains(., 'Message')]",
+                                By.XPATH,
+                                ".//button[contains(., 'Message')]",
                             )
                         except Exception as inner_ex:
                             print(
@@ -275,18 +286,21 @@ def process_chunk_of_rows(
                             message_button.click()
                         except Exception as click_ex:
                             driver.execute_script(
-                                'arguments[0].click();', message_button,
+                                'arguments[0].click();',
+                                message_button,
                             )
                         print('Message clicked')
                         print(f"{profile.text=}")
                         time.sleep(5)
                         # Locate the element using a CSS selector
                         recipient_profile_elem = driver.find_element(
-                            By.CSS_SELECTOR, 'div.recipient-profile',
+                            By.CSS_SELECTOR,
+                            'div.recipient-profile',
                         )
                         # Within that container, locate and click the "Public profile" button
                         public_profile_button = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR, 'button.topcard-condensed__bing-button',
+                            By.CSS_SELECTOR,
+                            'button.topcard-condensed__bing-button',
                         )
                         public_profile_button.click()
 
@@ -303,13 +317,15 @@ def process_chunk_of_rows(
                         profile_href = profile_link_elem.get_attribute('href')
                         print('Profile URL:', profile_href)
                         name_elem = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR, 'div.artdeco-entity-lockup__title')
+                            By.CSS_SELECTOR, 'div.artdeco-entity-lockup__title',
+                        )
                         name = name_elem.text.strip()
                         print('Name:', name)
 
                         # Extract the company name from the container
                         company_elem = recipient_profile_elem.find_element(
-                            By.CSS_SELECTOR, 'a.position-item__company-link')
+                            By.CSS_SELECTOR, 'a.position-item__company-link',
+                        )
                         company_name = company_elem.text.strip()
                         print('Company Name:', company_name)
 
@@ -317,55 +333,22 @@ def process_chunk_of_rows(
                         all_text = recipient_profile_elem.text
                         print('Extracted text:')
                         print(all_text)
-                        print('To pause')
-                        time.sleep(10)  # Pause briefly after clicking
-                        # Save the current window handle
-                        if not profile_href or not profile_href.startswith('http'):
-                            print('Invalid URL:', profile_href)
-                        else:
-                            # Save the current (original) window handle.
-                            original_window = driver.current_window_handle
-
-                            # Open the profile URL in a new tab.
-                            driver.execute_script(
-                                "window.open(arguments[0], '_blank');", profile_href)
-                            print('Executed window.open with URL:', profile_href)
-
-                            # Wait until a new window is available.
-                            WebDriverWait(driver, 20).until(
-                                lambda d: len(d.window_handles) > 1)
-                            print('Window handles:', driver.window_handles)
-
-                            # Identify and switch to the new window.
-                            new_window = [
-                                handle for handle in driver.window_handles if handle != original_window][0]
-                            driver.switch_to.window(new_window)
-                            print('Switched to new tab. Current URL:',
-                                  driver.current_url)
-
-                            # Wait until the new page is fully loaded.
-                            WebDriverWait(driver, 20).until(lambda d: d.execute_script(
-                                'return document.readyState') == 'complete')
-                            print('New tab title:', driver.title)
-
-                            # Pause to observe the new tab if needed
-                            time.sleep(2)
-
-                            # Close the new tab and return to the original window.
-                            driver.close()
-                            driver.switch_to.window(original_window)
-                            print(
-                                'Switched back to original window. Current URL:', driver.current_url)
+                        print('To profile')
+                        driver.get(profile_href)
+                        print('profile opened')
+                        
 
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
-                        dismiss_button = WebDriverWait(driver, 10).until(
-                            EC.element_to_be_clickable(
-                                (By.XPATH, "//button[@aria-label='Dismiss']"),
-                            ),
-                        )
-                        dismiss_button.click()
-                        print('dismiss_button clicked')
-                        print('To continue next profile')
+                        # dismiss_button = WebDriverWait(driver, 10).until(
+                        #     EC.element_to_be_clickable(
+                        #         (By.XPATH, "//button[@aria-label='Dismiss']"),
+                        #     ),
+                        # )
+                        # dismiss_button.click()
+                        # print('dismiss_button clicked')
+                        # print('To continue next profile')
+                        driver.get(current_link)
+                        time.sleep(10)
 
                         continue
                     except Exception as e:
