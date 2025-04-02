@@ -241,21 +241,17 @@ def process_chunk_of_rows(
                             )
                         print("Message clicked")
 
-                        # Wait for the hover card container to be present in the DOM
-                        hovercard = WebDriverWait(driver, 15).until(
-                            EC.presence_of_element_located(
-                                (By.ID, "artdeco-hoverable-artdeco-gen-99")
+                        try:
+                            hovercard = WebDriverWait(driver, 15).until(
+                                EC.presence_of_element_located((By.ID, "artdeco-hoverable-artdeco-gen-99"))
                             )
-                        )
-
-                        # Locate the content container and then the anchor element within it
-                        link_element = hovercard.find_element(
-                            By.CSS_SELECTOR, "div.artdeco-hoverable-content__content a"
-                        )
-
-                        # Get the href attribute from the anchor element
-                        profile_href = link_element.get_attribute("href")
-                        print("Profile URL:", profile_href)
+                            link_element = hovercard.find_element(
+                                By.CSS_SELECTOR, "div.artdeco-hoverable-content__content a"
+                            )
+                            profile_href = link_element.get_attribute("href")
+                            print("Profile URL:", profile_href)
+                        except Exception as e:
+                            print("Error while locating the profile link:", e)
                         response = requests.get(profile_href)
                         if response.status_code == 200:
                             soup = BeautifulSoup(response.text, "html.parser")
@@ -284,6 +280,8 @@ def process_chunk_of_rows(
                         continue
                     except Exception as e:
                         print("Error processing profile:", e)
+                        continue
+
                 # Wait for the Next button to be clickable (adjust timeout if needed)
                 next_button = WebDriverWait(driver, 10).until(
                     EC.element_to_be_clickable(
