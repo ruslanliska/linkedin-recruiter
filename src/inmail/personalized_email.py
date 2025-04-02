@@ -266,8 +266,6 @@ def process_chunk_of_rows(
                     print(f"{len(profile_items)=}")
                     profile = profile_items[profile_index]
                     print(f'{profile.text=}')
-                    continue
-                    print(f"{profile.text=}")
                     # Process each profile item (for example, print its text)
                     try:
                         # Hover over the profile item so that any hidden buttons become visible
@@ -302,6 +300,7 @@ def process_chunk_of_rows(
                             )
                         print('Message clicked')
                         print(f"{profile.text=}")
+                        print(f"{profile_index=}")
                         time.sleep(5)
                         # Locate the element using a CSS selector
                         recipient_profile_elem = driver.find_element(
