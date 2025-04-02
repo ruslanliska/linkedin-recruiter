@@ -4,7 +4,8 @@ import random
 import socket
 import time
 import traceback
-
+from bs4 import BeautifulSoup
+import requests
 import pandas as pd
 import undetected_chromedriver as uc
 from selenium.common.exceptions import NoSuchElementException
@@ -212,8 +213,6 @@ def process_chunk_of_rows(
                 profile_items = container.find_elements(By.XPATH, ".//li")
                 for profile in profile_items:
                     # Process each profile item (for example, print its text)
-                    print(profile.text)
-                    print(profile)
                     try:
                         # Hover over the profile item so that any hidden buttons become visible
                         ActionChains(driver).move_to_element(profile).perform()
@@ -249,17 +248,31 @@ def process_chunk_of_rows(
                         )
 
                         # Get the visible text from the element
-                        text = element.text
-                        print("Extracted text:", text)
+                        url = element.text
+                        print("Extracted url:", url)
+                        response = requests.get(url)
+
+                        if response.status_code == 200:
+                            soup = BeautifulSoup(response.text, "html.parser")
+
+                            desired_tags = ["main"]
+                            text_from_desired_tags = []
+                            for tag in soup.find_all(desired_tags):
+                                tag_text = tag.get_text(separator=" ", strip=True)
+                                if tag_text:
+                                    text_from_desired_tags.append(tag_text)
+
+                            cleaned_text = "\n".join(text_from_desired_tags)
+                            print(f"Cleaned Text snippet: {cleaned_text[:100]}...")
+                        else:
+                            print("Failed to fetch the page:", response.status_code)
                         time.sleep(15)  # Pause briefly after clicking
                         # Wait until the cancel button (ancestor of the li-icon) is clickable
-                        cancel_button = WebDriverWait(driver, 10).until(
-                            EC.element_to_be_clickable(
-                                (By.XPATH, "//li-icon[@type='cancel-icon']/ancestor::button")
-                            )
+                        dismiss_button = WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Dismiss']"))
                         )
-                        cancel_button.click()
-                        print("Close clicked")
+                        dismiss_button.click()
+                        print("dismiss_button clicked")
 
                         continue
                     except Exception as e:
