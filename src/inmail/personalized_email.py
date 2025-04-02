@@ -252,6 +252,15 @@ def process_chunk_of_rows(
                         text = element.text
                         print("Extracted text:", text)
                         time.sleep(15)  # Pause briefly after clicking
+                        # Wait until the cancel button (ancestor of the li-icon) is clickable
+                        cancel_button = WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable(
+                                (By.XPATH, "//li-icon[@type='cancel-icon']/ancestor::button")
+                            )
+                        )
+                        cancel_button.click()
+                        print("Close clicked")
+
                         continue
                     except Exception as e:
                         print("Error processing profile:", e)
