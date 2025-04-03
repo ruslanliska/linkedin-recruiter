@@ -111,6 +111,38 @@ class HomePage(ttk.Frame):
             padx=5,
             pady=10,
         )
+        # -----------------------------
+        # Row 5: Reference Email (ScrolledText)
+        # -----------------------------
+        label_reference_email = ttk.Label(
+            form,
+            text='Reference Email:',
+            font=('Helvetica', 12),
+        )
+        label_reference_email.grid(
+            row=5,
+            column=0,
+            sticky='ne',
+            padx=5,
+            pady=10,
+        )
+
+        self.reference_email_text = ScrolledText(
+            form,
+            wrap='word',
+            width=50,
+            height=10,
+            font=('Helvetica', 12),
+        )
+        self.reference_email_text.grid(
+            row=5,
+            column=1,
+            sticky='nsew',
+            padx=5,
+            pady=10,
+            columnspan=4,
+        )
+        self.reference_email_text.configure(state='normal')
 
         # -----------------------------
         # Visible Mode Toggle
