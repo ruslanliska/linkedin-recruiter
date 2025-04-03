@@ -102,37 +102,38 @@ def process_chunk_of_rows(
 
         logger.info('Starting search')
         if job_titles:
-            # Locate the facet section
+            # Locate the facet section that contains job titles
             facet_section = WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "section.search-facet"))
             )
-
-            # Hover over the facet section to trigger any dynamic expansion
+            print('facet_section located')
+            # Hover over the facet section to trigger dynamic content if necessary
             ActionChains(driver).move_to_element(facet_section).perform()
             time.sleep(1)  # Allow time for dynamic content to load
-
-            # Now try to locate and click the add button
+            print('facet_section hovered')
+            # Locate and click the "Add Job titles or boolean" button
             add_button = WebDriverWait(driver, 15).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, "button.facet-edit-button[data-view-name='search-facet-add']"))
             )
             driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", add_button)
             add_button.click()
-            logger.info('Job title clicked')
+            logger.info('Job title facet opened.')
+
+            # Iterate through job_titles and enter each title
             for title in job_titles:
-                # Wait for the input to become visible, then send keys
-                wait = WebDriverWait(driver, 5)
-                input_field = wait.until(
+                # Wait until the input field becomes visible within the facet
+                input_field = WebDriverWait(driver, 10).until(
                     EC.visibility_of_element_located(
-                        (
-                            By.CSS_SELECTOR,
-                            "input.artdeco-typeahead__input.ts-common-typeahead__input[placeholder*='job title']",
-                        ),
-                    ),
+                        (By.CSS_SELECTOR, "input.artdeco-typeahead__input.ts-common-typeahead__input[placeholder*='job title']")
+                    )
                 )
-                input_field.clear()  # optional, if you want to clear existing text
+                input_field.clear()  # Clear any existing text
                 input_field.send_keys(title)
                 input_field.send_keys(Keys.ENTER)
-                time.sleep(random.uniform(1, 3))
+                logger.info(f"Submitted job title: {title}")
+                time.sleep(random.uniform(1, 3))  # Pause between entries
+
+            # Send ESCAPE to close any open dropdown or suggestions
             input_field.send_keys(Keys.ESCAPE)
 
         if locations:
