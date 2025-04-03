@@ -564,9 +564,8 @@ def process_chunk_of_rows(
                     profile_end_time = time.perf_counter()
                     # Calculate and print the elapsed time
                     profile_elapsed_time = profile_end_time - profile_start_time
-                    logger.info(f"Code execution took {
-                                profile_elapsed_time:.6f
-                    } seconds.")
+                    print(f"Code execution took {
+                          profile_elapsed_time:.6f} seconds.")
 
                     continue
                 except Exception as e:
@@ -588,9 +587,7 @@ def process_chunk_of_rows(
             page_end_time = time.perf_counter()
             # Calculate and print the elapsed time
             page_elapsed_time = page_end_time - page_start_time
-            logger.info(f"Code execution took {
-                        page_elapsed_time:.6f
-            } seconds.")
+            print(f"Code execution took {page_elapsed_time:.6f} seconds.")
             time.sleep(random.uniform(6, 10))
             logger.info('Next page')
             continue
