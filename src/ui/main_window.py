@@ -2,7 +2,7 @@
 import logging
 import os
 import sys
-from time import time
+import time
 from tkinter import messagebox
 
 import ttkbootstrap as ttk

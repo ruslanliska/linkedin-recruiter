@@ -167,53 +167,42 @@ def process_chunk_of_rows(
                 # Press Enter
                 location_field.send_keys(Keys.ENTER)
             location_field.send_keys(Keys.ESCAPE)
-        if past_companies or job_functions or company_sizes or seniority:
-            print('advanced search')
-            advanced_search_btn = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable(
-                    (
-                        By.CSS_SELECTOR,
-                        'a[data-live-test-global-search-advanced-btn]',
-                    ),
-                ),
-            )
-            advanced_search_btn.click()
-            time.sleep(random.uniform(5, 7))
-            logger.info('Advanced search clicked')
-            try:
-                if past_companies:
-                    logger.info(f"Processing {past_companies=}")
-                if job_functions:
-                    logger.info(f"Processing {job_functions=}")
-                if company_sizes:
-                    logger.info(f"Processing {company_sizes=}")
-                if seniority:
-                    logger.info(f"Processing {seniority=}")
-                    # Wait until the Seniority facet's plus button is clickable and then click it.
-                    seniority_plus_button = WebDriverWait(driver, 15).until(
-                        EC.element_to_be_clickable(
-                            (
-                                By.XPATH,
-                                "//section[contains(@class, 'search-facet') and .//h3[contains(text(),'Seniority')]]"
-                                "//button[contains(@class, 'facet-edit-button') and .//li-icon[@type='plus-icon']]",
-                            ),
-                        ),
-                    )
-                    seniority_plus_button.click()
-                    logger.info('Seniority plus button clicked')
-            finally:
-                # Wait for the search button to be clickable
-                search_button = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable(
-                        (
-                            By.CSS_SELECTOR,
-                            'button.button-medium-primary.advanced-search__header--actions-primary[data-live-test-save-advanced-button]',
-                        ),
-                    ),
-                )
-                search_button.click()
-                logger.info('Search button clicked')
-                time.sleep(random.uniform(2, 5))
+        # if past_companies or job_functions or company_sizes or seniority:
+        #     print('advanced search')
+        #     advanced_search_btn = WebDriverWait(driver, 10).until(
+        #         EC.element_to_be_clickable(
+        #             (
+        #                 By.CSS_SELECTOR,
+        #                 'a[data-live-test-global-search-advanced-btn]',
+        #             ),
+        #         ),
+        #     )
+        #     advanced_search_btn.click()
+        #     time.sleep(random.uniform(5, 7))
+        #     logger.info('Advanced search clicked')
+        #     try:
+        #         if past_companies:
+        #             logger.info(f"Processing {past_companies=}")
+        #         if job_functions:
+        #             logger.info(f"Processing {job_functions=}")
+        #         if company_sizes:
+        #             logger.info(f"Processing {company_sizes=}")
+        #         if seniority:
+        #             logger.info(f"Processing {seniority=}")
+        #             logger.info('Seniority plus button clicked')
+        #     finally:
+        #         # Wait for the search button to be clickable
+        #         search_button = WebDriverWait(driver, 10).until(
+        #             EC.element_to_be_clickable(
+        #                 (
+        #                     By.CSS_SELECTOR,
+        #                     'button.button-medium-primary.advanced-search__header--actions-primary[data-live-test-save-advanced-button]',
+        #                 ),
+        #             ),
+        #         )
+        #         search_button.click()
+        #         logger.info('Search button clicked')
+        #         time.sleep(random.uniform(2, 5))
 
         return
         try:
