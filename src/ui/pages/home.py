@@ -592,20 +592,6 @@ class HomePage(ttk.Frame):
         for item in job_functions_options:
             self.listbox_job_functions.insert('end', item)
 
-        info_button_job_functions = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_job_functions.grid(
-            row=16,
-            column=4,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-
         # -----------------------------
         # Start Button
         # -----------------------------
