@@ -94,7 +94,9 @@ def process_chunk_of_rows(
         )
         time.sleep(random.uniform(2, 5))
         logger.info('ChromeDriver initialized successfully for this batch.')
-        driver.get('https://www.linkedin.com/talent/hire/1342305460/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1901433748&savedSearchAction=GET&savedSearchOwnerUrn=urn%3Ali%3Ats_seat%3A1518143638&searchContextId=8735ee08-8c7b-4f5f-98ad-dcccc7421d60&searchHistoryId=20599305612&searchRequestId=c14d6f0e-f605-48a1-bd30-f9adf19afaeb&start=0&uiOrigin=FACET_SEARCH')
+        driver.get(
+            'https://www.linkedin.com/talent/hire/1342305460/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1901433748&savedSearchAction=GET&savedSearchOwnerUrn=urn%3Ali%3Ats_seat%3A1518143638&searchContextId=8735ee08-8c7b-4f5f-98ad-dcccc7421d60&searchHistoryId=20599305612&searchRequestId=c14d6f0e-f605-48a1-bd30-f9adf19afaeb&start=0&uiOrigin=FACET_SEARCH',
+        )
         driver.maximize_window()
 
         logger.info('Search opened')
@@ -176,7 +178,7 @@ def process_chunk_of_rows(
             )
             print('Facet section located.')
 
-            # Check if the Clear button is present and clickable; if so, click it
+            # Try to click the Clear button if it exists
             try:
                 clear_button = facet_section.find_element(
                     By.CSS_SELECTOR, "button[aria-label='Clear Company sizes']",
@@ -186,8 +188,8 @@ def process_chunk_of_rows(
                     print('Clicked Clear button.')
                     # Allow time for the clear action to take effect
                     time.sleep(1)
-            except Exception as e:
-                print('Clear button not found or not clickable:', e)
+            except NoSuchElementException:
+                print('Clear button not found; proceeding without clearing.')
 
             # Locate and click the "Add" button to open the suggestions dropdown
             try:
@@ -200,7 +202,8 @@ def process_chunk_of_rows(
                     ),
                 )
                 driver.execute_script(
-                    "arguments[0].scrollIntoView({block: 'center'});", add_button,
+                    "arguments[0].scrollIntoView({block: 'center'});",
+                    add_button,
                 )
                 add_button.click()
                 print('Clicked add button to reveal suggestions.')
@@ -217,7 +220,8 @@ def process_chunk_of_rows(
 
             # Get all suggestion items (the anchor tags)
             suggestions = suggestions_container.find_elements(
-                By.CSS_SELECTOR, 'a.facet-suggestions__item-action',
+                By.CSS_SELECTOR,
+                'a.facet-suggestions__item-action',
             )
             print('Found', len(suggestions), 'suggestions.')
 
@@ -230,9 +234,11 @@ def process_chunk_of_rows(
                     if option.lower() in suggestion_text.lower():
                         try:
                             suggestion.click()
-                            print(f"Clicked suggestion for: {
-                                  option
-                                  } (found: '{suggestion_text}')")
+                            print(
+                                f"Clicked suggestion for: {
+                                    option
+                                } (found: '{suggestion_text}')",
+                            )
                             found = True
                             # Wait a short moment for the selection to register and DOM to update.
                             WebDriverWait(driver, 5).until(
@@ -245,14 +251,16 @@ def process_chunk_of_rows(
                                 ),
                             )
                             suggestions = suggestions_container.find_elements(
-                                By.CSS_SELECTOR, 'a.facet-suggestions__item-action',
+                                By.CSS_SELECTOR,
+                                'a.facet-suggestions__item-action',
                             )
                             break
                         except Exception as click_ex:
                             print(
                                 f"Error clicking suggestion for '{
                                     option
-                                }':", click_ex,
+                                }':",
+                                click_ex,
                             )
                 if not found:
                     print(f"Suggestion for '{option}' not found.")
@@ -292,7 +300,7 @@ def process_chunk_of_rows(
         #         search_button.click()
         #         logger.info('Search button clicked')
         #         time.sleep(random.uniform(2, 5))
-
+        time.sleep(600)
         return
         try:
             # Wait for the results element to be present (up to 15 seconds)
