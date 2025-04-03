@@ -167,6 +167,95 @@ def process_chunk_of_rows(
                 # Press Enter
                 location_field.send_keys(Keys.ENTER)
             location_field.send_keys(Keys.ESCAPE)
+        if company_sizes:
+            # Wait for the facet section that contains the Company sizes facet
+            facet_section = WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'section.search-facet'),
+                ),
+            )
+            print('Facet section located.')
+
+            # Check if the Clear button is present and clickable; if so, click it
+            try:
+                clear_button = facet_section.find_element(
+                    By.CSS_SELECTOR, "button[aria-label='Clear Company sizes']",
+                )
+                if clear_button.is_displayed():
+                    clear_button.click()
+                    print('Clicked Clear button.')
+                    # Allow time for the clear action to take effect
+                    time.sleep(1)
+            except Exception as e:
+                print('Clear button not found or not clickable:', e)
+
+            # Locate and click the "Add" button to open the suggestions dropdown
+            try:
+                add_button = WebDriverWait(facet_section, 15).until(
+                    EC.element_to_be_clickable(
+                        (
+                            By.CSS_SELECTOR,
+                            "button.facet-edit-button[data-view-name='search-facet-add']",
+                        ),
+                    ),
+                )
+                driver.execute_script(
+                    "arguments[0].scrollIntoView({block: 'center'});", add_button,
+                )
+                add_button.click()
+                print('Clicked add button to reveal suggestions.')
+            except Exception as e:
+                print('Error clicking add button:', e)
+
+            # Wait for the suggestions container to be present
+            suggestions_container = WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'ul.facet-suggestions'),
+                ),
+            )
+            print('Suggestions container located.')
+
+            # Get all suggestion items (the anchor tags)
+            suggestions = suggestions_container.find_elements(
+                By.CSS_SELECTOR, 'a.facet-suggestions__item-action',
+            )
+            print('Found', len(suggestions), 'suggestions.')
+
+            # Iterate through your list of options and click matching suggestions
+            for option in company_sizes:
+                found = False
+                for suggestion in suggestions:
+                    suggestion_text = suggestion.text.strip()
+                    # Check if the suggestion text starts with the desired option or contains it
+                    if option.lower() in suggestion_text.lower():
+                        try:
+                            suggestion.click()
+                            print(f"Clicked suggestion for: {
+                                  option
+                                  } (found: '{suggestion_text}')")
+                            found = True
+                            # Wait a short moment for the selection to register and DOM to update.
+                            WebDriverWait(driver, 5).until(
+                                EC.staleness_of(suggestion),
+                            )
+                            # After clicking, refresh the suggestions container and list
+                            suggestions_container = WebDriverWait(driver, 15).until(
+                                EC.presence_of_element_located(
+                                    (By.CSS_SELECTOR, 'ul.facet-suggestions'),
+                                ),
+                            )
+                            suggestions = suggestions_container.find_elements(
+                                By.CSS_SELECTOR, 'a.facet-suggestions__item-action',
+                            )
+                            break
+                        except Exception as click_ex:
+                            print(
+                                f"Error clicking suggestion for '{
+                                    option
+                                }':", click_ex,
+                            )
+                if not found:
+                    print(f"Suggestion for '{option}' not found.")
         # if past_companies or job_functions or company_sizes or seniority:
         #     print('advanced search')
         #     advanced_search_btn = WebDriverWait(driver, 10).until(
