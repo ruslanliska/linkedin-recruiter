@@ -102,33 +102,21 @@ def process_chunk_of_rows(
 
         logger.info('Starting search')
         if job_titles:
-            # Wait for the element to be present (using a partial match for aria-label)
-            element = WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located(
-                    (
-                        By.CSS_SELECTOR,
-                        "button.facet-edit-button[data-view-name='search-facet-add'][aria-label*='Job titles']",
-                    ),
-                ),
+            # Locate the facet section
+            facet_section = WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "section.search-facet"))
             )
-            print('Element found. Scrolling into view...')
-            # Scroll the element into view
-            driver.execute_script(
-                "arguments[0].scrollIntoView({block: 'center'});", element,
-            )
-            time.sleep(1)  # Wait a moment after scrolling
 
-            # Now wait until it becomes clickable
-            clickable_element = WebDriverWait(driver, 15).until(
-                EC.element_to_be_clickable(
-                    (
-                        By.CSS_SELECTOR,
-                        "button.facet-edit-button[data-view-name='search-facet-add'][aria-label*='Job titles']",
-                    ),
-                ),
+            # Hover over the facet section to trigger any dynamic expansion
+            ActionChains(driver).move_to_element(facet_section).perform()
+            time.sleep(1)  # Allow time for dynamic content to load
+
+            # Now try to locate and click the add button
+            add_button = WebDriverWait(driver, 15).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "button.facet-edit-button[data-view-name='search-facet-add']"))
             )
-            print('Element is clickable. Clicking now...')
-            clickable_element.click()
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", add_button)
+            add_button.click()
             logger.info('Job title clicked')
             for title in job_titles:
                 # Wait for the input to become visible, then send keys
