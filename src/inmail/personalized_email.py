@@ -94,7 +94,7 @@ def process_chunk_of_rows(
         )
         time.sleep(random.uniform(2, 5))
         logger.info('ChromeDriver initialized successfully for this batch.')
-        driver.get('https://www.linkedin.com/talent/search')
+        driver.get('https://www.linkedin.com/talent/search/advanced')
 
         logger.info('Search opened')
         time.sleep(random.uniform(2, 5))
