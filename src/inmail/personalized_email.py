@@ -189,6 +189,18 @@ def process_chunk_of_rows(
                     logger.info(f"Processing {company_sizes=}")
                 if seniority:
                     logger.info(f"Processing {seniority=}")
+                    # Wait until the Seniority facet's plus button is clickable and then click it.
+                    seniority_plus_button = WebDriverWait(driver, 15).until(
+                        EC.element_to_be_clickable(
+                            (
+                                By.XPATH,
+                                "//section[contains(@class, 'search-facet') and .//h3[contains(text(),'Seniority')]]"
+                                "//button[contains(@class, 'facet-edit-button') and .//li-icon[@type='plus-icon']]",
+                            ),
+                        ),
+                    )
+                    seniority_plus_button.click()
+                    logger.info('Seniority plus button clicked')
             finally:
                 # Wait for the search button to be clickable
                 search_button = WebDriverWait(driver, 10).until(
@@ -610,7 +622,9 @@ def process_chunk_of_rows(
                     profile_end_time = time.perf_counter()
                     # Calculate and print the elapsed time
                     profile_elapsed_time = profile_end_time - profile_start_time
-                    print(f"Code execution took {profile_elapsed_time:.6f} seconds.")  # noqa: E501
+                    print('Time spent for profile')
+                    print(profile_elapsed_time)
+                    print('=======================')
 
                     continue
                 except Exception as e:
