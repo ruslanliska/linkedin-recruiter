@@ -38,6 +38,8 @@ class HomePage(ttk.Frame):
         self.schools_var = ttk.StringVar()
         self.industries_var = ttk.StringVar()
         self.keywords_var = ttk.StringVar()
+        self.past_companies_var = ttk.StringVar()
+        self.control_email_sending_var = ttk.StringVar()
         self.create_widgets()
 
     def show_field_info(self):
@@ -51,12 +53,15 @@ class HomePage(ttk.Frame):
         # --- Scrollable container ---
         canvas = ttk.Canvas(self)
         scrollbar = ttk.Scrollbar(
-            self, orient='vertical', command=canvas.yview,
+            self,
+            orient='vertical',
+            command=canvas.yview,
         )
         scrollable_frame = ttk.Frame(canvas)
 
         scrollable_frame.bind(
-            '<Configure>', lambda e: canvas.configure(
+            '<Configure>',
+            lambda e: canvas.configure(
                 scrollregion=canvas.bbox('all'),
             ),
         )
@@ -464,37 +469,44 @@ class HomePage(ttk.Frame):
             padx=5,
             pady=10,
         )
-
         # -----------------------------
-        # Row 6: Control Email Sending Checkbox
+        # Row: 15 Past companies
         # -----------------------------
-        label_control_email_sending = ttk.Label(
+        label_past_companies = ttk.Label(
             form,
-            text='Control Email Sending:',
+            text='Past companies:',
             font=('Helvetica', 12),
         )
-        label_control_email_sending.grid(
-            row=6,
-            column=0,
-            sticky='e',
-            padx=5,
-            pady=10,
+        label_past_companies.grid(
+            row=15, column=0, sticky='e', padx=5, pady=10,
         )
 
-        self.control_email_sending_var = ttk.BooleanVar(value=False)
-        checkbox_control_email_sending = ttk.Checkbutton(
+        entry_past_companies = ttk.Entry(
             form,
-            text='',
-            variable=self.control_email_sending_var,
-            bootstyle='success-round-toggle',
+            textvariable=self.past_companies_var,
+            width=40,
         )
-        checkbox_control_email_sending.grid(
-            row=6,
+        entry_past_companies.grid(
+            row=15,
             column=1,
+            sticky='ew',
+            padx=5,
+            pady=10,
+            columnspan=3,
+        )
+
+        info_button_past_companies = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_past_companies.grid(
+            row=15,
+            column=4,
             sticky='w',
             padx=5,
             pady=10,
-            columnspan=2,
         )
 
         # -----------------------------
@@ -582,11 +594,19 @@ class HomePage(ttk.Frame):
         schools = proccess_search_variable(self.schools_var.get())
         industries = proccess_search_variable(self.industries_var.get())
         keywords = proccess_search_variable(self.keywords_var.get())
+
+        # advanced search vars
+        past_companies = proccess_search_variable(
+            self.past_companies_var.get(),
+        )
+
         reference_email_text = self.reference_email_text.get(
             '1.0',
             'end',
         ).strip()
-        reference_email = reference_email_text if reference_email_text else None  # noqa: E501
+        reference_email = (
+            reference_email_text if reference_email_text else None
+        )  # noqa: E501
         print(f"{job_titles=}")
         print(f"{locations=}")
         print(f"{skills_assessments=}")
@@ -594,6 +614,7 @@ class HomePage(ttk.Frame):
         print(f"{schools=}")
         print(f"{industries=}")
         print(f"{keywords=}")
+        print(f"{past_companies=}")
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
@@ -610,6 +631,7 @@ class HomePage(ttk.Frame):
                 industries,
                 keywords,
                 reference_email,
+                past_companies,
             ),
             daemon=True,
         )
@@ -629,6 +651,7 @@ class HomePage(ttk.Frame):
         industries,
         keywords,
         reference_email,
+        past_companies,
     ):
         """
         Process all rows in 'data' chunk by chunk.
@@ -645,7 +668,8 @@ class HomePage(ttk.Frame):
         print(f"{schools=}")
         print(f"{industries=}")
         print(f"{keywords=}")
-        print(f'{reference_email=}')
+        print(f"{reference_email=}")
+        print(f"{past_companies=}")
         try:
             # We'll define a callback that runs
             # after run_selenium_automation finishes
@@ -670,6 +694,7 @@ class HomePage(ttk.Frame):
                 industries=industries,
                 keywords=keywords,
                 reference_email=reference_email,
+                past_companies=past_companies,
             )
         except Exception as e:
             self.show_error_message('Process Error', str(e))
