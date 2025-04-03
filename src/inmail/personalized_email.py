@@ -167,21 +167,41 @@ def process_chunk_of_rows(
                 # Press Enter
                 location_field.send_keys(Keys.ENTER)
             location_field.send_keys(Keys.ESCAPE)
-    # past_companies: list[str] = None,
-    # job_functions: list[str] = None,
-    # company_sizes: list[str] = None,
-    # seniority: list[str] = None,
         if past_companies or job_functions or company_sizes or seniority:
             print('advanced search')
             advanced_search_btn = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR,
-                     'a[data-live-test-global-search-advanced-btn]'),
+                    (
+                        By.CSS_SELECTOR,
+                        'a[data-live-test-global-search-advanced-btn]',
+                    ),
                 ),
             )
             advanced_search_btn.click()
             time.sleep(random.uniform(5, 7))
             logger.info('Advanced search clicked')
+            try:
+                if past_companies:
+                    logger.info(f"Processing {past_companies=}")
+                if job_functions:
+                    logger.info(f"Processing {job_functions=}")
+                if company_sizes:
+                    logger.info(f"Processing {company_sizes=}")
+                if seniority:
+                    logger.info(f"Processing {seniority=}")
+            finally:
+                # Wait for the search button to be clickable
+                search_button = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable(
+                        (
+                            By.CSS_SELECTOR,
+                            'button.button-medium-primary.advanced-search__header--actions-primary[data-live-test-save-advanced-button]',
+                        ),
+                    ),
+                )
+                search_button.click()
+                logger.info('Search button clicked')
+                time.sleep(random.uniform(2, 5))
 
         return
         try:
@@ -345,13 +365,13 @@ def process_chunk_of_rows(
 
                     # Extract the href
                     profile_href = profile_link_elem.get_attribute('href')
-                    logger.info(f'{profile_href=}')
+                    logger.info(f"{profile_href=}")
                     name_elem = recipient_profile_elem.find_element(
                         By.CSS_SELECTOR,
                         'div.artdeco-entity-lockup__title',
                     )
                     name = name_elem.text.strip().split()
-                    logger.info(f'{name=}')
+                    logger.info(f"{name=}")
 
                     # Extract the company name from the container
                     company_elem = recipient_profile_elem.find_element(
@@ -359,7 +379,7 @@ def process_chunk_of_rows(
                         'a.position-item__company-link',
                     )
                     company_name = company_elem.text.strip()
-                    logger.info(f'Company Name: {company_name}')
+                    logger.info(f"Company Name: {company_name}")
                     company_slug = slugify_company(company_name)
                     profile_email_address = f"{
                         name[0].strip()
@@ -406,7 +426,9 @@ def process_chunk_of_rows(
                         if 'identityDashProfilesByMemberIdentity' in code_content:
                             try:
                                 data_json = json.loads(code_content)
-                                profile_urn = data_json['data']['data']['identityDashProfilesByMemberIdentity']['*elements'][
+                                profile_urn = data_json['data']['data'][
+                                    'identityDashProfilesByMemberIdentity'
+                                ]['*elements'][
                                     0
                                 ]  # noqa: E501
                                 profile_id = profile_urn.split(':')[-1]
@@ -502,7 +524,8 @@ def process_chunk_of_rows(
                             ),
                         )
                         driver.execute_script(
-                            'arguments[0].click();', email_label,
+                            'arguments[0].click();',
+                            email_label,
                         )
                         time.sleep(random.uniform(1, 2))
 
@@ -515,7 +538,8 @@ def process_chunk_of_rows(
                             ),
                         )
                         driver.execute_script(
-                            'arguments[0].click();', save_button,
+                            'arguments[0].click();',
+                            save_button,
                         )
                         time.sleep(random.uniform(2, 4))
 
@@ -578,7 +602,7 @@ def process_chunk_of_rows(
                         email_status = 'Sent'
                         logger.info('Message sent successfully.')
                         time.sleep(random.uniform(4, 7))
-                    logger.info(f'{email_status=}')
+                    logger.info(f"{email_status=}")
 
                     logger.info('To continue next profile')
 
