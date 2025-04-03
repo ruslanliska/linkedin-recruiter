@@ -94,7 +94,7 @@ def process_chunk_of_rows(
         )
         time.sleep(random.uniform(2, 5))
         logger.info('ChromeDriver initialized successfully for this batch.')
-        driver.get('https://www.linkedin.com/talent/search')
+        driver.get('https://www.linkedin.com/talent/hire/1342305460/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1901433748&savedSearchAction=GET&savedSearchOwnerUrn=urn%3Ali%3Ats_seat%3A1518143638&searchContextId=8735ee08-8c7b-4f5f-98ad-dcccc7421d60&searchHistoryId=20599305612&searchRequestId=c14d6f0e-f605-48a1-bd30-f9adf19afaeb&start=0&uiOrigin=FACET_SEARCH')
         driver.maximize_window()
 
         logger.info('Search opened')
