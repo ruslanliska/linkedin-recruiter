@@ -167,7 +167,23 @@ def process_chunk_of_rows(
                 # Press Enter
                 location_field.send_keys(Keys.ENTER)
             location_field.send_keys(Keys.ESCAPE)
+    # past_companies: list[str] = None,
+    # job_functions: list[str] = None,
+    # company_sizes: list[str] = None,
+    # seniority: list[str] = None,
+        if past_companies or job_functions or company_sizes or seniority:
+            print('advanced search')
+            advanced_search_btn = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(
+                    (By.CSS_SELECTOR,
+                     'a[data-live-test-global-search-advanced-btn]'),
+                ),
+            )
+            advanced_search_btn.click()
+            time.sleep(random.uniform(5, 7))
+            logger.info('Advanced search clicked')
 
+        return
         try:
             # Wait for the results element to be present (up to 15 seconds)
             results_element = WebDriverWait(driver, 15).until(
