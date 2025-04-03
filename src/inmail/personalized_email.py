@@ -5,8 +5,6 @@ import socket
 import time
 import traceback
 
-import pandas as pd
-import requests
 import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException
@@ -24,10 +22,8 @@ from src.config import settings
 from src.database.handlers import log_email
 from src.database.handlers import log_run_end
 from src.inmail.utils import get_user_data_dir
-from src.inmail.utils import inject_key_listeners
 from src.inmail.utils import parse_results_count
 from src.inmail.utils import slugify_company
-from src.inmail.utils import wait_for_key_signal
 
 socket.setdefaulttimeout(60)  # Set global timeout to 60 seconds
 
@@ -92,13 +88,6 @@ def process_chunk_of_rows(
             fix_hairline=True,
         )
         time.sleep(random.uniform(2, 5))
-        print(f"{job_titles=}")
-        print(f"{locations=}")
-        print(f"{skills_assessments=}")
-        print(f"{companies=}")
-        print(f"{schools=}")
-        print(f"{industries=}")
-        print(f"{keywords=}")
         logger.info('ChromeDriver initialized successfully for this batch.')
         driver.get('https://www.linkedin.com/talent/search')
 
@@ -193,6 +182,7 @@ def process_chunk_of_rows(
         page = 1
 
         for page in range(1, num_results):
+            page_start_time = time.perf_counter()
             logger.info(f"Processing page {page} of results")
             time.sleep(random.uniform(3, 5))
             current_link = driver.current_url
@@ -200,6 +190,8 @@ def process_chunk_of_rows(
 
             # for profile in profile_items:
             for profile_index in range(25):
+                profile_start_time = time.perf_counter()
+
                 driver.get(current_link)
                 time.sleep(random.uniform(6, 10))
 
@@ -219,8 +211,10 @@ def process_chunk_of_rows(
                         EC.visibility_of(container),
                     )
                 except TimeoutException:
-                    print('Profile list container not found within the timeout period.')
-                print(f"{profile_index=}")
+                    logger.info(
+                        'Profile list container not found within the timeout period.',
+                    )
+                logger.info(f"{profile_index=}")
                 # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
                 # Set the increment and pause duration.
                 increment = 30  # pixels per scroll
@@ -329,13 +323,13 @@ def process_chunk_of_rows(
 
                     # Extract the href
                     profile_href = profile_link_elem.get_attribute('href')
-                    logger.info('Profile URL:', profile_href)
+                    logger.info(f'{profile_href=}')
                     name_elem = recipient_profile_elem.find_element(
                         By.CSS_SELECTOR,
                         'div.artdeco-entity-lockup__title',
                     )
                     name = name_elem.text.strip().split()
-                    logger.info('Name:', name)
+                    logger.info(f'{name=}')
 
                     # Extract the company name from the container
                     company_elem = recipient_profile_elem.find_element(
@@ -374,9 +368,7 @@ def process_chunk_of_rows(
                             text_from_desired_tags.append(tag_text)
 
                     cleaned_text = '\n'.join(text_from_desired_tags)
-                    logger.info(f"Cleaned Text snippet: {
-                                cleaned_text[:100]
-                                }...")
+                    logger.info(f"Cleaned Text snippet.")
                     # Generate the personal email
                     email = generate_personal_email(
                         page_summary=cleaned_text,
@@ -392,9 +384,7 @@ def process_chunk_of_rows(
                         if 'identityDashProfilesByMemberIdentity' in code_content:
                             try:
                                 data_json = json.loads(code_content)
-                                profile_urn = data_json['data']['data'][
-                                    'identityDashProfilesByMemberIdentity'
-                                ]['*elements'][
+                                profile_urn = data_json['data']['data']['identityDashProfilesByMemberIdentity']['*elements'][
                                     0
                                 ]  # noqa: E501
                                 profile_id = profile_urn.split(':')[-1]
@@ -562,13 +552,21 @@ def process_chunk_of_rows(
                         error_message = 'Send button disabled.'
                         logger.warning('Send button is disabled.')
                     else:
-                        # send_button.click()
+                        send_button.click()
                         email_status = 'Sent'
                         logger.info('Message sent successfully.')
                         time.sleep(random.uniform(4, 7))
+                    logger.info(f'{email_status=}')
 
-                    print('To continue next profile')
+                    logger.info('To continue next profile')
+
                     time.sleep(10)
+                    profile_end_time = time.perf_counter()
+                    # Calculate and print the elapsed time
+                    profile_elapsed_time = profile_end_time - profile_start_time
+                    logger.info(f"Code execution took {
+                                profile_elapsed_time:.6f
+                    } seconds.")
 
                     continue
                 except Exception as e:
@@ -587,6 +585,12 @@ def process_chunk_of_rows(
 
             # Click the Next button
             next_button.click()
+            page_end_time = time.perf_counter()
+            # Calculate and print the elapsed time
+            page_elapsed_time = page_end_time - page_start_time
+            logger.info(f"Code execution took {
+                        page_elapsed_time:.6f
+            } seconds.")
             time.sleep(random.uniform(6, 10))
             logger.info('Next page')
             continue
