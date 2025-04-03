@@ -582,6 +582,11 @@ class HomePage(ttk.Frame):
         schools = proccess_search_variable(self.schools_var.get())
         industries = proccess_search_variable(self.industries_var.get())
         keywords = proccess_search_variable(self.keywords_var.get())
+        reference_email_text = self.reference_email_text.get(
+            '1.0',
+            'end',
+        ).strip()
+        reference_email = reference_email_text if reference_email_text else None  # noqa: E501
         print(f"{job_titles=}")
         print(f"{locations=}")
         print(f"{skills_assessments=}")
@@ -604,6 +609,7 @@ class HomePage(ttk.Frame):
                 schools,
                 industries,
                 keywords,
+                reference_email,
             ),
             daemon=True,
         )
@@ -622,6 +628,7 @@ class HomePage(ttk.Frame):
         schools,
         industries,
         keywords,
+        reference_email,
     ):
         """
         Process all rows in 'data' chunk by chunk.
@@ -638,6 +645,7 @@ class HomePage(ttk.Frame):
         print(f"{schools=}")
         print(f"{industries=}")
         print(f"{keywords=}")
+        print(f'{reference_email=}')
         try:
             # We'll define a callback that runs
             # after run_selenium_automation finishes
@@ -661,6 +669,7 @@ class HomePage(ttk.Frame):
                 schools=schools,
                 industries=industries,
                 keywords=keywords,
+                reference_email=reference_email,
             )
         except Exception as e:
             self.show_error_message('Process Error', str(e))
