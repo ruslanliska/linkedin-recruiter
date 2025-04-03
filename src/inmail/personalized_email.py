@@ -101,18 +101,25 @@ def process_chunk_of_rows(
 
         logger.info('Starting search')
         if job_titles:
-            # Wait for the button to be clickable, then click it.
+            # Wait for the element to be present (using a partial match for aria-label)
             element = WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located(
-                    (By.CSS_SELECTOR,
-                    "button.facet-edit-button[data-view-name='search-facet-add'][aria-label*='Job titles']")
+                    (By.CSS_SELECTOR, "button.facet-edit-button[data-view-name='search-facet-add'][aria-label*='Job titles']")
                 )
             )
+            print("Element found. Scrolling into view...")
+            # Scroll the element into view
             driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
-            WebDriverWait(driver, 15).until(EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, "button.facet-edit-button[data-view-name='search-facet-add'][aria-label*='Job titles']")
-            ))
-            element.click()
+            time.sleep(1)  # Wait a moment after scrolling
+
+            # Now wait until it becomes clickable
+            clickable_element = WebDriverWait(driver, 15).until(
+                EC.element_to_be_clickable(
+                    (By.CSS_SELECTOR, "button.facet-edit-button[data-view-name='search-facet-add'][aria-label*='Job titles']")
+                )
+            )
+            print("Element is clickable. Clicking now...")
+            clickable_element.click()
             logger.info('Job title clicked')
             for title in job_titles:
                 # Wait for the input to become visible, then send keys
