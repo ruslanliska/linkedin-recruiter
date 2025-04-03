@@ -48,9 +48,25 @@ class HomePage(ttk.Frame):
 
     def create_widgets(self):
         # Main frame for the form
-        form_frame = ttk.Frame(self)
-        form_frame.pack(pady=20, padx=20, fill='both', expand=True)
+        # --- Scrollable container ---
+        canvas = ttk.Canvas(self)
+        scrollbar = ttk.Scrollbar(
+            self, orient='vertical', command=canvas.yview,
+        )
+        scrollable_frame = ttk.Frame(canvas)
 
+        scrollable_frame.bind(
+            '<Configure>', lambda e: canvas.configure(
+                scrollregion=canvas.bbox('all'),
+            ),
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+        form_frame = scrollable_frame
         # Use a LabelFrame to group form fields with a title
         form = ttk.Labelframe(
             form_frame,
