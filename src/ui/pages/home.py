@@ -1,6 +1,7 @@
 import sqlite3
 import threading
 import time
+import tkinter as tk
 from datetime import datetime
 from datetime import timedelta
 from tkinter import messagebox
@@ -40,6 +41,7 @@ class HomePage(ttk.Frame):
         self.keywords_var = ttk.StringVar()
         self.past_companies_var = ttk.StringVar()
         self.control_email_sending_var = ttk.StringVar()
+        self.job_functions_var = ttk.Variable(value=[])  # Holds selected items
         self.create_widgets()
 
     def show_field_info(self):
@@ -478,7 +480,11 @@ class HomePage(ttk.Frame):
             font=('Helvetica', 12),
         )
         label_past_companies.grid(
-            row=15, column=0, sticky='e', padx=5, pady=10,
+            row=15,
+            column=0,
+            sticky='e',
+            padx=5,
+            pady=10,
         )
 
         entry_past_companies = ttk.Entry(
@@ -503,6 +509,97 @@ class HomePage(ttk.Frame):
         )
         info_button_past_companies.grid(
             row=15,
+            column=4,
+            sticky='w',
+            padx=5,
+            pady=10,
+        )
+        # -----------------------------
+        # Row 16: Job Functions (Multiselect Listbox)
+        # -----------------------------
+        label_job_functions = ttk.Label(
+            form,
+            text='Job Functions:',
+            font=('Helvetica', 12),
+        )
+        label_job_functions.grid(
+            row=16,
+            column=0,
+            sticky='ne',
+            padx=5,
+            pady=10,
+        )
+
+        job_functions_options = [
+            'Operations',
+            'Business Development',
+            'Sales',
+            'Education',
+            'Engineering',
+            'Healthcare Services',
+            'Administrative',
+            'Information Technology',
+            'Customer Success and Support',
+            'Arts and Design',
+            'Finance',
+            'Community and Social Services',
+            'Media and Communication',
+            'Accounting',
+            'Marketing',
+            'Human Resources',
+            'Research',
+            'Program and Project Management',
+            'Legal',
+            'Military and Protective Services',
+            'Consulting',
+            'Entrepreneurship',
+            'Real Estate',
+            'Quality Assurance',
+            'Purchasing',
+            'Product Management',
+        ]
+
+        frame_job_functions = ttk.Frame(form)
+        frame_job_functions.grid(
+            row=16,
+            column=1,
+            columnspan=3,
+            sticky='ew',
+            padx=5,
+            pady=10,
+        )
+
+        self.listbox_job_functions = tk.Listbox(
+            frame_job_functions,
+            listvariable=self.job_functions_var,
+            selectmode='multiple',
+            height=6,  # Visible items
+            exportselection=False,
+            font=('Helvetica', 11),
+        )
+        self.listbox_job_functions.pack(side='left', fill='both', expand=True)
+
+        scrollbar_job_functions = ttk.Scrollbar(
+            frame_job_functions,
+            orient='vertical',
+            command=self.listbox_job_functions.yview,
+        )
+        scrollbar_job_functions.pack(side='right', fill='y')
+        self.listbox_job_functions.config(
+            yscrollcommand=scrollbar_job_functions.set,
+        )
+
+        for item in job_functions_options:
+            self.listbox_job_functions.insert('end', item)
+
+        info_button_job_functions = ttk.Button(
+            form,
+            text='?',
+            command=self.show_field_info,
+            bootstyle='info-outline',
+        )
+        info_button_job_functions.grid(
+            row=16,
             column=4,
             sticky='w',
             padx=5,
@@ -599,6 +696,10 @@ class HomePage(ttk.Frame):
         past_companies = proccess_search_variable(
             self.past_companies_var.get(),
         )
+        job_functions = [
+            self.listbox_job_functions.get(i)
+            for i in self.listbox_job_functions.curselection()
+        ]
 
         reference_email_text = self.reference_email_text.get(
             '1.0',
@@ -607,6 +708,7 @@ class HomePage(ttk.Frame):
         reference_email = (
             reference_email_text if reference_email_text else None
         )  # noqa: E501
+
         print(f"{job_titles=}")
         print(f"{locations=}")
         print(f"{skills_assessments=}")
@@ -615,6 +717,7 @@ class HomePage(ttk.Frame):
         print(f"{industries=}")
         print(f"{keywords=}")
         print(f"{past_companies=}")
+        print(f"{job_functions=}")
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
@@ -632,6 +735,7 @@ class HomePage(ttk.Frame):
                 keywords,
                 reference_email,
                 past_companies,
+                job_functions,
             ),
             daemon=True,
         )
@@ -652,6 +756,7 @@ class HomePage(ttk.Frame):
         keywords,
         reference_email,
         past_companies,
+        job_functions,
     ):
         """
         Process all rows in 'data' chunk by chunk.
@@ -670,6 +775,7 @@ class HomePage(ttk.Frame):
         print(f"{keywords=}")
         print(f"{reference_email=}")
         print(f"{past_companies=}")
+        print(f"{job_functions=}")
         try:
             # We'll define a callback that runs
             # after run_selenium_automation finishes
@@ -695,6 +801,7 @@ class HomePage(ttk.Frame):
                 keywords=keywords,
                 reference_email=reference_email,
                 past_companies=past_companies,
+                job_functions=job_functions,
             )
         except Exception as e:
             self.show_error_message('Process Error', str(e))
