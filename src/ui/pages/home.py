@@ -42,6 +42,7 @@ class HomePage(ttk.Frame):
         self.past_companies_var = ttk.StringVar()
         self.control_email_sending_var = ttk.StringVar()
         self.job_functions_var = ttk.Variable(value=[])  # Holds selected items
+        self.company_sizes_var = ttk.Variable(value=[])
         self.create_widgets()
 
     def show_field_info(self):
@@ -593,6 +594,58 @@ class HomePage(ttk.Frame):
             self.listbox_job_functions.insert('end', item)
 
         # -----------------------------
+        # Row 17: Company Sizes (Multiselect Listbox)
+        # -----------------------------
+        label_company_sizes = ttk.Label(
+            form,
+            text='Company Sizes:',
+            font=('Helvetica', 12),
+        )
+        label_company_sizes.grid(
+            row=17, column=0, sticky='ne', padx=5, pady=10,
+        )
+
+        company_sizes_options = [
+            'Self-employed',
+            '1-10',
+            '11-50',
+            '51-200',
+            '201-500',
+            '501-1000',
+            '1001-5000',
+            '5001-10,000',
+            '10,000+',
+        ]
+
+        frame_company_sizes = ttk.Frame(form)
+        frame_company_sizes.grid(
+            row=17, column=1, columnspan=3, sticky='ew', padx=5, pady=10,
+        )
+
+        self.listbox_company_sizes = tk.Listbox(
+            frame_company_sizes,
+            listvariable=self.company_sizes_var,
+            selectmode='multiple',
+            height=5,
+            exportselection=False,
+            font=('Helvetica', 11),
+        )
+        self.listbox_company_sizes.pack(side='left', fill='both', expand=True)
+
+        scrollbar_company_sizes = ttk.Scrollbar(
+            frame_company_sizes,
+            orient='vertical',
+            command=self.listbox_company_sizes.yview,
+        )
+        scrollbar_company_sizes.pack(side='right', fill='y')
+        self.listbox_company_sizes.config(
+            yscrollcommand=scrollbar_company_sizes.set,
+        )
+
+        for size in company_sizes_options:
+            self.listbox_company_sizes.insert('end', size)
+
+        # -----------------------------
         # Start Button
         # -----------------------------
         self.start_button = ttk.Button(
@@ -686,6 +739,10 @@ class HomePage(ttk.Frame):
             self.listbox_job_functions.get(i)
             for i in self.listbox_job_functions.curselection()
         ]
+        company_sizes = [
+            self.listbox_company_sizes.get(i)
+            for i in self.listbox_company_sizes.curselection()
+        ]
 
         reference_email_text = self.reference_email_text.get(
             '1.0',
@@ -704,6 +761,7 @@ class HomePage(ttk.Frame):
         print(f"{keywords=}")
         print(f"{past_companies=}")
         print(f"{job_functions=}")
+        print(f"{company_sizes=}")
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
@@ -722,6 +780,7 @@ class HomePage(ttk.Frame):
                 reference_email,
                 past_companies,
                 job_functions,
+                company_sizes,
             ),
             daemon=True,
         )
@@ -743,6 +802,7 @@ class HomePage(ttk.Frame):
         reference_email,
         past_companies,
         job_functions,
+        company_sizes,
     ):
         """
         Process all rows in 'data' chunk by chunk.
@@ -762,6 +822,7 @@ class HomePage(ttk.Frame):
         print(f"{reference_email=}")
         print(f"{past_companies=}")
         print(f"{job_functions=}")
+        print(f"{company_sizes=}")
         try:
             # We'll define a callback that runs
             # after run_selenium_automation finishes
@@ -788,6 +849,7 @@ class HomePage(ttk.Frame):
                 reference_email=reference_email,
                 past_companies=past_companies,
                 job_functions=job_functions,
+                company_sizes=company_sizes,
             )
         except Exception as e:
             self.show_error_message('Process Error', str(e))
