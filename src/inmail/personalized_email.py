@@ -102,14 +102,17 @@ def process_chunk_of_rows(
         logger.info('Starting search')
         if job_titles:
             # Wait for the button to be clickable, then click it.
-            WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable(
-                    (
-                        By.CSS_SELECTOR,
-                        "button.facet-edit-button[data-view-name='search-facet-add'][aria-label='Add Job titles or boolean']",
-                    ),
-                ),
-            ).click()
+            element = WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR,
+                    "button.facet-edit-button[data-view-name='search-facet-add'][aria-label*='Job titles']")
+                )
+            )
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+            WebDriverWait(driver, 15).until(EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, "button.facet-edit-button[data-view-name='search-facet-add'][aria-label*='Job titles']")
+            ))
+            element.click()
             logger.info('Job title clicked')
             for title in job_titles:
                 # Wait for the input to become visible, then send keys
