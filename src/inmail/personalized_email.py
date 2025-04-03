@@ -107,30 +107,38 @@ def process_chunk_of_rows(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "section.search-facet"))
             )
             print('facet_section located')
+            
             # Hover over the facet section to trigger dynamic content if necessary
+            from selenium.webdriver.common.action_chains import ActionChains
             ActionChains(driver).move_to_element(facet_section).perform()
             time.sleep(1)  # Allow time for dynamic content to load
             print('facet_section hovered')
+            
             # Locate and click the "Add Job titles or boolean" button
             add_button = WebDriverWait(driver, 15).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, "button.facet-edit-button[data-view-name='search-facet-add']"))
             )
             driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", add_button)
             add_button.click()
-            logger.info('Job title facet opened.')
-
+            print('Job title facet opened.')
+            
             # Iterate through job_titles and enter each title
             for title in job_titles:
                 # Wait until the input field becomes visible within the facet
-                input_field = WebDriverWait(driver, 10).until(
+                input_field = WebDriverWait(driver, 15).until(
                     EC.visibility_of_element_located(
                         (By.CSS_SELECTOR, "input.artdeco-typeahead__input.ts-common-typeahead__input[placeholder*='job title']")
                     )
                 )
+                # Scroll and force focus on the input field
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_field)
+                driver.execute_script("arguments[0].focus();", input_field)
+                time.sleep(0.5)  # Brief pause for focus/animation
+                
                 input_field.clear()  # Clear any existing text
                 input_field.send_keys(title)
                 input_field.send_keys(Keys.ENTER)
-                logger.info(f"Submitted job title: {title}")
+                print(f"Submitted job title: {title}")
                 time.sleep(random.uniform(1, 3))  # Pause between entries
 
             # Send ESCAPE to close any open dropdown or suggestions
