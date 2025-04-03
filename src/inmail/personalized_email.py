@@ -169,98 +169,94 @@ def process_chunk_of_rows(
                 # Press Enter
                 location_field.send_keys(Keys.ENTER)
             location_field.send_keys(Keys.ESCAPE)
+
         if company_sizes:
-            # Wait for the facet section that contains the Company sizes facet
-            facet_section = WebDriverWait(driver, 15).until(
+            # Locate the facet section that contains "Company sizes" by finding a header with that text.
+            company_facet_section = WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, 'section.search-facet'),
+                    (
+                        By.XPATH,
+                        "//section[contains(@class, 'search-facet') and .//h3[contains(text(), 'Company sizes')]]",
+                    ),
                 ),
             )
-            print('Facet section located.')
+            print('Company sizes facet section located.')
+            driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", company_facet_section,
+            )
+            time.sleep(1)
 
-            # Try to click the Clear button if it exists
+            # Attempt to click the Clear button if it exists.
             try:
-                clear_button = facet_section.find_element(
+                clear_button = company_facet_section.find_element(
                     By.CSS_SELECTOR, "button[aria-label='Clear Company sizes']",
                 )
                 if clear_button.is_displayed():
                     clear_button.click()
-                    print('Clicked Clear button.')
-                    # Allow time for the clear action to take effect
+                    print('Clear button clicked.')
                     time.sleep(1)
-            except NoSuchElementException:
-                print('Clear button not found; proceeding without clearing.')
-
-            # Locate and click the "Add" button to open the suggestions dropdown
-            try:
-                add_button = WebDriverWait(facet_section, 15).until(
-                    EC.element_to_be_clickable(
-                        (
-                            By.CSS_SELECTOR,
-                            "button.facet-edit-button[data-view-name='search-facet-add']",
-                        ),
-                    ),
-                )
-                driver.execute_script(
-                    "arguments[0].scrollIntoView({block: 'center'});",
-                    add_button,
-                )
-                add_button.click()
-                print('Clicked add button to reveal suggestions.')
             except Exception as e:
-                print('Error clicking add button:', e)
+                print('Clear button not found; proceeding.', e)
 
-            # Wait for the suggestions container to be present
-            suggestions_container = WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located(
+            # Locate and click the "Add" button to open the suggestions dropdown.
+            add_button = WebDriverWait(company_facet_section, 15).until(
+                EC.element_to_be_clickable(
+                    (
+                        By.CSS_SELECTOR,
+                        "button.facet-edit-button[data-view-name='search-facet-add']",
+                    ),
+                ),
+            )
+            driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", add_button,
+            )
+            add_button.click()
+            print('Add button clicked to reveal suggestions.')
+            time.sleep(1)
+
+            # Wait for the suggestions container to become visible.
+            suggestions_container = WebDriverWait(company_facet_section, 15).until(
+                EC.visibility_of_element_located(
                     (By.CSS_SELECTOR, 'ul.facet-suggestions'),
                 ),
             )
             print('Suggestions container located.')
 
-            # Get all suggestion items (the anchor tags)
+            # Retrieve all suggestion items (anchor elements)
             suggestions = suggestions_container.find_elements(
-                By.CSS_SELECTOR,
-                'a.facet-suggestions__item-action',
+                By.CSS_SELECTOR, 'a.facet-suggestions__item-action',
             )
             print('Found', len(suggestions), 'suggestions.')
 
-            # Iterate through your list of options and click matching suggestions
-            for option in company_sizes:
+            # Iterate over your desired company sizes and click the matching suggestion.
+            for option in company_sizes_options:
                 found = False
                 for suggestion in suggestions:
                     suggestion_text = suggestion.text.strip()
-                    # Check if the suggestion text starts with the desired option or contains it
+                    # Use a case-insensitive check for a match.
                     if option.lower() in suggestion_text.lower():
                         try:
                             suggestion.click()
-                            print(
-                                f"Clicked suggestion for: {
-                                    option
-                                } (found: '{suggestion_text}')",
-                            )
+                            print(f"Clicked suggestion for: {
+                                  option
+                                  } (matched text: '{suggestion_text}')")
+                            time.sleep(random.uniform(1, 3))
                             found = True
-                            # Wait a short moment for the selection to register and DOM to update.
-                            WebDriverWait(driver, 5).until(
-                                EC.staleness_of(suggestion),
-                            )
-                            # After clicking, refresh the suggestions container and list
-                            suggestions_container = WebDriverWait(driver, 15).until(
-                                EC.presence_of_element_located(
+                            # After clicking, you might need to refresh the suggestions if the DOM updates.
+                            suggestions_container = WebDriverWait(company_facet_section, 15).until(
+                                EC.visibility_of_element_located(
                                     (By.CSS_SELECTOR, 'ul.facet-suggestions'),
                                 ),
                             )
                             suggestions = suggestions_container.find_elements(
-                                By.CSS_SELECTOR,
-                                'a.facet-suggestions__item-action',
+                                By.CSS_SELECTOR, 'a.facet-suggestions__item-action',
                             )
                             break
                         except Exception as click_ex:
                             print(
                                 f"Error clicking suggestion for '{
                                     option
-                                }':",
-                                click_ex,
+                                }':", click_ex,
                             )
                 if not found:
                     print(f"Suggestion for '{option}' not found.")
