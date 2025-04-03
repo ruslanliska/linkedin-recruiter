@@ -43,6 +43,7 @@ class HomePage(ttk.Frame):
         self.control_email_sending_var = ttk.StringVar()
         self.job_functions_var = ttk.Variable(value=[])  # Holds selected items
         self.company_sizes_var = ttk.Variable(value=[])
+        self.seniority_levels_var = ttk.Variable(value=[])
         self.create_widgets()
 
     def show_field_info(self):
@@ -646,6 +647,57 @@ class HomePage(ttk.Frame):
             self.listbox_company_sizes.insert('end', size)
 
         # -----------------------------
+        # Row 18: Seniority (Multiselect Listbox)
+        # -----------------------------
+        label_seniority = ttk.Label(
+            form,
+            text='Seniority:',
+            font=('Helvetica', 12),
+        )
+        label_seniority.grid(
+            row=18, column=0, sticky='ne', padx=5, pady=10,
+        )
+
+        seniority_options = [
+            'Entry',
+            'Senior',
+            'Manager',
+            'Director',
+            'Owner',
+            'VP',
+            'CXO',
+            'Training',
+            'Unpaid',
+            'Partner',
+        ]
+
+        frame_seniority = ttk.Frame(form)
+        frame_seniority.grid(
+            row=18, column=1, columnspan=3, sticky='ew', padx=5, pady=10,
+        )
+
+        self.listbox_seniority = tk.Listbox(
+            frame_seniority,
+            listvariable=self.seniority_levels_var,
+            selectmode='multiple',
+            height=5,
+            exportselection=False,
+            font=('Helvetica', 11),
+        )
+        self.listbox_seniority.pack(side='left', fill='both', expand=True)
+
+        scrollbar_seniority = ttk.Scrollbar(
+            frame_seniority,
+            orient='vertical',
+            command=self.listbox_seniority.yview,
+        )
+        scrollbar_seniority.pack(side='right', fill='y')
+        self.listbox_seniority.config(yscrollcommand=scrollbar_seniority.set)
+
+        for level in seniority_options:
+            self.listbox_seniority.insert('end', level)
+
+        # -----------------------------
         # Start Button
         # -----------------------------
         self.start_button = ttk.Button(
@@ -743,6 +795,10 @@ class HomePage(ttk.Frame):
             self.listbox_company_sizes.get(i)
             for i in self.listbox_company_sizes.curselection()
         ]
+        seniority = [
+            self.listbox_seniority.get(i)
+            for i in self.listbox_seniority.curselection()
+        ]
 
         reference_email_text = self.reference_email_text.get(
             '1.0',
@@ -762,6 +818,7 @@ class HomePage(ttk.Frame):
         print(f"{past_companies=}")
         print(f"{job_functions=}")
         print(f"{company_sizes=}")
+        print(f"{seniority=}")
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
@@ -781,6 +838,7 @@ class HomePage(ttk.Frame):
                 past_companies,
                 job_functions,
                 company_sizes,
+                seniority,
             ),
             daemon=True,
         )
@@ -803,6 +861,7 @@ class HomePage(ttk.Frame):
         past_companies,
         job_functions,
         company_sizes,
+        seniority,
     ):
         """
         Process all rows in 'data' chunk by chunk.
@@ -823,6 +882,7 @@ class HomePage(ttk.Frame):
         print(f"{past_companies=}")
         print(f"{job_functions=}")
         print(f"{company_sizes=}")
+        print(f"{seniority=}")
         try:
             # We'll define a callback that runs
             # after run_selenium_automation finishes
@@ -850,6 +910,7 @@ class HomePage(ttk.Frame):
                 past_companies=past_companies,
                 job_functions=job_functions,
                 company_sizes=company_sizes,
+                seniority=seniority,
             )
         except Exception as e:
             self.show_error_message('Process Error', str(e))

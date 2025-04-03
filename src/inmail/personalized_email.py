@@ -55,6 +55,7 @@ def process_chunk_of_rows(
     past_companies: list[str] = None,
     job_functions: list[str] = None,
     company_sizes: list[str] = None,
+    seniority: list[str] = None,
 ):
     """
     Process a batch (chunk) of rows in one WebDriver session.
@@ -625,6 +626,7 @@ def run_selenium_automation_with_retries(
     past_companies: list[str] = None,
     job_functions: list[str] = None,
     company_sizes: list[str] = None,
+    seniority: list[str] = None,
 ):
     logger.info(f"Run ID: {run_id} - Automation started (with retries).")
     run_status = 'Running'
@@ -640,6 +642,7 @@ def run_selenium_automation_with_retries(
     print(f"{past_companies=}")
     print(f"{job_functions=}")
     print(f"{company_sizes=}")
+    print(f"{seniority=}")
     try:
         # This function does the actual row-by-row Selenium logic
         process_chunk_of_rows(
@@ -658,6 +661,7 @@ def run_selenium_automation_with_retries(
             past_companies=past_companies,
             job_functions=job_functions,
             company_sizes=company_sizes,
+            seniority=seniority,
         )
         # If we get here, the batch was processed
         # without raising a fatal error
