@@ -182,14 +182,16 @@ def process_chunk_of_rows(
             )
             print('Company sizes facet section located.')
             driver.execute_script(
-                "arguments[0].scrollIntoView({block: 'center'});", company_facet_section,
+                "arguments[0].scrollIntoView({block: 'center'});",
+                company_facet_section,
             )
             time.sleep(1)
 
             # Attempt to click the Clear button if it exists.
             try:
                 clear_button = company_facet_section.find_element(
-                    By.CSS_SELECTOR, "button[aria-label='Clear Company sizes']",
+                    By.CSS_SELECTOR,
+                    "button[aria-label='Clear Company sizes']",
                 )
                 if clear_button.is_displayed():
                     clear_button.click()
@@ -208,7 +210,8 @@ def process_chunk_of_rows(
                 ),
             )
             driver.execute_script(
-                "arguments[0].scrollIntoView({block: 'center'});", add_button,
+                "arguments[0].scrollIntoView({block: 'center'});",
+                add_button,
             )
             add_button.click()
             print('Add button clicked to reveal suggestions.')
@@ -224,44 +227,14 @@ def process_chunk_of_rows(
 
             # Retrieve all suggestion items (anchor elements)
             suggestions = suggestions_container.find_elements(
-                By.CSS_SELECTOR, 'a.facet-suggestions__item-action',
+                By.CSS_SELECTOR,
+                'a.facet-suggestions__item-action',
             )
             print('Found', len(suggestions), 'suggestions.')
 
-            # Iterate over your desired company sizes and click the matching suggestion.
-            for option in company_sizes_options:
-                found = False
-                for suggestion in suggestions:
-                    suggestion_text = suggestion.text.strip()
-                    # Use a case-insensitive check for a match.
-                    if option.lower() in suggestion_text.lower():
-                        try:
-                            suggestion.click()
-                            print(f"Clicked suggestion for: {
-                                  option
-                                  } (matched text: '{suggestion_text}')")
-                            time.sleep(random.uniform(1, 3))
-                            found = True
-                            # After clicking, you might need to refresh the suggestions if the DOM updates.
-                            suggestions_container = WebDriverWait(company_facet_section, 15).until(
-                                EC.visibility_of_element_located(
-                                    (By.CSS_SELECTOR, 'ul.facet-suggestions'),
-                                ),
-                            )
-                            suggestions = suggestions_container.find_elements(
-                                By.CSS_SELECTOR, 'a.facet-suggestions__item-action',
-                            )
-                            break
-                        except Exception as click_ex:
-                            print(
-                                f"Error clicking suggestion for '{
-                                    option
-                                }':", click_ex,
-                            )
-                if not found:
-                    print(f"Suggestion for '{option}' not found.")
-        # if past_companies or job_functions or company_sizes or seniority:
-        #     print('advanced search')
+        if past_companies or job_functions or company_sizes or seniority:
+            print('advanced search')
+            time.sleep(120)
         #     advanced_search_btn = WebDriverWait(driver, 10).until(
         #         EC.element_to_be_clickable(
         #             (
@@ -296,8 +269,7 @@ def process_chunk_of_rows(
         #         search_button.click()
         #         logger.info('Search button clicked')
         #         time.sleep(random.uniform(2, 5))
-        time.sleep(600)
-        return
+
         try:
             # Wait for the results element to be present (up to 15 seconds)
             results_element = WebDriverWait(driver, 15).until(
@@ -354,7 +326,7 @@ def process_chunk_of_rows(
                 # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
                 # Set the increment and pause duration.
                 increment = 30  # pixels per scroll
-                pause = 0.01  # seconds between scrolls
+                pause = 0.001  # seconds between scrolls
 
                 # Get the initial scroll height
                 last_height = driver.execute_script(
@@ -398,6 +370,8 @@ def process_chunk_of_rows(
                 )
 
                 profile = profile_items[profile_index]
+                print(f"{profile=}")
+                continue
                 # Process each profile item (for example, print its text)
                 try:
                     # Hover over the profile item so that any hidden buttons become visible
