@@ -22,6 +22,7 @@ from src.config import settings
 from src.database.handlers import log_email
 from src.database.handlers import log_run_end
 from src.inmail.utils import get_user_data_dir
+from src.inmail.utils import is_within_trading_hours_or_wait
 from src.inmail.utils import parse_results_count
 from src.inmail.utils import slugify_company
 
@@ -290,6 +291,7 @@ def process_chunk_of_rows(
         page = 1
 
         for page in range(1, num_results):
+            is_within_trading_hours_or_wait()
             page_start_time = time.perf_counter()
             logger.info(f"Processing page {page} of results")
             time.sleep(random.uniform(3, 5))
@@ -716,6 +718,9 @@ def process_chunk_of_rows(
         raise e
 
     finally:
+        print('Finnallu sleep')
+        time.sleep(600)
+
         if driver:
             driver.quit()
             logger.info('WebDriver has been closed for this batch.')
