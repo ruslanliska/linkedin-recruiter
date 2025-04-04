@@ -68,42 +68,42 @@ def process_chunk_of_rows(
         # === 1) Initialize WebDriver once for this batch ===
         options = uc.ChromeOptions()
         if not visible_mode:
-            options.add_argument("--headless")
+            options.add_argument('--headless')
 
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--start-maximized")
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--start-maximized')
         options.add_argument(f"--user-data-dir={get_user_data_dir()}")
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
-            driver_executable_path=r"C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe",
+            driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
         )
-        logger.info("Driver installed")
+        logger.info('Driver installed')
 
         # Optional: stealth, if you want to keep it
         from selenium_stealth import stealth
 
         stealth(
             driver,
-            languages=["en-US", "en"],
-            vendor="Google Inc.",
-            platform="Win32",
-            webgl_vendor="Intel Inc.",
-            renderer="Intel Iris OpenGL Engine",
+            languages=['en-US', 'en'],
+            vendor='Google Inc.',
+            platform='Win32',
+            webgl_vendor='Intel Inc.',
+            renderer='Intel Iris OpenGL Engine',
             fix_hairline=True,
         )
         time.sleep(random.uniform(2, 5))
-        logger.info("ChromeDriver initialized successfully for this batch.")
+        logger.info('ChromeDriver initialized successfully for this batch.')
         driver.get(
-            "https://www.linkedin.com/talent/hire/1342305460/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1901433748&savedSearchAction=GET&savedSearchOwnerUrn=urn%3Ali%3Ats_seat%3A1518143638&searchContextId=8735ee08-8c7b-4f5f-98ad-dcccc7421d60&searchHistoryId=20599305612&searchRequestId=c14d6f0e-f605-48a1-bd30-f9adf19afaeb&start=0&uiOrigin=FACET_SEARCH",
+            'https://www.linkedin.com/talent/hire/1342305460/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1901433748&savedSearchAction=GET&savedSearchOwnerUrn=urn%3Ali%3Ats_seat%3A1518143638&searchContextId=8735ee08-8c7b-4f5f-98ad-dcccc7421d60&searchHistoryId=20599305612&searchRequestId=c14d6f0e-f605-48a1-bd30-f9adf19afaeb&start=0&uiOrigin=FACET_SEARCH',
         )
         driver.maximize_window()
 
-        logger.info("Search opened")
+        logger.info('Search opened')
         time.sleep(random.uniform(2, 5))
 
-        logger.info("Starting search")
+        logger.info('Starting search')
         if job_titles:
             # Wait for the button to be clickable, then click it.
             WebDriverWait(driver, 10).until(
@@ -114,7 +114,7 @@ def process_chunk_of_rows(
                     ),
                 ),
             ).click()
-            logger.info("Job title clicked")
+            logger.info('Job title clicked')
             for title in job_titles:
                 # Wait for the input to become visible, then send keys
                 wait = WebDriverWait(driver, 5)
@@ -142,7 +142,7 @@ def process_chunk_of_rows(
 
             location_button = wait.until(EC.element_to_be_clickable(locator))
             location_button.click()
-            logger.info("Location clicked")
+            logger.info('Location clicked')
             for location in locations:
                 # Wait for the input to be visible
                 wait = WebDriverWait(driver, 2)
@@ -234,7 +234,7 @@ def process_chunk_of_rows(
         #     print('Found', len(suggestions), 'suggestions.')
 
         if past_companies or job_functions or company_sizes or seniority:
-            print("advanced search")
+            print('advanced search')
             time.sleep(120)
         #     advanced_search_btn = WebDriverWait(driver, 10).until(
         #         EC.element_to_be_clickable(
@@ -277,7 +277,7 @@ def process_chunk_of_rows(
                 EC.presence_of_element_located(
                     (
                         By.CSS_SELECTOR,
-                        "span[data-live-test-profile-list-num-custom]",
+                        'span[data-live-test-profile-list-num-custom]',
                     ),
                 ),
             )
@@ -286,7 +286,7 @@ def process_chunk_of_rows(
             logger.info(f"Number of results: {num_results}")
         except TimeoutException:
             logger.error(
-                "Results element not found within the timeout period.",
+                'Results element not found within the timeout period.',
             )
         page = 1
 
@@ -296,7 +296,7 @@ def process_chunk_of_rows(
             logger.info(f"Processing page {page} of results")
             time.sleep(random.uniform(3, 5))
             current_link = driver.current_url
-            print("Current URL:", current_link)
+            print('Current URL:', current_link)
 
             # for profile in profile_items:
             for profile_index in range(25):
@@ -305,7 +305,7 @@ def process_chunk_of_rows(
                 driver.get(current_link)
                 time.sleep(random.uniform(6, 10))
 
-                print("Opened search result")
+                print('Opened search result')
                 try:
                     # Wait until the profile list container is present using the updated class selector
                     container = WebDriverWait(driver, 15).until(
@@ -322,7 +322,7 @@ def process_chunk_of_rows(
                     )
                 except TimeoutException:
                     logger.info(
-                        "Profile list container not found within the timeout period.",
+                        'Profile list container not found within the timeout period.',
                     )
                 logger.info(f"{profile_index=}")
                 # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
@@ -332,20 +332,20 @@ def process_chunk_of_rows(
 
                 # Get the initial scroll height
                 last_height = driver.execute_script(
-                    "return document.body.scrollHeight",
+                    'return document.body.scrollHeight',
                 )
 
                 while True:
                     # Scroll down by the increment
                     driver.execute_script(
-                        "window.scrollBy(0, arguments[0]);",
+                        'window.scrollBy(0, arguments[0]);',
                         increment,
                     )
                     time.sleep(pause)
 
                     # Optionally, check if new content loaded by comparing heights.
                     new_height = driver.execute_script(
-                        "return document.body.scrollHeight",
+                        'return document.body.scrollHeight',
                     )
                     if new_height != last_height:
                         last_height = new_height
@@ -353,16 +353,16 @@ def process_chunk_of_rows(
                     # Break condition: for example, if you reached near the bottom.
                     # Here, we stop if we've scrolled within 100 pixels of the bottom.
                     current_scroll = driver.execute_script(
-                        "return window.pageYOffset;",
+                        'return window.pageYOffset;',
                     )
                     if (
                         current_scroll
-                        + driver.execute_script("return window.innerHeight;")
+                        + driver.execute_script('return window.innerHeight;')
                         >= last_height - 100
                     ):
                         break
 
-                print("Finished scrolling.")
+                print('Finished scrolling.')
                 time.sleep(random.uniform(2, 6))
                 # driver.execute_script('window.scrollTo(0, 0);')
                 max_retries = 3
@@ -427,7 +427,7 @@ def process_chunk_of_rows(
                         )
                     except Exception as inner_ex:
                         logger.error(
-                            "Message button not found in profile:",
+                            'Message button not found in profile:',
                             profile.text,
                         )
                     #     # continue  # Skip this profile if button not found
@@ -442,22 +442,22 @@ def process_chunk_of_rows(
                         message_button.click()
                     except Exception as click_ex:
                         driver.execute_script(
-                            "arguments[0].click();",
+                            'arguments[0].click();',
                             message_button,
                         )
-                    logger.info("Message clicked")
+                    logger.info('Message clicked')
                     logger.info(f"{profile_index=}")
                     time.sleep(random.uniform(20, 26))
 
                     # Locate the element using a CSS selector
                     recipient_profile_elem = driver.find_element(
                         By.CSS_SELECTOR,
-                        "div.recipient-profile",
+                        'div.recipient-profile',
                     )
                     # Within that container, locate and click the "Public profile" button
                     public_profile_button = recipient_profile_elem.find_element(
                         By.CSS_SELECTOR,
-                        "button.topcard-condensed__bing-button",
+                        'button.topcard-condensed__bing-button',
                     )
                     public_profile_button.click()
 
@@ -467,17 +467,17 @@ def process_chunk_of_rows(
                         EC.presence_of_element_located(
                             (
                                 By.CSS_SELECTOR,
-                                "a[data-test-public-profile-link]",
+                                'a[data-test-public-profile-link]',
                             ),
                         ),
                     )
 
                     # Extract the href
-                    profile_href = profile_link_elem.get_attribute("href")
+                    profile_href = profile_link_elem.get_attribute('href')
                     logger.info(f"{profile_href=}")
                     name_elem = recipient_profile_elem.find_element(
                         By.CSS_SELECTOR,
-                        "div.artdeco-entity-lockup__title",
+                        'div.artdeco-entity-lockup__title',
                     )
                     name = name_elem.text.strip().split()
                     logger.info(f"{name=}")
@@ -485,7 +485,7 @@ def process_chunk_of_rows(
                     # Extract the company name from the container
                     company_elem = recipient_profile_elem.find_element(
                         By.CSS_SELECTOR,
-                        "a.position-item__company-link",
+                        'a.position-item__company-link',
                     )
                     company_name = company_elem.text.strip()
                     logger.info(f"Company Name: {company_name}")
@@ -499,26 +499,26 @@ def process_chunk_of_rows(
 
                     # Extract its text (Selenium automatically returns visible text)
                     all_text = recipient_profile_elem.text
-                    logger.info("Extracted text:")
-                    logger.info("To profile")
+                    logger.info('Extracted text:')
+                    logger.info('To profile')
                     driver.get(profile_href)
-                    logger.info("Profile opened")
+                    logger.info('Profile opened')
 
                     time.sleep(random.uniform(4, 7))
                     # Extract main content from the page
                     from bs4 import BeautifulSoup
 
                     full_html = driver.page_source
-                    soup = BeautifulSoup(full_html, "html.parser")
+                    soup = BeautifulSoup(full_html, 'html.parser')
 
-                    desired_tags = ["main"]
+                    desired_tags = ['main']
                     text_from_desired_tags = []
                     for tag in soup.find_all(desired_tags):
-                        tag_text = tag.get_text(separator=" ", strip=True)
+                        tag_text = tag.get_text(separator=' ', strip=True)
                         if tag_text:
                             text_from_desired_tags.append(tag_text)
 
-                    cleaned_text = "\n".join(text_from_desired_tags)
+                    cleaned_text = '\n'.join(text_from_desired_tags)
                     logger.info(f"Cleaned Text snippet.")
                     # Generate the personal email
                     email = generate_personal_email(
@@ -529,27 +529,27 @@ def process_chunk_of_rows(
                     subject = generate_subject(email_body=email)
                     logger.info(f"Email Subject by AI: {subject}")
                     # Extract profile ID from <code> elements
-                    code_elements = driver.find_elements(By.TAG_NAME, "code")
+                    code_elements = driver.find_elements(By.TAG_NAME, 'code')
                     profile_id = None
                     for code_element in code_elements:
-                        code_content = code_element.get_attribute("innerHTML")
-                        if "identityDashProfilesByMemberIdentity" in code_content:
+                        code_content = code_element.get_attribute('innerHTML')
+                        if 'identityDashProfilesByMemberIdentity' in code_content:
                             try:
                                 data_json = json.loads(code_content)
-                                profile_urn = data_json["data"]["data"][
-                                    "identityDashProfilesByMemberIdentity"
-                                ]["*elements"][
+                                profile_urn = data_json['data']['data'][
+                                    'identityDashProfilesByMemberIdentity'
+                                ]['*elements'][
                                     0
                                 ]  # noqa: E501
-                                profile_id = profile_urn.split(":")[-1]
+                                profile_id = profile_urn.split(':')[-1]
                                 break
                             except (json.JSONDecodeError, KeyError) as e:
                                 logger.warning(f"JSON parsing error: {e}")
                                 continue
 
                     if not profile_id:
-                        logger.warning("Profile ID not found.")
-                        raise ValueError("Profile ID extraction failed.")
+                        logger.warning('Profile ID not found.')
+                        raise ValueError('Profile ID extraction failed.')
 
                     logger.info(f"Extracted Profile ID: {profile_id}")
                     # Navigate to messaging composer
@@ -560,13 +560,13 @@ def process_chunk_of_rows(
                     # Wait for the contact info element
                     contact_info = driver.find_element(
                         By.CLASS_NAME,
-                        "contact-info",
+                        'contact-info',
                     )
                     # Check if email is saved
                     try:
                         existing_email = contact_info.find_element(
                             By.XPATH,
-                            ".//span[@data-test-contact-email-address]",
+                            './/span[@data-test-contact-email-address]',
                         )
                         logger.info(f"Email found: {existing_email.text}")
                     except NoSuchElementException:
@@ -585,7 +585,7 @@ def process_chunk_of_rows(
                         )
                         email_input.send_keys(profile_email_address)
                         email_input.send_keys(Keys.ENTER)
-                        logger.info("Email saved")
+                        logger.info('Email saved')
                         time.sleep(random.uniform(4, 7))
 
                     driver.refresh()
@@ -604,9 +604,9 @@ def process_chunk_of_rows(
                         "//div[contains(@class, 'single-message-composer__trigger-message')]",  # noqa: E501
                     )
                     text_content = send_info.text.strip()
-                    if "Send immediately via InMail" in text_content:
+                    if 'Send immediately via InMail' in text_content:
                         logger.info(
-                            "Detected: Send immediately via InMail -> switching to Email",  # noqa: E501
+                            'Detected: Send immediately via InMail -> switching to Email',  # noqa: E501
                         )
                         settings_button = driver.find_element(
                             By.XPATH,
@@ -634,7 +634,7 @@ def process_chunk_of_rows(
                             ),
                         )
                         driver.execute_script(
-                            "arguments[0].click();",
+                            'arguments[0].click();',
                             email_label,
                         )
                         time.sleep(random.uniform(1, 2))
@@ -648,7 +648,7 @@ def process_chunk_of_rows(
                             ),
                         )
                         driver.execute_script(
-                            "arguments[0].click();",
+                            'arguments[0].click();',
                             save_button,
                         )
                         time.sleep(random.uniform(2, 4))
@@ -661,7 +661,7 @@ def process_chunk_of_rows(
                             )
                             if error_message_element.is_displayed():
                                 logger.warning(
-                                    "Error: No recipient email found. Switching to InMail instead.",  # noqa: E501
+                                    'Error: No recipient email found. Switching to InMail instead.',  # noqa: E501
                                 )
                                 # Possibly skip or handle differently
                                 driver.refresh()
@@ -671,12 +671,12 @@ def process_chunk_of_rows(
                         except NoSuchElementException:
                             pass
 
-                    elif "Send immediately via Email" in text_content:
-                        logger.info("Detected: Send immediately via Email")
+                    elif 'Send immediately via Email' in text_content:
+                        logger.info('Detected: Send immediately via Email')
 
                     else:
                         logger.warning(
-                            "Unknown message mode text. Proceed carefully.",
+                            'Unknown message mode text. Proceed carefully.',
                         )
 
                     # Fill in subject
@@ -696,60 +696,61 @@ def process_chunk_of_rows(
 
                     chunk_size = 20
                     for i in range(0, len(email), chunk_size):
-                        editor.send_keys(email[i : i + chunk_size])
+                        editor.send_keys(email[i: i + chunk_size])
 
                     # Send
                     send_button = driver.find_element(
                         By.CSS_SELECTOR,
-                        "button[data-live-test-messaging-submit-btn]",
+                        'button[data-live-test-messaging-submit-btn]',
                     )
-                    if send_button.get_attribute("disabled"):
-                        email_status = "Failed"
-                        error_message = "Send button disabled."
-                        logger.warning("Send button is disabled.")
+                    if send_button.get_attribute('disabled'):
+                        email_status = 'Failed'
+                        error_message = 'Send button disabled.'
+                        logger.warning('Send button is disabled.')
                     else:
                         send_button.click()
-                        email_status = "Sent"
-                        logger.info("Message sent successfully.")
+                        email_status = 'Sent'
+                        logger.info('Message sent successfully.')
                         time.sleep(random.uniform(4, 7))
                     logger.info(f"{email_status=}")
 
-                    logger.info("To continue next profile")
+                    logger.info('To continue next profile')
 
                     time.sleep(10)
                     profile_end_time = time.perf_counter()
                     # Calculate and print the elapsed time
                     profile_elapsed_time = profile_end_time - profile_start_time
-                    print("Time spent for profile")
+                    print('Time spent for profile')
                     print(profile_elapsed_time)
-                    print("=======================")
+                    print('=======================')
 
                     continue
                 except Exception as e:
-                    print("Error processing profile:", e)
+                    print('Error processing profile:', e)
                     continue
 
             # Wait for the Next button to be clickable (adjust timeout if needed)
+            driver.get(current_link)
             time.sleep(random.uniform(8, 12))
             increment = 40  # pixels per scroll
             pause = 0.001  # seconds between scrolls
 
             # Get the initial scroll height
             last_height = driver.execute_script(
-                "return document.body.scrollHeight",
+                'return document.body.scrollHeight',
             )
 
             while True:
                 # Scroll down by the increment
                 driver.execute_script(
-                    "window.scrollBy(0, arguments[0]);",
+                    'window.scrollBy(0, arguments[0]);',
                     increment,
                 )
                 time.sleep(pause)
 
                 # Optionally, check if new content loaded by comparing heights.
                 new_height = driver.execute_script(
-                    "return document.body.scrollHeight",
+                    'return document.body.scrollHeight',
                 )
                 if new_height != last_height:
                     last_height = new_height
@@ -757,21 +758,22 @@ def process_chunk_of_rows(
                 # Break condition: for example, if you reached near the bottom.
                 # Here, we stop if we've scrolled within 100 pixels of the bottom.
                 current_scroll = driver.execute_script(
-                    "return window.pageYOffset;",
+                    'return window.pageYOffset;',
                 )
                 if (
-                    current_scroll + driver.execute_script("return window.innerHeight;")
+                    current_scroll +
+                        driver.execute_script('return window.innerHeight;')
                     >= last_height - 100
                 ):
                     break
 
-            print("Finished scrolling.")
+            print('Finished scrolling.')
             time.sleep(random.uniform(2, 6))
             next_button = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable(
                     (
                         By.CSS_SELECTOR,
-                        "a.pagination__quick-link--next[data-test-pagination-next]",
+                        'a.pagination__quick-link--next[data-test-pagination-next]',
                     ),
                 ),
             )
@@ -783,7 +785,7 @@ def process_chunk_of_rows(
             page_elapsed_time = page_end_time - page_start_time
             print(f"Code execution took {page_elapsed_time:.6f} seconds.")
             time.sleep(random.uniform(6, 10))
-            logger.info("Next page")
+            logger.info('Next page')
             continue
 
         return
@@ -794,12 +796,12 @@ def process_chunk_of_rows(
         raise e
 
     finally:
-        print("Finnally")
+        print('Finnally')
         time.sleep(600)
 
         if driver:
             driver.quit()
-            logger.info("WebDriver has been closed for this batch.")
+            logger.info('WebDriver has been closed for this batch.')
 
 
 def run_selenium_automation_with_retries(
@@ -822,7 +824,7 @@ def run_selenium_automation_with_retries(
     seniority: list[str] = None,
 ):
     logger.info(f"Run ID: {run_id} - Automation started (with retries).")
-    run_status = "Running"
+    run_status = 'Running'
     error_message = None
     print(f"{job_titles=}")
     print(f"{locations=}")
@@ -864,14 +866,14 @@ def run_selenium_automation_with_retries(
         logger.debug(traceback.format_exc())
 
     except KeyboardInterrupt:
-        run_status = "Interrupted"
-        error_message = "Run was interrupted by the user (KeyboardInterrupt)."
+        run_status = 'Interrupted'
+        error_message = 'Run was interrupted by the user (KeyboardInterrupt).'
         logger.warning(error_message)
         if callback:
             callback(success=False, message=error_message)
 
     except Exception as e:
-        run_status = "Failed"
+        run_status = 'Failed'
         error_message = f"An unexpected error occurred: {e}"
         logger.error(error_message)
         logger.debug(traceback.format_exc())
@@ -879,8 +881,8 @@ def run_selenium_automation_with_retries(
             callback(success=False, message=error_message)
 
     finally:
-        if run_id and run_status not in ["Completed", "Failed", "Interrupted"]:
-            run_status = "Failed"
-            error_message = "Run ended unexpectedly."
+        if run_id and run_status not in ['Completed', 'Failed', 'Interrupted']:
+            run_status = 'Failed'
+            error_message = 'Run ended unexpectedly.'
             if callback:
                 callback(success=False, message=error_message)
