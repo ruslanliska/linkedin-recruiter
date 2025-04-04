@@ -668,7 +668,7 @@ def process_chunk_of_rows(
                         error_message = 'Send button disabled.'
                         logger.warning('Send button is disabled.')
                     else:
-                        # send_button.click()
+                        send_button.click()
                         email_status = 'Sent'
                         logger.info('Message sent successfully.')
                         time.sleep(random.uniform(4, 7))
@@ -717,8 +717,7 @@ def process_chunk_of_rows(
         raise e
 
     finally:
-        print('Finnallu sleep')
-        time.sleep(600)
+        print('Finnally')
 
         if driver:
             driver.quit()
