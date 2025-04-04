@@ -365,11 +365,50 @@ def process_chunk_of_rows(
                 print('Finished scrolling.')
                 time.sleep(random.uniform(2, 6))
                 # driver.execute_script('window.scrollTo(0, 0);')
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
+                        profile_items = container.find_elements(
+                            By.XPATH,
+                            ".//li[.//a[@data-test-link-to-profile-link='true']]",
+                        )
+                        # If find_elements was successful (didn't raise an exception),
+                        # we have the items, so break out of the retry loop.
+                        logger.info(
+                            f"Attempt {
+                                attempt + 1}/{max_retries}: Successfully found profile items.",
+                        )
+                        break  # Exit the retry loop on success
 
-                profile_items = container.find_elements(
-                    By.XPATH,
-                    ".//li[.//a[@data-test-link-to-profile-link='true']]",
-                )
+                    except Exception as inner_ex:
+                        logger.warning(
+                            f"Attempt {
+                                attempt + 1
+                            }/{max_retries} failed to find profile items. Error: {inner_ex}",
+                        )
+                        driver.refresh()
+                        if attempt < max_retries - 1:
+                            # Optional: Wait a short period before retrying
+                            time.sleep(2)  # Wait for 1 second
+                        else:
+                            # This was the last attempt, log the final failure
+                            logger.error(
+                                f"Failed to find profile items after {
+                                    max_retries
+                                } attempts. Skipping this container.",
+                                # You might still want to log container text here, but carefully
+                                # as container itself might be stale.
+                                # try:
+                                #     logger.error(f"Container text at final failure: {container.text}")
+                                # except Exception as text_ex:
+                                #     logger.error(f"Could not get container text: {text_ex}")
+                            )
+                            # Let the loop finish naturally to trigger the 'else' block
+
+                else:
+                    # This 'else' block executes ONLY if the 'for' loop completed
+                    # without hitting the 'break' statement (i.e., all attempts failed).
+                    continue  # Skip to the next iteration of the outer loop
 
                 profile = profile_items[profile_index]
 
