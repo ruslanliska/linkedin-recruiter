@@ -372,8 +372,7 @@ def process_chunk_of_rows(
                 )
 
                 profile = profile_items[profile_index]
-                print(f"{profile=}")
-                continue
+
                 # Process each profile item (for example, print its text)
                 try:
                     # Hover over the profile item so that any hidden buttons become visible
@@ -669,7 +668,7 @@ def process_chunk_of_rows(
                         error_message = 'Send button disabled.'
                         logger.warning('Send button is disabled.')
                     else:
-                        send_button.click()
+                        # send_button.click()
                         email_status = 'Sent'
                         logger.info('Message sent successfully.')
                         time.sleep(random.uniform(4, 7))
