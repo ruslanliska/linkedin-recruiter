@@ -376,7 +376,8 @@ def process_chunk_of_rows(
                         # we have the items, so break out of the retry loop.
                         logger.info(
                             f"Attempt {
-                                attempt + 1}/{max_retries}: Successfully found profile items.",
+                                attempt + 1
+                            }/{max_retries}: Successfully found profile items.",
                         )
                         break  # Exit the retry loop on success
 
@@ -446,7 +447,7 @@ def process_chunk_of_rows(
                         )
                     logger.info('Message clicked')
                     logger.info(f"{profile_index=}")
-                    time.sleep(random.uniform(7, 12))
+                    time.sleep(random.uniform(20, 26))
 
                     # Locate the element using a CSS selector
                     recipient_profile_elem = driver.find_element(
