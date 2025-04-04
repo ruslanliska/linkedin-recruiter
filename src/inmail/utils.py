@@ -2,8 +2,13 @@ import logging
 import platform
 import re
 import sys
+import time
+from datetime import datetime
+from datetime import time as dt_time  # Alias time to avoid conflict
+from datetime import timedelta
 from pathlib import Path
 
+import pytz
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -94,7 +99,7 @@ def wait_for_key_signal(driver, timeout=300):
         pressed_key = WebDriverWait(driver, timeout).until(key_pressed)
 
         logging.info(
-            f'{pressed_key} key signal detected. Continuing the script...',
+            f"{pressed_key} key signal detected. Continuing the script...",
         )
         return pressed_key
 
@@ -110,7 +115,8 @@ def get_captured_keys(driver):
     """
     try:
         key_log = driver.find_element(
-            By.ID, 'key-log-area',
+            By.ID,
+            'key-log-area',
         ).get_attribute('value')
         return key_log
     except Exception as e:
@@ -207,3 +213,147 @@ def parse_results_count(results_text):
     except ValueError:
         value = 0
     return int(value)
+
+
+def wait_until_next_day():
+    """
+    Sleep (block) until 9 AM CET.
+    This stops processing in this thread until the specified time.
+    """
+    # Get current time in UTC
+    now_utc = datetime.now(pytz.utc)
+
+    # Convert to CET
+    cet_timezone = pytz.timezone('CET')
+    now_cet = now_utc.astimezone(cet_timezone)
+
+    # Calculate next 5 AM CET
+    if now_cet.hour >= 5:
+        # If it's past 6 AM today, set to 5 AM next day
+        next_cet = (now_cet + timedelta(days=1)).replace(
+            hour=5,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+    else:
+        # If it's before 5 AM today, set to 5 AM today
+        next_cet = now_cet.replace(
+            hour=5,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+
+    # Convert the target time back to UTC
+    next_utc = next_cet.astimezone(pytz.utc)
+
+    # Calculate the time to wait in seconds
+    seconds_to_wait = (next_utc - now_utc).total_seconds()
+    print(f"{next_cet=}")
+    print(f"{seconds_to_wait=}")
+    time.sleep(seconds_to_wait)
+
+
+def is_within_trading_hours_or_wait(
+    start_hour=9, end_hour=17, timezone_str='CET',  # 5 PM is 17:00
+):
+    """
+    Checks if the current time is within the specified trading hours
+    [start_hour, end_hour) in the given timezone (e.g., 9:00 AM to 4:59:59 PM).
+
+    If the current time is within the trading hours, returns True immediately.
+    If the current time is outside trading hours, it waits (sleeps) until
+    the next start_hour (e.g., 9 AM today or 9 AM next day) and then returns True.
+
+    Args:
+        start_hour (int): The hour the trading window starts (e.g., 9 for 9 AM). Inclusive.
+        end_hour (int): The hour the trading window ends (e.g., 17 for 5 PM). Exclusive.
+        timezone_str (str): The timezone string recognized by pytz (e.g., 'CET', 'Europe/Berlin', 'America/New_York').
+
+    Returns:
+        True: Always returns True, but might block/wait before doing so if outside trading hours.
+    """
+    try:
+        tz = pytz.timezone(timezone_str)
+    except pytz.UnknownTimeZoneError:
+        print(f"Error: Unknown timezone '{
+              timezone_str
+              }'. Using UTC as fallback.")
+        tz = pytz.utc
+        # Adjust hours if timezone was specific, e.g. CET=UTC+1/2 depending on DST
+        # This fallback might not be ideal, better to ensure correct timezone_str
+        # For simplicity here, we'll just use UTC hours if timezone fails.
+
+    # --- Get Current Time ---
+    now_utc = datetime.now(pytz.utc)
+    now_local = now_utc.astimezone(tz)
+    current_local_time = now_local.time()
+
+    # --- Define Trading Window Times ---
+    # Use datetime.time for easy comparison
+    trading_start_time = dt_time(start_hour, 0, 0)
+    trading_end_time = dt_time(end_hour, 0, 0)
+
+    # --- Check if Within Trading Hours ---
+    # The condition is: start_time <= current_time < end_time
+    if trading_start_time <= current_local_time < trading_end_time:
+        print(
+            f"Current time {now_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')} is within trading hours ({
+                start_hour
+            }:00 - {end_hour}:00 {timezone_str}).",
+        )
+        return True
+    else:
+        print(
+            f"Current time {now_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')} is outside trading hours ({
+                start_hour
+            }:00 - {end_hour}:00 {timezone_str}).",
+        )
+
+        # --- Calculate Next Trading Start Time ---
+        # Replace time part of current local datetime with the start hour
+        start_datetime_today = now_local.replace(
+            hour=start_hour, minute=0, second=0, microsecond=0,
+        )
+
+        if now_local.time() >= trading_end_time:
+            # If current time is after trading ended today, wait until start time *tomorrow*
+            next_start_local = start_datetime_today + timedelta(days=1)
+            print(f"Targeting start time tomorrow.")
+        else:  # current_local_time < trading_start_time
+            # If current time is before trading starts today, wait until start time *today*
+            next_start_local = start_datetime_today
+            print(f"Targeting start time later today.")
+
+        # --- Calculate Wait Duration and Sleep ---
+        # Convert the target local start time back to UTC for accurate comparison
+        next_start_utc = next_start_local.astimezone(pytz.utc)
+
+        # Calculate the difference in seconds
+        # Use a fresh `now_utc` call to minimize drift during calculation
+        wait_duration_seconds = (
+            next_start_utc - datetime.now(pytz.utc)
+        ).total_seconds()
+
+        if wait_duration_seconds > 0:
+            print(
+                f"Waiting for {wait_duration_seconds:.2f} seconds until the next window starts at {
+                    next_start_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')
+                }.",
+            )
+            time.sleep(wait_duration_seconds)
+            print(
+                f"Wait finished. Resuming at {
+                    datetime.now(pytz.utc).astimezone(
+                        tz
+                    ).strftime('%Y-%m-%d %H:%M:%S %Z%z')
+                }",
+            )
+            # After waiting, we have reached the start of the next trading period
+            return True
+        else:
+            # If wait duration is zero or negative, it means the start time is now or has just passed.
+            # This could happen due to calculation time or clock skew. Proceed immediately.
+            print('Calculated wait time is non-positive. Proceeding immediately.')
+            return True
