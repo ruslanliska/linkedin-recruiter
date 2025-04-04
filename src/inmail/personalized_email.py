@@ -170,67 +170,67 @@ def process_chunk_of_rows(
                 location_field.send_keys(Keys.ENTER)
             location_field.send_keys(Keys.ESCAPE)
 
-        if company_sizes:
-            # Locate the facet section that contains "Company sizes" by finding a header with that text.
-            company_facet_section = WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located(
-                    (
-                        By.XPATH,
-                        "//section[contains(@class, 'search-facet') and .//h3[contains(text(), 'Company sizes')]]",
-                    ),
-                ),
-            )
-            print('Company sizes facet section located.')
-            driver.execute_script(
-                "arguments[0].scrollIntoView({block: 'center'});",
-                company_facet_section,
-            )
-            time.sleep(1)
+        # if company_sizes:
+        #     # Locate the facet section that contains "Company sizes" by finding a header with that text.
+        #     company_facet_section = WebDriverWait(driver, 15).until(
+        #         EC.presence_of_element_located(
+        #             (
+        #                 By.XPATH,
+        #                 "//section[contains(@class, 'search-facet') and .//h3[contains(text(), 'Company sizes')]]",
+        #             ),
+        #         ),
+        #     )
+        #     print('Company sizes facet section located.')
+        #     driver.execute_script(
+        #         "arguments[0].scrollIntoView({block: 'center'});",
+        #         company_facet_section,
+        #     )
+        #     time.sleep(1)
 
-            # Attempt to click the Clear button if it exists.
-            try:
-                clear_button = company_facet_section.find_element(
-                    By.CSS_SELECTOR,
-                    "button[aria-label='Clear Company sizes']",
-                )
-                if clear_button.is_displayed():
-                    clear_button.click()
-                    print('Clear button clicked.')
-                    time.sleep(1)
-            except Exception as e:
-                print('Clear button not found; proceeding.', e)
+        #     # Attempt to click the Clear button if it exists.
+        #     try:
+        #         clear_button = company_facet_section.find_element(
+        #             By.CSS_SELECTOR,
+        #             "button[aria-label='Clear Company sizes']",
+        #         )
+        #         if clear_button.is_displayed():
+        #             clear_button.click()
+        #             print('Clear button clicked.')
+        #             time.sleep(1)
+        #     except Exception as e:
+        #         print('Clear button not found; proceeding.', e)
 
-            # Locate and click the "Add" button to open the suggestions dropdown.
-            add_button = WebDriverWait(company_facet_section, 15).until(
-                EC.element_to_be_clickable(
-                    (
-                        By.CSS_SELECTOR,
-                        "button.facet-edit-button[data-view-name='search-facet-add']",
-                    ),
-                ),
-            )
-            driver.execute_script(
-                "arguments[0].scrollIntoView({block: 'center'});",
-                add_button,
-            )
-            add_button.click()
-            print('Add button clicked to reveal suggestions.')
-            time.sleep(1)
+        #     # Locate and click the "Add" button to open the suggestions dropdown.
+        #     add_button = WebDriverWait(company_facet_section, 15).until(
+        #         EC.element_to_be_clickable(
+        #             (
+        #                 By.CSS_SELECTOR,
+        #                 "button.facet-edit-button[data-view-name='search-facet-add']",
+        #             ),
+        #         ),
+        #     )
+        #     driver.execute_script(
+        #         "arguments[0].scrollIntoView({block: 'center'});",
+        #         add_button,
+        #     )
+        #     add_button.click()
+        #     print('Add button clicked to reveal suggestions.')
+        #     time.sleep(1)
 
-            # Wait for the suggestions container to become visible.
-            suggestions_container = WebDriverWait(company_facet_section, 15).until(
-                EC.visibility_of_element_located(
-                    (By.CSS_SELECTOR, 'ul.facet-suggestions'),
-                ),
-            )
-            print('Suggestions container located.')
+        #     # Wait for the suggestions container to become visible.
+        #     suggestions_container = WebDriverWait(company_facet_section, 15).until(
+        #         EC.visibility_of_element_located(
+        #             (By.CSS_SELECTOR, 'ul.facet-suggestions'),
+        #         ),
+        #     )
+        #     print('Suggestions container located.')
 
-            # Retrieve all suggestion items (anchor elements)
-            suggestions = suggestions_container.find_elements(
-                By.CSS_SELECTOR,
-                'a.facet-suggestions__item-action',
-            )
-            print('Found', len(suggestions), 'suggestions.')
+        #     # Retrieve all suggestion items (anchor elements)
+        #     suggestions = suggestions_container.find_elements(
+        #         By.CSS_SELECTOR,
+        #         'a.facet-suggestions__item-action',
+        #     )
+        #     print('Found', len(suggestions), 'suggestions.')
 
         if past_companies or job_functions or company_sizes or seniority:
             print('advanced search')
@@ -483,6 +483,7 @@ def process_chunk_of_rows(
                     email = generate_personal_email(
                         page_summary=cleaned_text,
                         user_prompt=prompt,
+                        email_instructions=reference_email,
                     )
                     subject = generate_subject(email_body=email)
                     logger.info(f"Email Subject by AI: {subject}")
