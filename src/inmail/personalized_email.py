@@ -697,22 +697,26 @@ def process_chunk_of_rows(
                     chunk_size = 20
                     for i in range(0, len(email), chunk_size):
                         editor.send_keys(email[i: i + chunk_size])
-
-                    # Send
-                    send_button = driver.find_element(
-                        By.CSS_SELECTOR,
-                        'button[data-live-test-messaging-submit-btn]',
-                    )
-                    if send_button.get_attribute('disabled'):
+                    try:
+                        # Send
+                        send_button = driver.find_element(
+                            By.CSS_SELECTOR,
+                            'button[data-live-test-messaging-submit-btn]',
+                        )
+                        if send_button.get_attribute('disabled'):
+                            email_status = 'Failed'
+                            error_message = 'Send button disabled.'
+                            logger.warning('Send button is disabled.')
+                        else:
+                            send_button.click()
+                            email_status = 'Sent'
+                            logger.info('Message sent successfully.')
+                            time.sleep(random.uniform(4, 7))
+                        logger.info(f"{email_status=}")
+                    except Exception as e:
                         email_status = 'Failed'
-                        error_message = 'Send button disabled.'
-                        logger.warning('Send button is disabled.')
-                    else:
-                        send_button.click()
-                        email_status = 'Sent'
-                        logger.info('Message sent successfully.')
-                        time.sleep(random.uniform(4, 7))
-                    logger.info(f"{email_status=}")
+                        error_message = str(e)
+                        logger.error(f"Error sending message: {error_message}")
 
                     logger.info('To continue next profile')
 
