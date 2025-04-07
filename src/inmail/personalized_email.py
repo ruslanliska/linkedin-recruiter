@@ -292,44 +292,454 @@ def process_chunk_of_rows(
             )
         page = 1
 
-        for page in range(1, num_results):
-            is_within_trading_hours_or_wait()
-            page_start_time = time.perf_counter()
-            logger.info(f"Processing page {page} of results")
-            time.sleep(random.uniform(3, 5))
-            current_link = driver.current_url
-            print('Current URL:', current_link)
+        for page in range(1, num_results//25):
+            try:
+                is_within_trading_hours_or_wait()
+                page_start_time = time.perf_counter()
+                logger.info(f"Processing page {page} of results")
+                time.sleep(random.uniform(3, 5))
+                current_link = driver.current_url
+                print('Current URL:', current_link)
 
-            # for profile in profile_items:
-            for profile_index in range(25):
-                profile_start_time = time.perf_counter()
+                # for profile in profile_items:
+                for profile_index in range(25):
+                    profile_start_time = time.perf_counter()
 
-                driver.get(current_link)
-                time.sleep(random.uniform(6, 10))
+                    driver.get(current_link)
+                    time.sleep(random.uniform(6, 10))
 
-                print('Opened search result')
-                try:
-                    # Wait until the profile list container is present using the updated class selector
-                    container = WebDriverWait(driver, 15).until(
-                        EC.presence_of_element_located(
-                            (
-                                By.XPATH,
-                                "//div[contains(@class, 'profile-list-container-card')]",
+                    print('Opened search result')
+                    try:
+                        # Wait until the profile list container is present using the updated class selector
+                        container = WebDriverWait(driver, 15).until(
+                            EC.presence_of_element_located(
+                                (
+                                    By.XPATH,
+                                    "//div[contains(@class, 'profile-list-container-card')]",
+                                ),
                             ),
-                        ),
+                        )
+                        # Optionally wait until it's visible
+                        container = WebDriverWait(driver, 15).until(
+                            EC.visibility_of(container),
+                        )
+                    except TimeoutException:
+                        logger.info(
+                            'Profile list container not found within the timeout period.',
+                        )
+                    logger.info(f"{profile_index=}")
+                    # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
+                    # Set the increment and pause duration.
+                    increment = 30  # pixels per scroll
+                    pause = 0.001  # seconds between scrolls
+
+                    # Get the initial scroll height
+                    last_height = driver.execute_script(
+                        'return document.body.scrollHeight',
                     )
-                    # Optionally wait until it's visible
-                    container = WebDriverWait(driver, 15).until(
-                        EC.visibility_of(container),
-                    )
-                except TimeoutException:
-                    logger.info(
-                        'Profile list container not found within the timeout period.',
-                    )
-                logger.info(f"{profile_index=}")
-                # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
-                # Set the increment and pause duration.
-                increment = 30  # pixels per scroll
+
+                    while True:
+                        # Scroll down by the increment
+                        driver.execute_script(
+                            'window.scrollBy(0, arguments[0]);',
+                            increment,
+                        )
+                        time.sleep(pause)
+
+                        # Optionally, check if new content loaded by comparing heights.
+                        new_height = driver.execute_script(
+                            'return document.body.scrollHeight',
+                        )
+                        if new_height != last_height:
+                            last_height = new_height
+
+                        # Break condition: for example, if you reached near the bottom.
+                        # Here, we stop if we've scrolled within 100 pixels of the bottom.
+                        current_scroll = driver.execute_script(
+                            'return window.pageYOffset;',
+                        )
+                        if (
+                            current_scroll
+                            + driver.execute_script('return window.innerHeight;')
+                            >= last_height - 100
+                        ):
+                            break
+
+                    print('Finished scrolling.')
+                    time.sleep(random.uniform(2, 6))
+                    # driver.execute_script('window.scrollTo(0, 0);')
+                    max_retries = 3
+                    for attempt in range(max_retries):
+                        try:
+                            profile_items = container.find_elements(
+                                By.XPATH,
+                                ".//li[.//a[@data-test-link-to-profile-link='true']]",
+                            )
+                            # If find_elements was successful (didn't raise an exception),
+                            # we have the items, so break out of the retry loop.
+                            logger.info(
+                                f"Attempt {
+                                    attempt + 1
+                                }/{max_retries}: Successfully found profile items.",
+                            )
+                            break  # Exit the retry loop on success
+
+                        except Exception as inner_ex:
+                            logger.warning(
+                                f"Attempt {
+                                    attempt + 1
+                                }/{max_retries} failed to find profile items. Error: {inner_ex}",
+                            )
+                            driver.refresh()
+                            if attempt < max_retries - 1:
+                                # Optional: Wait a short period before retrying
+                                time.sleep(2)  # Wait for 1 second
+                            else:
+                                # This was the last attempt, log the final failure
+                                logger.error(
+                                    f"Failed to find profile items after {
+                                        max_retries
+                                    } attempts. Skipping this container.",
+                                    # You might still want to log container text here, but carefully
+                                    # as container itself might be stale.
+                                    # try:
+                                    #     logger.error(f"Container text at final failure: {container.text}")
+                                    # except Exception as text_ex:
+                                    #     logger.error(f"Could not get container text: {text_ex}")
+                                )
+                                # Let the loop finish naturally to trigger the 'else' block
+
+                    else:
+                        # This 'else' block executes ONLY if the 'for' loop completed
+                        # without hitting the 'break' statement (i.e., all attempts failed).
+                        continue  # Skip to the next iteration of the outer loop
+
+                    profile = profile_items[profile_index]
+
+                    # Process each profile item (for example, print its text)
+                    try:
+                        # Hover over the profile item so that any hidden buttons become visible
+                        ActionChains(driver).move_to_element(profile).perform()
+                        time.sleep(random.uniform(2, 4))
+
+                        # Attempt to locate the Message button within this profile.
+                        try:
+                            message_button = profile.find_element(
+                                By.XPATH,
+                                ".//button[contains(., 'Message')]",
+                            )
+                        except Exception as inner_ex:
+                            logger.error(
+                                'Message button not found in profile:',
+                                profile.text,
+                            )
+                        #     # continue  # Skip this profile if button not found
+
+                        # # Wait until the button is clickable (if necessary)
+                        WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable(message_button),
+                        )
+
+                        # Try a normal click; if that fails, use JavaScript to click
+                        try:
+                            message_button.click()
+                        except Exception as click_ex:
+                            driver.execute_script(
+                                'arguments[0].click();',
+                                message_button,
+                            )
+                        logger.info('Message clicked')
+                        logger.info(f"{profile_index=}")
+                        time.sleep(random.uniform(20, 26))
+
+                        # Locate the element using a CSS selector
+                        recipient_profile_elem = driver.find_element(
+                            By.CSS_SELECTOR,
+                            'div.recipient-profile',
+                        )
+                        # Within that container, locate and click the "Public profile" button
+                        public_profile_button = recipient_profile_elem.find_element(
+                            By.CSS_SELECTOR,
+                            'button.topcard-condensed__bing-button',
+                        )
+                        public_profile_button.click()
+
+                        # Now wait for the hovercard anchor to appear.
+                        # We can target it by its stable attribute: data-test-public-profile-link
+                        profile_link_elem = WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located(
+                                (
+                                    By.CSS_SELECTOR,
+                                    'a[data-test-public-profile-link]',
+                                ),
+                            ),
+                        )
+
+                        # Extract the href
+                        profile_href = profile_link_elem.get_attribute('href')
+                        logger.info(f"{profile_href=}")
+                        name_elem = recipient_profile_elem.find_element(
+                            By.CSS_SELECTOR,
+                            'div.artdeco-entity-lockup__title',
+                        )
+                        name = name_elem.text.strip().split()
+                        logger.info(f"{name=}")
+
+                        # Extract the company name from the container
+                        company_elem = recipient_profile_elem.find_element(
+                            By.CSS_SELECTOR,
+                            'a.position-item__company-link',
+                        )
+                        company_name = company_elem.text.strip()
+                        logger.info(f"Company Name: {company_name}")
+                        company_slug = slugify_company(company_name)
+                        profile_email_address = f"{
+                            name[0].strip()
+                        }.{name[1].strip()}@{company_slug}.com".lower()
+                        logger.info(
+                            f"Guessed {profile_email_address=}",
+                        )
+
+                        # Extract its text (Selenium automatically returns visible text)
+                        all_text = recipient_profile_elem.text
+                        logger.info('Extracted text:')
+                        logger.info('To profile')
+                        driver.get(profile_href)
+                        logger.info('Profile opened')
+
+                        time.sleep(random.uniform(4, 7))
+                        # Extract main content from the page
+                        from bs4 import BeautifulSoup
+
+                        full_html = driver.page_source
+                        soup = BeautifulSoup(full_html, 'html.parser')
+
+                        desired_tags = ['main']
+                        text_from_desired_tags = []
+                        for tag in soup.find_all(desired_tags):
+                            tag_text = tag.get_text(separator=' ', strip=True)
+                            if tag_text:
+                                text_from_desired_tags.append(tag_text)
+
+                        cleaned_text = '\n'.join(text_from_desired_tags)
+                        logger.info(f"Cleaned Text snippet.")
+                        # Generate the personal email
+                        email = generate_personal_email(
+                            page_summary=cleaned_text,
+                            user_prompt=prompt,
+                            email_instructions=reference_email,
+                        )
+                        subject = generate_subject(email_body=email)
+                        logger.info(f"Email Subject by AI: {subject}")
+                        # Extract profile ID from <code> elements
+                        code_elements = driver.find_elements(By.TAG_NAME, 'code')
+                        profile_id = None
+                        for code_element in code_elements:
+                            code_content = code_element.get_attribute('innerHTML')
+                            if 'identityDashProfilesByMemberIdentity' in code_content:
+                                try:
+                                    data_json = json.loads(code_content)
+                                    profile_urn = data_json['data']['data'][
+                                        'identityDashProfilesByMemberIdentity'
+                                    ]['*elements'][
+                                        0
+                                    ]  # noqa: E501
+                                    profile_id = profile_urn.split(':')[-1]
+                                    break
+                                except (json.JSONDecodeError, KeyError) as e:
+                                    logger.warning(f"JSON parsing error: {e}")
+                                    continue
+
+                        if not profile_id:
+                            logger.warning('Profile ID not found.')
+                            raise ValueError('Profile ID extraction failed.')
+
+                        logger.info(f"Extracted Profile ID: {profile_id}")
+                        # Navigate to messaging composer
+                        target_url = f"https://www.linkedin.com/talent/profile/{profile_id}"  # noqa: E501
+                        logger.info(f"Navigate to {target_url}")
+                        driver.get(target_url)
+                        time.sleep(random.uniform(10, 20))
+                        # Wait for the contact info element
+                        contact_info = driver.find_element(
+                            By.CLASS_NAME,
+                            'contact-info',
+                        )
+                        # Check if email is saved
+                        try:
+                            existing_email = contact_info.find_element(
+                                By.XPATH,
+                                './/span[@data-test-contact-email-address]',
+                            )
+                            logger.info(f"Email found: {existing_email.text}")
+                        except NoSuchElementException:
+                            # If no email, add it
+                            logger.info(
+                                "No email found. Looking for 'Add email' button...",
+                            )
+                            add_email_button = driver.find_element(
+                                By.XPATH,
+                                ".//button[@class='button-small-muted-tertiary contact-info__add']",  # noqa: E501
+                            )
+                            add_email_button.click()
+                            email_input = driver.find_element(
+                                By.XPATH,
+                                ".//input[@type='email']",
+                            )
+                            email_input.send_keys(profile_email_address)
+                            email_input.send_keys(Keys.ENTER)
+                            logger.info('Email saved')
+                            time.sleep(random.uniform(4, 7))
+
+                        driver.refresh()
+                        time.sleep(random.uniform(4, 7))
+                        # Open message composer
+                        email_button = driver.find_element(
+                            By.XPATH,
+                            "//button[contains(@class, 'artdeco-button') and contains(@data-live-test-component, 'message-icon-btn')]",  # noqa: E501
+                        )
+                        email_button.click()
+                        time.sleep(random.uniform(4, 7))
+
+                        # Detect if it's InMail or Email
+                        send_info = driver.find_element(
+                            By.XPATH,
+                            "//div[contains(@class, 'single-message-composer__trigger-message')]",  # noqa: E501
+                        )
+                        text_content = send_info.text.strip()
+                        if 'Send immediately via InMail' in text_content:
+                            logger.info(
+                                'Detected: Send immediately via InMail -> switching to Email',  # noqa: E501
+                            )
+                            settings_button = driver.find_element(
+                                By.XPATH,
+                                "//button[contains(@class, 'single-message-composer__trigger-message-gear-icon')]",  # noqa: E501
+                            )
+                            settings_button.click()
+                            time.sleep(random.uniform(3, 6))
+
+                            # Wait for the modal, switch to Email
+                            modal = WebDriverWait(driver, 10).until(
+                                EC.visibility_of_element_located(
+                                    (
+                                        By.XPATH,
+                                        "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",  # noqa: E501
+                                    ),
+                                ),
+                            )
+                            # Click the Email radio label
+                            email_label = WebDriverWait(modal, 10).until(
+                                EC.element_to_be_clickable(
+                                    (
+                                        By.XPATH,
+                                        ".//label[normalize-space(.)='Email']",
+                                    ),
+                                ),
+                            )
+                            driver.execute_script(
+                                'arguments[0].click();',
+                                email_label,
+                            )
+                            time.sleep(random.uniform(1, 2))
+
+                            save_button = WebDriverWait(modal, 10).until(
+                                EC.element_to_be_clickable(
+                                    (
+                                        By.XPATH,
+                                        ".//button[.//span[contains(normalize-space(), 'Save')]]",  # noqa: E501
+                                    ),
+                                ),
+                            )
+                            driver.execute_script(
+                                'arguments[0].click();',
+                                save_button,
+                            )
+                            time.sleep(random.uniform(2, 4))
+
+                            # Check for error
+                            try:
+                                error_message_element = driver.find_element(
+                                    By.XPATH,
+                                    "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",  # noqa: E501
+                                )
+                                if error_message_element.is_displayed():
+                                    logger.warning(
+                                        'Error: No recipient email found. Switching to InMail instead.',  # noqa: E501
+                                    )
+                                    # Possibly skip or handle differently
+                                    driver.refresh()
+                                    time.sleep(random.uniform(4, 7))
+
+                                    continue
+                            except NoSuchElementException:
+                                pass
+
+                        elif 'Send immediately via Email' in text_content:
+                            logger.info('Detected: Send immediately via Email')
+
+                        else:
+                            logger.warning(
+                                'Unknown message mode text. Proceed carefully.',
+                            )
+
+                        # Fill in subject
+                        subject_input = driver.find_element(
+                            By.CSS_SELECTOR,
+                            "input[aria-label='Message subject'][placeholder='Add a subject']",  # noqa: E501
+                        )
+                        subject_input.click()
+                        subject_input.send_keys(subject)
+
+                        # Fill in the message body
+                        editor = driver.find_element(
+                            By.CSS_SELECTOR,
+                            ".ql-editor[contenteditable='true']",
+                        )
+                        editor.click()
+
+                        chunk_size = 20
+                        for i in range(0, len(email), chunk_size):
+                            editor.send_keys(email[i: i + chunk_size])
+                        try:
+                            # Send
+                            send_button = driver.find_element(
+                                By.CSS_SELECTOR,
+                                'button[data-live-test-messaging-submit-btn]',
+                            )
+                            if send_button.get_attribute('disabled'):
+                                email_status = 'Failed'
+                                error_message = 'Send button disabled.'
+                                logger.warning('Send button is disabled.')
+                            else:
+                                send_button.click()
+                                email_status = 'Sent'
+                                logger.info('Message sent successfully.')
+                                time.sleep(random.uniform(4, 7))
+                            logger.info(f"{email_status=}")
+                        except Exception as e:
+                            email_status = 'Failed'
+                            error_message = str(e)
+                            logger.error(f"Error sending message: {error_message}")
+
+                        logger.info('To continue next profile')
+
+                        time.sleep(10)
+                        profile_end_time = time.perf_counter()
+                        # Calculate and print the elapsed time
+                        profile_elapsed_time = profile_end_time - profile_start_time
+                        print('Time spent for profile')
+                        print(profile_elapsed_time)
+                        print('=======================')
+
+                        continue
+                    except Exception as e:
+                        print('Error processing profile:', e)
+                        continue
+
+                # Wait for the Next button to be clickable (adjust timeout if needed)
+                driver.get(current_link)
+                time.sleep(random.uniform(8, 12))
+                increment = 40  # pixels per scroll
                 pause = 0.001  # seconds between scrolls
 
                 # Get the initial scroll height
@@ -358,441 +768,34 @@ def process_chunk_of_rows(
                         'return window.pageYOffset;',
                     )
                     if (
-                        current_scroll
-                        + driver.execute_script('return window.innerHeight;')
+                        current_scroll +
+                            driver.execute_script('return window.innerHeight;')
                         >= last_height - 100
                     ):
                         break
 
                 print('Finished scrolling.')
                 time.sleep(random.uniform(2, 6))
-                # driver.execute_script('window.scrollTo(0, 0);')
-                max_retries = 3
-                for attempt in range(max_retries):
-                    try:
-                        profile_items = container.find_elements(
-                            By.XPATH,
-                            ".//li[.//a[@data-test-link-to-profile-link='true']]",
-                        )
-                        # If find_elements was successful (didn't raise an exception),
-                        # we have the items, so break out of the retry loop.
-                        logger.info(
-                            f"Attempt {
-                                attempt + 1
-                            }/{max_retries}: Successfully found profile items.",
-                        )
-                        break  # Exit the retry loop on success
-
-                    except Exception as inner_ex:
-                        logger.warning(
-                            f"Attempt {
-                                attempt + 1
-                            }/{max_retries} failed to find profile items. Error: {inner_ex}",
-                        )
-                        driver.refresh()
-                        if attempt < max_retries - 1:
-                            # Optional: Wait a short period before retrying
-                            time.sleep(2)  # Wait for 1 second
-                        else:
-                            # This was the last attempt, log the final failure
-                            logger.error(
-                                f"Failed to find profile items after {
-                                    max_retries
-                                } attempts. Skipping this container.",
-                                # You might still want to log container text here, but carefully
-                                # as container itself might be stale.
-                                # try:
-                                #     logger.error(f"Container text at final failure: {container.text}")
-                                # except Exception as text_ex:
-                                #     logger.error(f"Could not get container text: {text_ex}")
-                            )
-                            # Let the loop finish naturally to trigger the 'else' block
-
-                else:
-                    # This 'else' block executes ONLY if the 'for' loop completed
-                    # without hitting the 'break' statement (i.e., all attempts failed).
-                    continue  # Skip to the next iteration of the outer loop
-
-                profile = profile_items[profile_index]
-
-                # Process each profile item (for example, print its text)
-                try:
-                    # Hover over the profile item so that any hidden buttons become visible
-                    ActionChains(driver).move_to_element(profile).perform()
-                    time.sleep(random.uniform(2, 4))
-
-                    # Attempt to locate the Message button within this profile.
-                    try:
-                        message_button = profile.find_element(
-                            By.XPATH,
-                            ".//button[contains(., 'Message')]",
-                        )
-                    except Exception as inner_ex:
-                        logger.error(
-                            'Message button not found in profile:',
-                            profile.text,
-                        )
-                    #     # continue  # Skip this profile if button not found
-
-                    # # Wait until the button is clickable (if necessary)
-                    WebDriverWait(driver, 10).until(
-                        EC.element_to_be_clickable(message_button),
-                    )
-
-                    # Try a normal click; if that fails, use JavaScript to click
-                    try:
-                        message_button.click()
-                    except Exception as click_ex:
-                        driver.execute_script(
-                            'arguments[0].click();',
-                            message_button,
-                        )
-                    logger.info('Message clicked')
-                    logger.info(f"{profile_index=}")
-                    time.sleep(random.uniform(20, 26))
-
-                    # Locate the element using a CSS selector
-                    recipient_profile_elem = driver.find_element(
-                        By.CSS_SELECTOR,
-                        'div.recipient-profile',
-                    )
-                    # Within that container, locate and click the "Public profile" button
-                    public_profile_button = recipient_profile_elem.find_element(
-                        By.CSS_SELECTOR,
-                        'button.topcard-condensed__bing-button',
-                    )
-                    public_profile_button.click()
-
-                    # Now wait for the hovercard anchor to appear.
-                    # We can target it by its stable attribute: data-test-public-profile-link
-                    profile_link_elem = WebDriverWait(driver, 10).until(
-                        EC.presence_of_element_located(
-                            (
-                                By.CSS_SELECTOR,
-                                'a[data-test-public-profile-link]',
-                            ),
-                        ),
-                    )
-
-                    # Extract the href
-                    profile_href = profile_link_elem.get_attribute('href')
-                    logger.info(f"{profile_href=}")
-                    name_elem = recipient_profile_elem.find_element(
-                        By.CSS_SELECTOR,
-                        'div.artdeco-entity-lockup__title',
-                    )
-                    name = name_elem.text.strip().split()
-                    logger.info(f"{name=}")
-
-                    # Extract the company name from the container
-                    company_elem = recipient_profile_elem.find_element(
-                        By.CSS_SELECTOR,
-                        'a.position-item__company-link',
-                    )
-                    company_name = company_elem.text.strip()
-                    logger.info(f"Company Name: {company_name}")
-                    company_slug = slugify_company(company_name)
-                    profile_email_address = f"{
-                        name[0].strip()
-                    }.{name[1].strip()}@{company_slug}.com".lower()
-                    logger.info(
-                        f"Guessed {profile_email_address=}",
-                    )
-
-                    # Extract its text (Selenium automatically returns visible text)
-                    all_text = recipient_profile_elem.text
-                    logger.info('Extracted text:')
-                    logger.info('To profile')
-                    driver.get(profile_href)
-                    logger.info('Profile opened')
-
-                    time.sleep(random.uniform(4, 7))
-                    # Extract main content from the page
-                    from bs4 import BeautifulSoup
-
-                    full_html = driver.page_source
-                    soup = BeautifulSoup(full_html, 'html.parser')
-
-                    desired_tags = ['main']
-                    text_from_desired_tags = []
-                    for tag in soup.find_all(desired_tags):
-                        tag_text = tag.get_text(separator=' ', strip=True)
-                        if tag_text:
-                            text_from_desired_tags.append(tag_text)
-
-                    cleaned_text = '\n'.join(text_from_desired_tags)
-                    logger.info(f"Cleaned Text snippet.")
-                    # Generate the personal email
-                    email = generate_personal_email(
-                        page_summary=cleaned_text,
-                        user_prompt=prompt,
-                        email_instructions=reference_email,
-                    )
-                    subject = generate_subject(email_body=email)
-                    logger.info(f"Email Subject by AI: {subject}")
-                    # Extract profile ID from <code> elements
-                    code_elements = driver.find_elements(By.TAG_NAME, 'code')
-                    profile_id = None
-                    for code_element in code_elements:
-                        code_content = code_element.get_attribute('innerHTML')
-                        if 'identityDashProfilesByMemberIdentity' in code_content:
-                            try:
-                                data_json = json.loads(code_content)
-                                profile_urn = data_json['data']['data'][
-                                    'identityDashProfilesByMemberIdentity'
-                                ]['*elements'][
-                                    0
-                                ]  # noqa: E501
-                                profile_id = profile_urn.split(':')[-1]
-                                break
-                            except (json.JSONDecodeError, KeyError) as e:
-                                logger.warning(f"JSON parsing error: {e}")
-                                continue
-
-                    if not profile_id:
-                        logger.warning('Profile ID not found.')
-                        raise ValueError('Profile ID extraction failed.')
-
-                    logger.info(f"Extracted Profile ID: {profile_id}")
-                    # Navigate to messaging composer
-                    target_url = f"https://www.linkedin.com/talent/profile/{profile_id}"  # noqa: E501
-                    logger.info(f"Navigate to {target_url}")
-                    driver.get(target_url)
-                    time.sleep(random.uniform(10, 20))
-                    # Wait for the contact info element
-                    contact_info = driver.find_element(
-                        By.CLASS_NAME,
-                        'contact-info',
-                    )
-                    # Check if email is saved
-                    try:
-                        existing_email = contact_info.find_element(
-                            By.XPATH,
-                            './/span[@data-test-contact-email-address]',
-                        )
-                        logger.info(f"Email found: {existing_email.text}")
-                    except NoSuchElementException:
-                        # If no email, add it
-                        logger.info(
-                            "No email found. Looking for 'Add email' button...",
-                        )
-                        add_email_button = driver.find_element(
-                            By.XPATH,
-                            ".//button[@class='button-small-muted-tertiary contact-info__add']",  # noqa: E501
-                        )
-                        add_email_button.click()
-                        email_input = driver.find_element(
-                            By.XPATH,
-                            ".//input[@type='email']",
-                        )
-                        email_input.send_keys(profile_email_address)
-                        email_input.send_keys(Keys.ENTER)
-                        logger.info('Email saved')
-                        time.sleep(random.uniform(4, 7))
-
-                    driver.refresh()
-                    time.sleep(random.uniform(4, 7))
-                    # Open message composer
-                    email_button = driver.find_element(
-                        By.XPATH,
-                        "//button[contains(@class, 'artdeco-button') and contains(@data-live-test-component, 'message-icon-btn')]",  # noqa: E501
-                    )
-                    email_button.click()
-                    time.sleep(random.uniform(4, 7))
-
-                    # Detect if it's InMail or Email
-                    send_info = driver.find_element(
-                        By.XPATH,
-                        "//div[contains(@class, 'single-message-composer__trigger-message')]",  # noqa: E501
-                    )
-                    text_content = send_info.text.strip()
-                    if 'Send immediately via InMail' in text_content:
-                        logger.info(
-                            'Detected: Send immediately via InMail -> switching to Email',  # noqa: E501
-                        )
-                        settings_button = driver.find_element(
-                            By.XPATH,
-                            "//button[contains(@class, 'single-message-composer__trigger-message-gear-icon')]",  # noqa: E501
-                        )
-                        settings_button.click()
-                        time.sleep(random.uniform(3, 6))
-
-                        # Wait for the modal, switch to Email
-                        modal = WebDriverWait(driver, 10).until(
-                            EC.visibility_of_element_located(
-                                (
-                                    By.XPATH,
-                                    "//div[@role='dialog' and contains(@class, 'inline-modal__container')]",  # noqa: E501
-                                ),
-                            ),
-                        )
-                        # Click the Email radio label
-                        email_label = WebDriverWait(modal, 10).until(
-                            EC.element_to_be_clickable(
-                                (
-                                    By.XPATH,
-                                    ".//label[normalize-space(.)='Email']",
-                                ),
-                            ),
-                        )
-                        driver.execute_script(
-                            'arguments[0].click();',
-                            email_label,
-                        )
-                        time.sleep(random.uniform(1, 2))
-
-                        save_button = WebDriverWait(modal, 10).until(
-                            EC.element_to_be_clickable(
-                                (
-                                    By.XPATH,
-                                    ".//button[.//span[contains(normalize-space(), 'Save')]]",  # noqa: E501
-                                ),
-                            ),
-                        )
-                        driver.execute_script(
-                            'arguments[0].click();',
-                            save_button,
-                        )
-                        time.sleep(random.uniform(2, 4))
-
-                        # Check for error
-                        try:
-                            error_message_element = driver.find_element(
-                                By.XPATH,
-                                "//h3[contains(@class, 'trigger-conditions-modal__message-channel-error')]",  # noqa: E501
-                            )
-                            if error_message_element.is_displayed():
-                                logger.warning(
-                                    'Error: No recipient email found. Switching to InMail instead.',  # noqa: E501
-                                )
-                                # Possibly skip or handle differently
-                                driver.refresh()
-                                time.sleep(random.uniform(4, 7))
-
-                                continue
-                        except NoSuchElementException:
-                            pass
-
-                    elif 'Send immediately via Email' in text_content:
-                        logger.info('Detected: Send immediately via Email')
-
-                    else:
-                        logger.warning(
-                            'Unknown message mode text. Proceed carefully.',
-                        )
-
-                    # Fill in subject
-                    subject_input = driver.find_element(
-                        By.CSS_SELECTOR,
-                        "input[aria-label='Message subject'][placeholder='Add a subject']",  # noqa: E501
-                    )
-                    subject_input.click()
-                    subject_input.send_keys(subject)
-
-                    # Fill in the message body
-                    editor = driver.find_element(
-                        By.CSS_SELECTOR,
-                        ".ql-editor[contenteditable='true']",
-                    )
-                    editor.click()
-
-                    chunk_size = 20
-                    for i in range(0, len(email), chunk_size):
-                        editor.send_keys(email[i: i + chunk_size])
-                    try:
-                        # Send
-                        send_button = driver.find_element(
+                next_button = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable(
+                        (
                             By.CSS_SELECTOR,
-                            'button[data-live-test-messaging-submit-btn]',
-                        )
-                        if send_button.get_attribute('disabled'):
-                            email_status = 'Failed'
-                            error_message = 'Send button disabled.'
-                            logger.warning('Send button is disabled.')
-                        else:
-                            send_button.click()
-                            email_status = 'Sent'
-                            logger.info('Message sent successfully.')
-                            time.sleep(random.uniform(4, 7))
-                        logger.info(f"{email_status=}")
-                    except Exception as e:
-                        email_status = 'Failed'
-                        error_message = str(e)
-                        logger.error(f"Error sending message: {error_message}")
-
-                    logger.info('To continue next profile')
-
-                    time.sleep(10)
-                    profile_end_time = time.perf_counter()
-                    # Calculate and print the elapsed time
-                    profile_elapsed_time = profile_end_time - profile_start_time
-                    print('Time spent for profile')
-                    print(profile_elapsed_time)
-                    print('=======================')
-
-                    continue
-                except Exception as e:
-                    print('Error processing profile:', e)
-                    continue
-
-            # Wait for the Next button to be clickable (adjust timeout if needed)
-            driver.get(current_link)
-            time.sleep(random.uniform(8, 12))
-            increment = 40  # pixels per scroll
-            pause = 0.001  # seconds between scrolls
-
-            # Get the initial scroll height
-            last_height = driver.execute_script(
-                'return document.body.scrollHeight',
-            )
-
-            while True:
-                # Scroll down by the increment
-                driver.execute_script(
-                    'window.scrollBy(0, arguments[0]);',
-                    increment,
-                )
-                time.sleep(pause)
-
-                # Optionally, check if new content loaded by comparing heights.
-                new_height = driver.execute_script(
-                    'return document.body.scrollHeight',
-                )
-                if new_height != last_height:
-                    last_height = new_height
-
-                # Break condition: for example, if you reached near the bottom.
-                # Here, we stop if we've scrolled within 100 pixels of the bottom.
-                current_scroll = driver.execute_script(
-                    'return window.pageYOffset;',
-                )
-                if (
-                    current_scroll +
-                        driver.execute_script('return window.innerHeight;')
-                    >= last_height - 100
-                ):
-                    break
-
-            print('Finished scrolling.')
-            time.sleep(random.uniform(2, 6))
-            next_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable(
-                    (
-                        By.CSS_SELECTOR,
-                        'a.pagination__quick-link--next[data-test-pagination-next]',
+                            'a.pagination__quick-link--next[data-test-pagination-next]',
+                        ),
                     ),
-                ),
-            )
+                )
 
-            # Click the Next button
-            next_button.click()
-            page_end_time = time.perf_counter()
-            # Calculate and print the elapsed time
-            page_elapsed_time = page_end_time - page_start_time
-            print(f"Code execution took {page_elapsed_time:.6f} seconds.")
-            time.sleep(random.uniform(6, 10))
-            logger.info('Next page')
-            continue
+                # Click the Next button
+                next_button.click()
+                page_end_time = time.perf_counter()
+                # Calculate and print the elapsed time
+                page_elapsed_time = page_end_time - page_start_time
+                print(f"Code execution took {page_elapsed_time:.6f} seconds.")
+                time.sleep(random.uniform(6, 10))
+                logger.info('Next page')
+                continue
+            except Exception:
+                continue
 
         return
     except Exception as e:
