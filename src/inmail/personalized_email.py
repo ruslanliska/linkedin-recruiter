@@ -726,8 +726,7 @@ def process_chunk_of_rows(
                             email_status = 'Failed'
                             error_message = str(e)
                             logger.error(f"Error sending message: {
-                                         error_message
-                                         }")
+                                         error_message}")
 
                         logger.info('To continue next profile')
 
@@ -803,6 +802,7 @@ def process_chunk_of_rows(
                 logger.info('Next page')
                 continue
             except Exception:
+                driver.get(current_link)
 
                 continue
 
