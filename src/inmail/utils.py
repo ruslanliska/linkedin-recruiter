@@ -278,8 +278,7 @@ def is_within_trading_hours_or_wait(
         tz = pytz.timezone(timezone_str)
     except pytz.UnknownTimeZoneError:
         print(f"Error: Unknown timezone '{
-              timezone_str
-              }'. Using UTC as fallback.")
+              timezone_str}'. Using UTC as fallback.")
         tz = pytz.utc
         # Adjust hours if timezone was specific, e.g. CET=UTC+1/2 depending on DST
         # This fallback might not be ideal, better to ensure correct timezone_str
@@ -298,18 +297,16 @@ def is_within_trading_hours_or_wait(
     # --- Check if Within Trading Hours ---
     # The condition is: start_time <= current_time < end_time
     if trading_start_time <= current_local_time < trading_end_time:
-        print(
-            f"Current time {now_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')} is within trading hours ({
-                start_hour
-            }:00 - {end_hour}:00 {timezone_str}).",
-        )
+        print(f"Current time {now_local.strftime(
+            '%Y-%m-%d %H:%M:%S %Z%z')} is within trading hours")
+        print(f"{start_hour}:00 - {end_hour}:00 {timezone_str}).")
         return True
     else:
         print(
-            f"Current time {now_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')} is outside trading hours ({
-                start_hour
-            }:00 - {end_hour}:00 {timezone_str}).",
+            f"Current time {now_local.strftime(
+                '%Y-%m-%d %H:%M:%S %Z%z')} is outside trading hours",
         )
+        print(f"{start_hour}:00 - {end_hour}:00 {timezone_str}).")
 
         # --- Calculate Next Trading Start Time ---
         # Replace time part of current local datetime with the start hour
