@@ -721,17 +721,14 @@ def process_chunk_of_rows(
                                 email_status = 'Sent'
                                 logger.info('Message sent successfully.')
                                 time.sleep(random.uniform(4, 7))
-                            driver.find_element(
-                                By.TAG_NAME, 'body',
-                            ).send_keys(Keys.ESCAPE)
-                            print('ESC clicked')
+
                             logger.info(f"{email_status=}")
                         except Exception as e:
                             email_status = 'Failed'
                             error_message = str(e)
-                            logger.error(f"Error sending message: {
-                                         error_message
-                                         }")
+                            logger.error(f"Error sending message: {error_message}")  # noqa: E501
+                        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.ESCAPE)  # noqa: E501
+                        print('ESC clicked')
 
                         logger.info('To continue next profile')
 
