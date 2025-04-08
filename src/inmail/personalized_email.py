@@ -235,9 +235,9 @@ def process_chunk_of_rows(
 
         if past_companies or job_functions or company_sizes or seniority:
             print('advanced search')
-            time.sleep(120)
+            time.sleep(300)
         else:
-            time.sleep(120)
+            time.sleep(300)
         #     advanced_search_btn = WebDriverWait(driver, 10).until(
         #         EC.element_to_be_clickable(
         #             (
