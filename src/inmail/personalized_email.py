@@ -412,6 +412,8 @@ def process_chunk_of_rows(
                     else:
                         # This 'else' block executes ONLY if the 'for' loop completed
                         # without hitting the 'break' statement (i.e., all attempts failed).
+                        driver.get(current_link)
+
                         continue  # Skip to the next iteration of the outer loop
 
                     profile = profile_items[profile_index]
@@ -533,11 +535,13 @@ def process_chunk_of_rows(
                         logger.info(f"Email Subject by AI: {subject}")
                         # Extract profile ID from <code> elements
                         code_elements = driver.find_elements(
-                            By.TAG_NAME, 'code')
+                            By.TAG_NAME, 'code',
+                        )
                         profile_id = None
                         for code_element in code_elements:
                             code_content = code_element.get_attribute(
-                                'innerHTML')
+                                'innerHTML',
+                            )
                             if 'identityDashProfilesByMemberIdentity' in code_content:
                                 try:
                                     data_json = json.loads(code_content)
@@ -722,7 +726,8 @@ def process_chunk_of_rows(
                             email_status = 'Failed'
                             error_message = str(e)
                             logger.error(f"Error sending message: {
-                                         error_message}")
+                                         error_message
+                                         }")
 
                         logger.info('To continue next profile')
 
@@ -798,6 +803,7 @@ def process_chunk_of_rows(
                 logger.info('Next page')
                 continue
             except Exception:
+
                 continue
 
         return
