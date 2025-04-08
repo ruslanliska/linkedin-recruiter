@@ -390,7 +390,7 @@ def process_chunk_of_rows(
                                     attempt + 1
                                 }/{max_retries} failed to find profile items. Error: {inner_ex}",
                             )
-                            driver.refresh()
+                            driver.get(current_link)
                             if attempt < max_retries - 1:
                                 # Optional: Wait a short period before retrying
                                 time.sleep(2)  # Wait for 1 second
@@ -532,10 +532,12 @@ def process_chunk_of_rows(
                         subject = generate_subject(email_body=email)
                         logger.info(f"Email Subject by AI: {subject}")
                         # Extract profile ID from <code> elements
-                        code_elements = driver.find_elements(By.TAG_NAME, 'code')
+                        code_elements = driver.find_elements(
+                            By.TAG_NAME, 'code')
                         profile_id = None
                         for code_element in code_elements:
-                            code_content = code_element.get_attribute('innerHTML')
+                            code_content = code_element.get_attribute(
+                                'innerHTML')
                             if 'identityDashProfilesByMemberIdentity' in code_content:
                                 try:
                                     data_json = json.loads(code_content)
@@ -719,7 +721,8 @@ def process_chunk_of_rows(
                         except Exception as e:
                             email_status = 'Failed'
                             error_message = str(e)
-                            logger.error(f"Error sending message: {error_message}")
+                            logger.error(f"Error sending message: {
+                                         error_message}")
 
                         logger.info('To continue next profile')
 
