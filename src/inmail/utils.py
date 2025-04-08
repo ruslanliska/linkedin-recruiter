@@ -256,7 +256,7 @@ def wait_until_next_day():
 
 
 def is_within_trading_hours_or_wait(
-    start_hour=9, end_hour=17, timezone_str='CET',  # 5 PM is 17:00
+    start_hour=7, end_hour=21, timezone_str='CET',  # 5 PM is 17:00
 ):
     """
     Checks if the current time is within the specified trading hours
@@ -277,7 +277,7 @@ def is_within_trading_hours_or_wait(
     try:
         tz = pytz.timezone(timezone_str)
     except pytz.UnknownTimeZoneError:
-        print(f"Error: Unknown timezone '{timezone_str}'. Using UTC as fallback.") #noqa: E501
+        print(f"Error: Unknown timezone '{timezone_str}'. Using UTC as fallback.")  # noqa: E501
         tz = pytz.utc
         # Adjust hours if timezone was specific, e.g. CET=UTC+1/2 depending on DST
         # This fallback might not be ideal, better to ensure correct timezone_str
@@ -296,13 +296,20 @@ def is_within_trading_hours_or_wait(
     # --- Check if Within Trading Hours ---
     # The condition is: start_time <= current_time < end_time
     if trading_start_time <= current_local_time < trading_end_time:
-        print(f"Current time {now_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')} is within trading hours")
+        print(f"Current time {
+            now_local.strftime(
+                '%Y-%m-%d %H:%M:%S %Z%z'
+            )
+        } is within trading hours")
         print(f"{start_hour}:00 - {end_hour}:00 {timezone_str}).")
         return True
     else:
         print(
-            f"Current time {now_local.strftime(
-                '%Y-%m-%d %H:%M:%S %Z%z')} is outside trading hours",
+            f"Current time {
+                now_local.strftime(
+                    '%Y-%m-%d %H:%M:%S %Z%z'
+                )
+            } is outside trading hours",
         )
         print(f"{start_hour}:00 - {end_hour}:00 {timezone_str}).")
 
@@ -333,7 +340,7 @@ def is_within_trading_hours_or_wait(
 
         if wait_duration_seconds > 0:
             print(
-                f"Waiting for {wait_duration_seconds:.2f} seconds until the next window starts at {next_start_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')}.", #noqa: E501
+                f"Waiting for {wait_duration_seconds:.2f} seconds until the next window starts at {next_start_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')}.",  # noqa: E501
             )
             time.sleep(wait_duration_seconds)
             print(
