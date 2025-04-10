@@ -61,6 +61,9 @@ def process_chunk_of_rows(
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
         options.add_argument(f"--user-data-dir={get_user_data_dir()}")
+        options.add_argument('--verbose')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--remote-debugging-port=0')
         print(f"{settings.DRIVER_PATH=}")
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
@@ -70,7 +73,7 @@ def process_chunk_of_rows(
 
         # Optional: stealth, if you want to keep it
         from selenium_stealth import stealth
-
+        print('Init stealth')
         stealth(
             driver,
             languages=['en-US', 'en'],
@@ -81,6 +84,7 @@ def process_chunk_of_rows(
             fix_hairline=True,
         )
         time.sleep(random.uniform(2, 5))
+        print('Init stealth done')
 
         logger.info('ChromeDriver initialized successfully for this batch.')
 
