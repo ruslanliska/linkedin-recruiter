@@ -13,7 +13,8 @@ load_dotenv()
 browser = Browser(
     config=BrowserConfig(
         # Specify the path to your Chrome executable
-        browser_binary_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # macOS path
+        # browser_binary_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # macOS path
+        browser_binary_path=r'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',  # windows path
         # For Windows, typically: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
         # For Linux, typically: '/usr/bin/google-chrome'
     ),
