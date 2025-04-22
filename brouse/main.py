@@ -65,9 +65,6 @@ async def main():
     agent = Agent(
         task=f"""
         You have search result, there is some amount of pages, yur task to write a message to each person on the page, then go to the next page and write all people from search
-        Scroll down to get all profiles on the page. 
-        Go one profile by one.
-        The task to message each person in the search result
 
         Step 1:
         For each profile, open it in by clicking on name
@@ -101,6 +98,7 @@ async def main():
 
         Step 7:
         and go to next profile (Click index 1), If you can click it, reload page and then click
+        Retry from step 1.
         """,
         llm=ChatOpenAI(
             model="gpt-4o",
