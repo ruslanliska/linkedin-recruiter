@@ -106,7 +106,7 @@ async def main():
         Retry from step 1.
         """,
         llm=ChatOpenAI(
-            model="gpt-4o",
+            model="gpt-4o-mini",
         ),
         browser=browser,
         memory_interval=10,
