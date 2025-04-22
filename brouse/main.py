@@ -21,7 +21,7 @@ browser = Browser(
 
 
 initial_actions = [
-    {'open_tab': {'url': 'https://www.google.com'}},
+    {'open_tab': {'url': 'http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH'}},
     {'wait': {'seconds': 30}},
 ]
 
@@ -59,6 +59,7 @@ async def main():
         You should send Email. So switch from InMail type to email. For this you must enter email to user profile
 
         Always remember the last page with search results, and scroll it always down to get all list of people to message.
+        WRITE MESSAGE, BUT DONT SEND IT
         """,
         llm=ChatOpenAI(
             model='gpt-4o',
