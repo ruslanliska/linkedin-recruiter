@@ -80,6 +80,7 @@ async def main():
         Use generate_email_body to create email to send. 
         For profile_summary get the last techbologies and experience from last working place, gather all skills and experience.
         Use only this action to generate email body!
+        Paste generated email into compose message field.
         
         Step 5:
         Switch Initial message from InMail to Email (Index 29)
@@ -87,12 +88,11 @@ async def main():
         Click Save button
 
         Step 6:
-        Always remember the last page with search results, and scroll it always down to get all list of people to message.
-        after sending email, close the window with email, this will bring back you to search.
         WRITE MESSAGE, BUT DONT SEND IT
 
         Step 7:
-        Close profile and go to next profile (Click index 1), If you can click it, reload page and then click
+        Reload page
+        and go to next profile (Click index 1), If you can click it, reload page and then click
         """,
         llm=ChatOpenAI(
             model="gpt-4o",
