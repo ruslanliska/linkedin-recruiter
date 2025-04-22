@@ -62,6 +62,7 @@ async def main():
         You should send Email. So switch from InMail type to email. For this you must enter email to user profile
 
         Always remember the last page with search results, and scroll it always down to get all list of people to message.
+        after sending email, close the window with email, this will bring back you to search.
         WRITE MESSAGE, BUT DONT SEND IT
         """,
         llm=ChatOpenAI(
