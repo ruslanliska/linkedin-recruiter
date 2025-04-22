@@ -89,7 +89,7 @@ async def main():
         WRITE MESSAGE, BUT DONT SEND IT
 
         Step 6:
-        Close profile and go to next profile
+        Close profile and go to next profile (Click index 1), If you can click it, reload page and then click
         """,
         llm=ChatOpenAI(
             model="gpt-4o",
