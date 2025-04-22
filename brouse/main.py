@@ -52,6 +52,8 @@ async def main():
     agent = Agent(
         task=f"""
         You have search result, there is some amount of pages, yur task to write a message to each person on the page, then go to the next page and write all people from search
+        Scroll down to get all profiles on the page. 
+        Go one profile by one.
         The task to message each person in the search result
 
         Use generate_email_body to create email to send.
