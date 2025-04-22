@@ -38,7 +38,7 @@ async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
 
     email = generate_email(page_summary=profile_experience)
-    print(f'{email=}')
+    print(f"{email=}")
     return email
 
 
@@ -95,9 +95,10 @@ async def main():
         Check if subject present and valid
         Check if email body valid. If not, fix it and continue
         WRITE MESSAGE, BUT DONT SEND IT
+        Reload page
+        wait for 10 seconds
 
         Step 7:
-        Reload page
         and go to next profile (Click index 1), If you can click it, reload page and then click
         """,
         llm=ChatOpenAI(
