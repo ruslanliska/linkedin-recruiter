@@ -77,19 +77,19 @@ async def main():
         Click on send message and wait 4 seconds
 
         Step 4:
-        Generate a subject.
+        Switch Initial message from InMail to Email (Index 29)
+        if you see send Immediately via InMail - click on it and change to Email (Index 31)
+        Click Save button to save setup for Email, and go to next step!
 
         Step 5:
+        Generate a subject.
+
+        Step 6:
         Use generate_email_body to create email to send. 
         For profile_experience get the profile experience 
         Use only this action to generate email body!
         Fill in message field with outpur from generate_email_body.
         Input it to index 40
-        
-        Step 6:
-        Switch Initial message from InMail to Email (Index 29)
-        if you see send Immediately via InMail - click on it and change to Email (Index 31)
-        Click Save button to save setup for Email, and go to next step!
 
         Step 7:
         Validation of all steps
