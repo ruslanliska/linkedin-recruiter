@@ -66,13 +66,18 @@ async def main():
         Scroll down to get all profiles on the page. 
         Go one profile by one.
         The task to message each person in the search result
-        For each profile, open it in new tab - then open it in linkedin recruiter - input email (Use guess_email if no user email provided in contact info) and create message
+        Step 1:
+        For each profile, open it in by clicking on name
+        
+        Step 2:
+        input email (Use guess_email if no user email provided in contact info) and create message
 
+        Step 3:
         Use generate_email_body to create email to send. For profile_summary get the last techbologies and experience from last working place.
         Use guess_email if no user email provided in contact info
         Also, generate a subject.
 
-        Step:
+        Step 4:
         Switch from InMail to Email
         if ater clicking send message, you see send Immediately via InMail - click on it and change to Email
         You should send Email. So switch from InMail type to email. For this you must enter email to user profile
