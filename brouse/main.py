@@ -65,7 +65,8 @@ async def main():
     agent = Agent(
         task=f"""
         You have search result, there is some amount of pages, yur task to write a message to each person on the page, then go to the next page and write all people from search
-
+        Follow next steps in strong order.
+        
         Step 1:
         For each profile, open it in by clicking on name
         
@@ -73,21 +74,24 @@ async def main():
         input email (Use guess_email if no user email provided in contact info) and create message
 
         Step 3:
-        Generate a subject.
+        Click on send message and wait 4 seconds
 
         Step 4:
+        Generate a subject.
+
+        Step 5:
         Use generate_email_body to create email to send. 
         For profile_experience get the profile experience 
         Use only this action to generate email body!
         Fill in message field with outpur from generate_email_body.
         Input it to index 40
         
-        Step 5:
+        Step 6:
         Switch Initial message from InMail to Email (Index 29)
         if you see send Immediately via InMail - click on it and change to Email (Index 31)
         Click Save button to save setup for Email, and go to next step!
 
-        Step 6:
+        Step 7:
         Validation of all steps
         Check if Initial message is Send via Email
         Check if subject present and valid
@@ -96,7 +100,7 @@ async def main():
         Reload page
         wait for 10 seconds
 
-        Step 7:
+        Step 8:
         and go to next profile (Click index 1), If you can click it, reload page and then click
         Retry from step 1.
         """,
