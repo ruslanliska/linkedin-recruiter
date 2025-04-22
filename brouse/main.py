@@ -33,11 +33,13 @@ initial_actions = [
 controller = Controller()
 
 
-@controller.registry.action("Generate email body with profile summary")
-async def generate_email_body(profile_summary: str):
+@controller.registry.action("Generate email body with profile experience")
+async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
 
-    return generate_email(profile_summary)
+    email = generate_email(page_summary=profile_experience)
+    print(f'{email=}')
+    return email
 
 
 @controller.registry.action("Guess email if no email provided in contact info")
@@ -78,7 +80,7 @@ async def main():
 
         Step 4:
         Use generate_email_body to create email to send. 
-        For profile_summary get the last techbologies and experience from last working place, gather all skills and experience.
+        For profile_experience get the profile experience 
         Use only this action to generate email body!
         Paste generated email into compose message field.
         
@@ -88,6 +90,7 @@ async def main():
         Click Save button
 
         Step 6:
+        Input email body
         WRITE MESSAGE, BUT DONT SEND IT
 
         Step 7:
