@@ -14,7 +14,7 @@ browser = Browser(
     config=BrowserConfig(
         # Specify the path to your Chrome executable
         # browser_binary_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # macOS path
-        browser_binary_path=r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",  # windows path
+        browser_binary_path=r'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',  # windows path
         # For Windows, typically: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
         # For Linux, typically: '/usr/bin/google-chrome'
     ),
@@ -23,17 +23,17 @@ browser = Browser(
 
 initial_actions = [
     {
-        "open_tab": {
-            "url": "http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH"
-        }
+        'open_tab': {
+            'url': 'http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH',
+        },
     },
-    {"wait": {"seconds": 30}},
+    {'wait': {'seconds': 30}},
 ]
 
 controller = Controller()
 
 
-@controller.registry.action("Generate email body with profile experience")
+@controller.registry.action('Generate email body with profile experience')
 async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
 
@@ -42,22 +42,26 @@ async def generate_email_body(profile_experience: str):
     return email
 
 
-@controller.registry.action("Guess email if no email provided in contact info")
+@controller.registry.action('Guess email if no email provided in contact info')
 async def guess_email(first_name: str, last_name: str, current_company_name: str):
     import re
 
     slug = (
         re.sub(
-            r"[^\w\s-]",
-            "",
+            r'[^\w\s-]',
+            '',
             current_company_name,
         )
         .lower()
-        .replace(" ", "-")
+        .replace(' ', '-')
     )
     return (
-        f"{first_name.lower().strip()}.{last_name.lower().strip()}@{slug.strip()}.com"
+        f"{first_name.lower().strip()}.{
+            last_name.lower().strip()}@{slug.strip()}.com"
     )
+extend_system_message = """
+You are recruiter. You must control all steps in task executed properly and in correct order
+"""
 
 
 async def main():
@@ -66,10 +70,10 @@ async def main():
         task=f"""
         You have search result, there is some amount of pages, yur task to write a message to each person on the page, then go to the next page and write all people from search
         Follow next steps in strong order.
-        
+
         Step 1:
         For each profile, open it in by clicking on name
-        
+
         Step 2:
         input email (Use guess_email if no user email provided in contact info) and create message
 
@@ -89,8 +93,8 @@ async def main():
         Generate a subject.
 
         Step 6:
-        Use generate_email_body to create email to send. 
-        For profile_experience get the profile experience 
+        Use generate_email_body to create email to send.
+        For profile_experience get the profile experience
         Use only this action to generate email body!
         Fill in message field with outpur from generate_email_body.
         Input it to index 40
@@ -109,18 +113,20 @@ async def main():
         Retry from step 1.
         """,
         llm=ChatOpenAI(
-            model="gpt-4o",
+            model='gpt-4o',
+            temperature=0,
         ),
         browser=browser,
         memory_interval=10,
         initial_actions=initial_actions,
         controller=controller,
+        extend_system_message=extend_system_message,
     )
     await agent.run()
 
-    input("Press Enter to close the browser...")
+    input('Press Enter to close the browser...')
     await browser.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     asyncio.run(main())
