@@ -79,9 +79,8 @@ async def main():
         Also, generate a subject.
 
         Step 4:
-        Switch from InMail to Email
-        if ater clicking send message, you see send Immediately via InMail - click on it and change to Email
-        You should send Email. So switch from InMail type to email. For this you must enter email to user profile
+        Switch Initial message from InMail to Email (Index 29)
+        if you see send Immediately via InMail - click on it and change to Email, then save.
         Click Save button
 
         Step 5:
