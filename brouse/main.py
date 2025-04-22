@@ -82,7 +82,7 @@ async def main():
         Use generate_email_body to create email to send. 
         For profile_experience get the profile experience 
         Use only this action to generate email body!
-        Paste generated email into compose message field.
+        Fill in message field with outpur from generate_email_body.
         
         Step 5:
         Switch Initial message from InMail to Email (Index 29)
@@ -90,7 +90,7 @@ async def main():
         Click Save button
 
         Step 6:
-        Input email body
+        Validation of all steps
         Check if Initial message is Send via Email
         Check if subject present and valid
         Check if email body valid. If not, fix it and continue
