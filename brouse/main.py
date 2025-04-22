@@ -83,6 +83,7 @@ async def main():
         For profile_experience get the profile experience 
         Use only this action to generate email body!
         Fill in message field with outpur from generate_email_body.
+        Input it to index 40
         
         Step 5:
         Switch Initial message from InMail to Email (Index 29)
