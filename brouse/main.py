@@ -74,21 +74,24 @@ async def main():
         input email (Use guess_email if no user email provided in contact info) and create message
 
         Step 3:
-        Use generate_email_body to create email to send. For profile_summary get the last techbologies and experience from last working place, gather all skills and experience.
-        Use guess_email if no user email provided in contact info
-        Also, generate a subject.
+        Generate a subject.
 
         Step 4:
+        Use generate_email_body to create email to send. 
+        For profile_summary get the last techbologies and experience from last working place, gather all skills and experience.
+        Use only this action to generate email body!
+        
+        Step 5:
         Switch Initial message from InMail to Email (Index 29)
         if you see send Immediately via InMail - click on it and change to Email, then save.
         Click Save button
 
-        Step 5:
+        Step 6:
         Always remember the last page with search results, and scroll it always down to get all list of people to message.
         after sending email, close the window with email, this will bring back you to search.
         WRITE MESSAGE, BUT DONT SEND IT
 
-        Step 6:
+        Step 7:
         Close profile and go to next profile (Click index 1), If you can click it, reload page and then click
         """,
         llm=ChatOpenAI(
