@@ -66,6 +66,7 @@ async def main():
         Scroll down to get all profiles on the page. 
         Go one profile by one.
         The task to message each person in the search result
+
         Step 1:
         For each profile, open it in by clicking on name
         
@@ -73,7 +74,7 @@ async def main():
         input email (Use guess_email if no user email provided in contact info) and create message
 
         Step 3:
-        Use generate_email_body to create email to send. For profile_summary get the last techbologies and experience from last working place.
+        Use generate_email_body to create email to send. For profile_summary get the last techbologies and experience from last working place, gather all skills and experience.
         Use guess_email if no user email provided in contact info
         Also, generate a subject.
 
@@ -81,10 +82,15 @@ async def main():
         Switch from InMail to Email
         if ater clicking send message, you see send Immediately via InMail - click on it and change to Email
         You should send Email. So switch from InMail type to email. For this you must enter email to user profile
+        Click Save button
 
+        Step 5:
         Always remember the last page with search results, and scroll it always down to get all list of people to message.
         after sending email, close the window with email, this will bring back you to search.
         WRITE MESSAGE, BUT DONT SEND IT
+
+        Step 6:
+        Close profile and go to next profile
         """,
         llm=ChatOpenAI(
             model="gpt-4o",
