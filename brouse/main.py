@@ -91,6 +91,9 @@ async def main():
 
         Step 6:
         Input email body
+        Check if Initial message is Send via Email
+        Check if subject present and valid
+        Check if email body valid. If not, fix it and continue
         WRITE MESSAGE, BUT DONT SEND IT
 
         Step 7:
