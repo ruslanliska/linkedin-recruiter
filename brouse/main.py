@@ -77,13 +77,13 @@ async def main():
         Click on send message and wait 4 seconds
 
         Step 4:
+        THIS IS REQUIRED, IF THIS STEP IS NOT COMPLETED, OTHER STEPS CANT BE DONE.
         Find text Initial message
         Send immediately via InMail in message container
 
         Switch from InMail to Email BY CLICKING ON send Immediately via InMail
-        if you see send Immediately via InMail - click on it and change to Send as EMAIL (Index 31)
+        change to Send as EMAIL
         Click Save button to save setup for Email, and go to next step!
-        THIS IS REQUIRED, IF THIS STEP IS NOT COMPLETED, OTHER STEPS CANT BE DONE.
 
         Step 5:
         Generate a subject.
