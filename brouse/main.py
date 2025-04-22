@@ -84,7 +84,7 @@ async def main():
         
         Step 5:
         Switch Initial message from InMail to Email (Index 29)
-        if you see send Immediately via InMail - click on it and change to Email, then save.
+        if you see send Immediately via InMail - click on it and change to Email (Index 31)
         Click Save button
 
         Step 6:
