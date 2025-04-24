@@ -106,7 +106,7 @@ async def main():
             parsed: ProfilesCount = ProfilesCount.model_validate_json(result)
             print(f"{parsed.number_of_profiles=}")
             profiles = parsed.number_of_profiles
-            for i in profiles:
+            for i in range(1, profiles):
                 agent2 = Agent(
                     task=f'You are processing profile number {i}! You will see text Number of {profiles}, confirm it is true, if not, navigate to that profile by clicking arrows right or left, if you click and current number doesnt change, reload page and try again.',
                     llm=model,
