@@ -51,6 +51,7 @@ class ProfileOpened(BaseModel):
 controller = Controller()
 controller_agent_1 = Controller(output_model=ProfilesCount)
 controller_agent_2 = Controller(output_model=ProfileOpened)
+controller_agent_3 = Controller()
 
 
 @controller.registry.action('Generate email body with profile experience')
@@ -62,7 +63,7 @@ async def generate_email_body(profile_experience: str):
     return email
 
 
-@controller.registry.action('Guess email if no email provided in contact info')
+@controller_agent_3.registry.action('Guess email if no email provided in contact info')
 async def guess_email(first_name: str, last_name: str, current_company_name: str):
     import re
 
@@ -102,18 +103,34 @@ async def main():
             print(f"{parsed.number_of_profiles=}")
             profiles = parsed.number_of_profiles
             for i in range(1, profiles):
-                agent2 = Agent(
-                    task=f"You are processing profile number {i}! You must see text {i} of {profiles}, confirm it is true, if not, navigate to that profile by clicking arrows right or left, if you click and current number doesnt change, reload page and try again.",
-                    llm=model,
-                    browser_context=context,
-                    controller=controller_agent_2,
-                )
-                profile_opened = await agent2.run()
-                result_opened = profile_opened.final_result()
-                result_opened: ProfileOpened = ProfileOpened.model_validate_json(
-                    result_opened,
-                )
-                print(f"{result_opened.if_correct_profile_opened=}")
+                try:
+                    agent2 = Agent(
+                        task=f"""You are processing profile number {i}! You must see text {i} of {profiles}, 
+                        confirm it is true, if not, navigate to that profile by clicking arrows right or left, if you click and current number doesnt change, reload page and try again.""",
+                        llm=model,
+                        browser_context=context,
+                        controller=controller_agent_2,
+                    )
+                    profile_opened = await agent2.run()
+                    result_opened = profile_opened.final_result()
+                    result_opened: ProfileOpened = ProfileOpened.model_validate_json(
+                        result_opened,
+                    )
+                    print(f"{result_opened.if_correct_profile_opened=}")
+                    agent3 = Agent(
+                        task=f"""The task is to enter email for user if email is not provided in contact information and save email. If email provided, just mark the task as completed.
+                        Use guess_email
+                        """,
+                        llm=model,
+                        browser_context=context,
+                        controller=controller_agent_3,
+                    )
+                    await agent3.run()
+                    print('Run completed')
+
+                except Exception as e:
+                    print(e)
+                    continue
 
         else:
             print('No result')
