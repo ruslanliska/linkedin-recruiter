@@ -52,9 +52,10 @@ controller = Controller()
 controller_agent_1 = Controller(output_model=ProfilesCount)
 controller_agent_2 = Controller(output_model=ProfileOpened)
 controller_agent_3 = Controller()
+controller_agent_5 = Controller()
 
 
-@controller.registry.action('Generate email body with profile experience')
+@controller_agent_5.registry.action('Generate email body with profile experience')
 async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
 
@@ -137,6 +138,16 @@ async def main():
                     )
                     await agent4.run()
                     print('Email option Done')
+                    agent5 = Agent(
+                        task=f"""The task is to input subject and Email to input fields
+                        First generate email body, use generate_email_body, for input get Profile summary and last experience, concat it into one string.
+                        Generate subject based on email body and input it
+                        """,
+                        llm=model,
+                        browser_context=context,
+                    )
+                    await agent5.run()
+                    print('Subject and email option Done')
 
                     print('Run completed')
 
