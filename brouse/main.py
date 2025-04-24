@@ -118,6 +118,7 @@ async def main():
                         llm=model,
                         browser_context=context,
                         controller=controller_agent_2,
+                        max_failures=3,
                     )
 
                     profile_opened = await agent2.run()
@@ -126,6 +127,8 @@ async def main():
                         result_opened,
                     )
                     print(f"{result_opened.if_correct_profile_opened=}")
+                    if not result_opened.if_correct_profile_opened:
+                        continue
                     agent3 = Agent(
                         task=f"""The task is to enter email for user if email is not provided in contact information and save email. If email provided, just mark the task as completed.
                         Use guess_email
@@ -163,13 +166,13 @@ async def main():
                     agent5 = Agent(
                         task=f"""The task is to input subject and Email to input fields
                         You must input real values, make this message ready to go
-                        First generate email body, use generate_email_body, for input get Profile summary and last experience, concat it into one string. (Enter the result to field with placeholder - Compose a message) and wait for 40 seconds
+                        First generate email body, use generate_email_body, for input get User job experience. (Enter the result to field with placeholder - Compose a message) and wait for 40 seconds
                         Generate subject based on email body and input it (Enter to field with placeholder - Add a subject)
                         """,
                         llm=model,
                         browser_context=context,
                         controller=controller_agent_5,
-                        max_failures=3,
+                        max_failures=1,
                     )
                     result_agent_5 = await agent5.run()
                     result_agent_5 = result_agent_5.final_result()
