@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 import asyncio
 
 from browser_use import Agent
@@ -7,6 +6,7 @@ from browser_use import BrowserConfig
 from browser_use import Controller
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -62,9 +62,7 @@ async def guess_email(first_name: str, last_name: str, current_company_name: str
         .lower()
         .replace(' ', '-')
     )
-    return f"{first_name.lower().strip()}.{
-        last_name.lower().strip()
-    }@{slug.strip()}.com"
+    return f"{first_name.lower().strip()}.{last_name.lower().strip()}@{slug.strip()}.com"  # noqa: E501
 
 
 extend_system_message = """
