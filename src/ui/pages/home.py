@@ -9,6 +9,7 @@ import pytz
 import ttkbootstrap as ttk
 
 from brouse.main import run_agents
+
 # from src
 
 DB_PATH = 'run_history.db'
@@ -224,9 +225,9 @@ class HomePage(ttk.Frame):
             #     company_sizes=company_sizes,
             #     seniority=seniority,
             # )
-            print(f'{reference_email=}')
-            print(f'{prompt=}')
-            run_agents()
+            print(f"{reference_email=}")
+            print(f"{prompt=}")
+            run_agents(reference_email=reference_email, prompt=prompt)
         except Exception as e:
             self.show_error_message('Process Error', str(e))
         finally:
