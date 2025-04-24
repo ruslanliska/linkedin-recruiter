@@ -34,7 +34,7 @@ initial_action_agent_1 = [
 
 # Define the output format as a Pydantic model
 class ProfilesCount(BaseModel):
-    number_of_profiles: str
+    number_of_profiles: int
 
 
 controller = Controller(output_model=ProfilesCount)
