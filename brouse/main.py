@@ -140,8 +140,9 @@ async def main():
                     print('Email option Done')
                     agent5 = Agent(
                         task=f"""The task is to input subject and Email to input fields
-                        First generate email body, use generate_email_body, for input get Profile summary and last experience, concat it into one string.
-                        Generate subject based on email body and input it
+                        You must input real values, make this message ready to go
+                        First generate email body, use generate_email_body, for input get Profile summary and last experience, concat it into one string. (Enter the result to field with placeholder - Compose a message)
+                        Generate subject based on email body and input it (Enter to field with placeholder - Add a subject)
                         """,
                         llm=model,
                         browser_context=context,
