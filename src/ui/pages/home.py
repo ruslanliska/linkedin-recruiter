@@ -1,11 +1,7 @@
 import threading
-import time
-from datetime import datetime
-from datetime import timedelta
 from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 
-import pytz
 import ttkbootstrap as ttk
 
 from brouse.main import run_agents
@@ -233,45 +229,6 @@ class HomePage(ttk.Frame):
         finally:
             # Re-enable the buttons once we're done
             self.enable_start_button()
-
-    def wait_until_next_day(self):
-        """
-        Sleep (block) until 9 AM CET.
-        This stops processing in this thread until the specified time.
-        """
-        # Get current time in UTC
-        now_utc = datetime.now(pytz.utc)
-
-        # Convert to CET
-        cet_timezone = pytz.timezone('CET')
-        now_cet = now_utc.astimezone(cet_timezone)
-
-        # Calculate next 5 AM CET
-        if now_cet.hour >= 5:
-            # If it's past 6 AM today, set to 5 AM next day
-            next_cet = (now_cet + timedelta(days=1)).replace(
-                hour=5,
-                minute=0,
-                second=0,
-                microsecond=0,
-            )
-        else:
-            # If it's before 5 AM today, set to 5 AM today
-            next_cet = now_cet.replace(
-                hour=5,
-                minute=0,
-                second=0,
-                microsecond=0,
-            )
-
-        # Convert the target time back to UTC
-        next_utc = next_cet.astimezone(pytz.utc)
-
-        # Calculate the time to wait in seconds
-        seconds_to_wait = (next_utc - now_utc).total_seconds()
-        print(f"{next_cet=}")
-        print(f"{seconds_to_wait=}")
-        time.sleep(seconds_to_wait)
 
     def show_info_message(self, title, message):
         """Show a messagebox info from the main thread."""
