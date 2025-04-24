@@ -32,11 +32,6 @@ initial_action_agent_1 = [
     {'wait': {'seconds': 30}},
 ]
 initial_action_agent_2 = [
-    {
-        'open_tab': {
-            'url': 'http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH',
-        },
-    },
     {'wait': {'seconds': 30}},
 ]
 
@@ -111,7 +106,6 @@ async def main():
                     task=f'You are processing profile number {i}! You will see text Number of {profiles}, confirm it is true, if not, navigate to that profile by clicking arrows right or left, if you click and current number doesnt change, reload page and try again.',
                     llm=model,
                     browser_context=context,
-                    initial_actions=initial_action_agent_1,
                     controller=controller_agent_2,
                 )
                 profile_opened = await agent2.run()
