@@ -301,11 +301,7 @@ def is_within_trading_hours_or_wait(
         return True
     else:
         print(
-            f"Current time {
-                now_local.strftime(
-                    '%Y-%m-%d %H:%M:%S %Z%z'
-                )
-            } is outside trading hours",
+            f"Current time {now_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')} is outside trading hours", # noqa: E501
         )
         print(f"{start_hour}:00 - {end_hour}:00 {timezone_str}).")
 
