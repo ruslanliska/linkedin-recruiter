@@ -112,6 +112,8 @@ async def main():
                         browser_context=context,
                         controller=controller_agent_2,
                     )
+                    print(f"{agent2.final_result=}")
+
                     profile_opened = await agent2.run()
                     result_opened = profile_opened.final_result()
                     result_opened: ProfileOpened = ProfileOpened.model_validate_json(
@@ -127,6 +129,8 @@ async def main():
                         controller=controller_agent_3,
                     )
                     await agent3.run()
+                    print(f"{agent3.final_result=}")
+
                     print("Email input completed")
                     agent4 = Agent(
                         task=f"""The task is to click on Send message to candidate, wait for 5 seconds and in new window (Compose Message) which appears, find text Send immediately via InMail,
@@ -135,6 +139,7 @@ async def main():
                         """,
                         llm=model,
                         browser_context=context,
+                        max_failures=3
                     )
                     result_agent_4 = await agent4.run()
                     print(f"{result_agent_4.final_result=}")
