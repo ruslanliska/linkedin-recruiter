@@ -67,7 +67,7 @@ controller_agent_5 = Controller(output_model=TaskCompleted)
 @controller_agent_5.registry.action('Generate email body with profile experience')
 async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
-
+    
     email = generate_email(
         page_summary=profile_experience,
         user_prompt=PROMPT,

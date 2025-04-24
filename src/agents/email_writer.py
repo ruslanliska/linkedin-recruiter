@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 
 from src.config import settings
 
-llm = ChatOpenAI(model='gpt-4o-mini', api_key=settings.OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-4o-mini", api_key=settings.OPENAI_API_KEY)
 
 DEFAULT_EMAIL_INSTRUCTION = """
 Write an email to a prospective employer to introduce fitting candidates for their company based on the experience summary provided. A receiver profile will be given, so the email must be addressed directly to this person.
@@ -53,7 +53,7 @@ Ensure the final email addresses the recipient directly, based on their name and
 MAKE SURE - EMAIL IS READY TO SEND, REMOVE ALL PLACEHOLDERS AND USE GENERIC SENTENCES INSTEAD.
 """
 
-DEFAULT_USER_PROMPT = 'Generate email in english.'
+DEFAULT_USER_PROMPT = "Generate email in english."
 
 
 def generate_prompt_template(
@@ -62,10 +62,10 @@ def generate_prompt_template(
 ) -> ChatPromptTemplate:
     prompt = ChatPromptTemplate.from_messages(
         [
-            ('system', SYSTEM_PROMPT),
-            ('human', email_instructions),
-            ('human', user_prompt),
-            ('human', 'Here is receiver profile: {profile_summary}'),
+            ("system", SYSTEM_PROMPT),
+            ("human", email_instructions),
+            ("human", user_prompt),
+            ("human", "Here is receiver profile: {profile_summary}"),
         ],
     )
     return prompt
@@ -73,8 +73,8 @@ def generate_prompt_template(
 
 def generate_email(
     page_summary: str,
-    user_prompt: str = DEFAULT_USER_PROMPT,
-    email_instructions: str = DEFAULT_EMAIL_INSTRUCTION,
+    user_prompt: str | None = DEFAULT_USER_PROMPT,
+    email_instructions: str | None = DEFAULT_EMAIL_INSTRUCTION,
 ) -> str:
     prompt = generate_prompt_template(
         user_prompt=user_prompt,
@@ -83,8 +83,8 @@ def generate_email(
     email_chain = prompt | llm | StrOutputParser()
     email = email_chain.invoke(
         {
-            'profile_summary': page_summary,
-            'email_instructions': email_instructions,
+            "profile_summary": page_summary,
+            "email_instructions": email_instructions,
         },
     )
     return email
