@@ -76,6 +76,9 @@ def generate_email(
     user_prompt: str | None = DEFAULT_USER_PROMPT,
     email_instructions: str | None = DEFAULT_EMAIL_INSTRUCTION,
 ) -> str:
+    print('generate_email')
+    email_instructions = email_instructions or DEFAULT_EMAIL_INSTRUCTION
+    user_prompt = user_prompt or DEFAULT_USER_PROMPT
     prompt = generate_prompt_template(
         user_prompt=user_prompt,
         email_instructions=email_instructions,
