@@ -15,7 +15,7 @@ browser = Browser(
     config=BrowserConfig(
         # Specify the path to your Chrome executable
         # browser_binary_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # macOS path
-        browser_binary_path=r'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',  # windows path
+        browser_binary_path=r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",  # windows path
         # For Windows, typically: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
         # For Linux, typically: '/usr/bin/google-chrome'
     ),
@@ -24,11 +24,11 @@ browser = Browser(
 
 initial_action_agent_1 = [
     {
-        'open_tab': {
-            'url': 'http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH',
+        "open_tab": {
+            "url": "http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH",
         },
     },
-    {'wait': {'seconds': 30}},
+    {"wait": {"seconds": 30}},
 ]
 
 
@@ -40,7 +40,7 @@ class ProfilesCount(BaseModel):
 controller = Controller(output_model=ProfilesCount)
 
 
-@controller.registry.action('Generate email body with profile experience')
+@controller.registry.action("Generate email body with profile experience")
 async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
 
@@ -49,18 +49,18 @@ async def generate_email_body(profile_experience: str):
     return email
 
 
-@controller.registry.action('Guess email if no email provided in contact info')
+@controller.registry.action("Guess email if no email provided in contact info")
 async def guess_email(first_name: str, last_name: str, current_company_name: str):
     import re
 
     slug = (
         re.sub(
-            r'[^\w\s-]',
-            '',
+            r"[^\w\s-]",
+            "",
             current_company_name,
         )
         .lower()
-        .replace(' ', '-')
+        .replace(" ", "-")
     )
     return f"{first_name.lower().strip()}.{last_name.lower().strip()}@{slug.strip()}.com"  # noqa: E501
 
@@ -72,11 +72,11 @@ You are recruiter. You must control all steps in task executed properly and in c
 
 async def main():
     async with await browser.new_context() as context:
-        model = ChatOpenAI(model='gpt-4o')
+        model = ChatOpenAI(model="gpt-4o")
 
         # Initialize browser agent
         agent1 = Agent(
-            task='You have search result opened, you must get number of results and click on first account, click on name',
+            task="You have search result opened, you must get number of results and click on first name to open profile, and return only number of results",
             llm=model,
             browser_context=context,
             initial_actions=initial_action_agent_1,
@@ -87,7 +87,7 @@ async def main():
             parsed: ProfilesCount = ProfilesCount.model_validate_json(result)
             print(f"{parsed.number_of_profiles=}")
         else:
-            print('No result')
+            print("No result")
 
     # Create the agent with your configured browser
     # agent = Agent(
@@ -152,5 +152,5 @@ async def main():
     # await browser.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())
