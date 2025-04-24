@@ -1,4 +1,3 @@
-from pydantic import Field
 import asyncio
 
 from browser_use import Agent
@@ -8,6 +7,7 @@ from browser_use import Controller
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
+from pydantic import Field
 
 load_dotenv()
 
@@ -31,6 +31,14 @@ initial_action_agent_1 = [
     },
     {'wait': {'seconds': 30}},
 ]
+initial_action_agent_2 = [
+    {
+        'open_tab': {
+            'url': 'http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH',
+        },
+    },
+    {'wait': {'seconds': 30}},
+]
 
 # Define the output format as a Pydantic model
 
@@ -39,7 +47,15 @@ class ProfilesCount(BaseModel):
     number_of_profiles: int = Field(description='Number of profiles found')
 
 
-controller = Controller(output_model=ProfilesCount)
+class ProfileOpened(BaseModel):
+    if_correct_profile_opened: bool = Field(
+        description='If correct profile opened, return True, else False',
+    )
+
+
+controller = Controller()
+controller_agent_1 = Controller(output_model=ProfilesCount)
+controller_agent_2 = Controller(output_model=ProfileOpened)
 
 
 @controller.registry.action('Generate email body with profile experience')
@@ -82,13 +98,31 @@ async def main():
             llm=model,
             browser_context=context,
             initial_actions=initial_action_agent_1,
-            controller=controller,
+            controller=controller_agent_1,
         )
         profiles_count = await agent1.run()
         result = profiles_count.final_result()
         if result:
             parsed: ProfilesCount = ProfilesCount.model_validate_json(result)
             print(f"{parsed.number_of_profiles=}")
+            profiles = parsed.number_of_profiles
+            for i in profiles:
+                agent2 = Agent(
+                    task=f'You are processing profile number {i}! You will see text Number of {
+                        profiles
+                    }, confirm it is true, if not, navigate to that profile by clicking arrows right or left, if you click and current number doesnt change, reload page and try again.',
+                    llm=model,
+                    browser_context=context,
+                    initial_actions=initial_action_agent_1,
+                    controller=controller_agent_2,
+                )
+                profile_opened = await agent2.run()
+                result_opened = profile_opened.final_result()
+                result_opened: ProfileOpened = ProfileOpened.model_validate_json(
+                    result,
+                )
+                print(f"{result_opened.if_correct_profile_opened=}")
+
         else:
             print('No result')
 
