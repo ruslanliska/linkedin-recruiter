@@ -171,7 +171,7 @@ async def main():
                     agent5 = Agent(
                         task=f"""The task is to input subject and Email to input fields
                         You must input real values, make this message ready to go
-                        First generate email body, use generate_email_body, for input get User job experience. (Enter the result to field with placeholder - Compose a message) and wait for 40 seconds
+                        First generate email body, use generate_email_body, for input get User job experience (Find component with header 'Experience'). (Enter the result to field with placeholder - Compose a message) and wait for 40 seconds
                         Generate subject based on email body and input it (Enter to field with placeholder - Add a subject)
                         When all fields filled. Click on Send button (Ignore errors if any)
                         Refresh page
