@@ -143,6 +143,8 @@ async def main():
                         result_agent_3,
                     )
                     print(f"{result_agent_3.is_task_completed=}")
+                    if not result_agent_3.is_task_completed:
+                        continue
 
                     print('Email input completed')
                     agent4 = Agent(
@@ -162,6 +164,8 @@ async def main():
                         result_agent_4,
                     )
                     print(f"{result_agent_4.is_task_completed=}")
+                    if not result_agent_4.is_task_completed:
+                        continue
                     print('Email option Done')
                     agent5 = Agent(
                         task=f"""The task is to input subject and Email to input fields
@@ -180,6 +184,8 @@ async def main():
                         result_agent_5,
                     )
                     print(f"{result_agent_5.is_task_completed=}")
+                    if not result_agent_5.is_task_completed:
+                        continue
                     print('Subject and email option Done')
 
                     print('Run completed')
