@@ -132,6 +132,7 @@ async def main():
                     agent3 = Agent(
                         task=f"""The task is to enter email for user if email is not provided in contact information and save email. If email provided, just mark the task as completed.
                         Use guess_email
+                        Task is complete when email saved in contact info and present there.
                         """,
                         llm=model,
                         browser_context=context,
