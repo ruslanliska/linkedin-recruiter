@@ -68,9 +68,11 @@ controller_agent_5 = Controller(output_model=TaskCompleted)
 async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
 
-    email = generate_email(page_summary=profile_experience, 
-                           user_prompt=PROMPT, 
-                           email_instructions=REFERENCE_EMAIL)
+    email = generate_email(
+        page_summary=profile_experience,
+        user_prompt=PROMPT,
+        email_instructions=REFERENCE_EMAIL,
+    )
     print(f"{email=}")
     return email
 
@@ -118,7 +120,7 @@ async def main():
             for i in range(1, profiles):
                 try:
                     agent2 = Agent(
-                        task=f"""You are processing profile number {i}! You must see text {i} of {profiles},
+                        task=f"""You are processing profile number {i}! You must see text {i} of 'Some number' of profiles. The first number is important, as it is number of profile,
                         confirm it is true, if not, navigate to that profile by clicking arrows right or left, if you click and current number doesnt change, refresh page and try again.""",
                         llm=model,
                         browser_context=context,
