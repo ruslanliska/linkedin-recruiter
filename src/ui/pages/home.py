@@ -1,7 +1,5 @@
-import sqlite3
 import threading
 import time
-import tkinter as tk
 from datetime import datetime
 from datetime import timedelta
 from tkinter import messagebox
@@ -10,8 +8,8 @@ from tkinter.scrolledtext import ScrolledText
 import pytz
 import ttkbootstrap as ttk
 
-from src.inmail.personalized_email import run_selenium_automation_with_retries
-from src.ui.pages.utils import proccess_search_variable
+from brouse.main import run_agents
+# from src
 
 DB_PATH = 'run_history.db'
 
@@ -25,25 +23,6 @@ class HomePage(ttk.Frame):
         # Thread reference for Selenium automation
         self.automation_thread = None
 
-        # Initialize variables for daily limit and emails sent today
-        self.daily_limit_var = ttk.IntVar()
-        self.emails_sent_today_var = ttk.IntVar()
-
-        # Load daily limit and update emails sent today
-        self.load_daily_limit()
-        self.update_emails_sent_today()
-        self.job_titles_var = ttk.StringVar()
-        self.locations_var = ttk.StringVar()
-        self.skills_assessments_var = ttk.StringVar()
-        self.companies_var = ttk.StringVar()
-        self.schools_var = ttk.StringVar()
-        self.industries_var = ttk.StringVar()
-        self.keywords_var = ttk.StringVar()
-        self.past_companies_var = ttk.StringVar()
-        self.control_email_sending_var = ttk.StringVar()
-        self.job_functions_var = ttk.Variable(value=[])  # Holds selected items
-        self.company_sizes_var = ttk.Variable(value=[])
-        self.seniority_levels_var = ttk.Variable(value=[])
         self.create_widgets()
 
     def show_field_info(self):
@@ -92,51 +71,6 @@ class HomePage(ttk.Frame):
                 form.columnconfigure(col_index, weight=0)
 
         # -----------------------------
-        # Daily Limit / Emails Sent
-        # -----------------------------
-        label_daily_limit = ttk.Label(
-            form,
-            text='Daily Limit:',
-            font=('Helvetica', 12),
-        )
-        label_daily_limit.grid(row=1, column=0, sticky='e', padx=5, pady=10)
-
-        entry_daily_limit = ttk.Entry(
-            form,
-            textvariable=self.daily_limit_var,
-            width=10,
-        )
-        entry_daily_limit.grid(row=1, column=1, sticky='w', padx=5, pady=10)
-
-        # Bind the daily limit variable to save when changed
-        self.daily_limit_var.trace_add('write', self.on_daily_limit_changed)
-
-        label_emails_sent_today = ttk.Label(
-            form,
-            text='Emails sent today:',
-            font=('Helvetica', 12),
-        )
-        label_emails_sent_today.grid(
-            row=1,
-            column=2,
-            sticky='e',
-            padx=5,
-            pady=10,
-        )
-
-        label_emails_sent_today_value = ttk.Label(
-            form,
-            textvariable=self.emails_sent_today_var,
-            font=('Helvetica', 12),
-        )
-        label_emails_sent_today_value.grid(
-            row=1,
-            column=3,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-        # -----------------------------
         # Row 5: Reference Email (ScrolledText)
         # -----------------------------
         label_reference_email = ttk.Label(
@@ -170,32 +104,6 @@ class HomePage(ttk.Frame):
         self.reference_email_text.configure(state='normal')
 
         # -----------------------------
-        # Visible Mode Toggle
-        # -----------------------------
-        label_visible_mode = ttk.Label(
-            form,
-            text='Visible Mode:',
-            font=('Helvetica', 12),
-        )
-        label_visible_mode.grid(row=2, column=0, sticky='e', padx=5, pady=10)
-
-        self.visible_mode_var = ttk.BooleanVar(value=True)  # Default: True
-        switch_visible_mode = ttk.Checkbutton(
-            form,
-            text='',
-            variable=self.visible_mode_var,
-            bootstyle='success-round-toggle',
-        )
-        switch_visible_mode.grid(
-            row=2,
-            column=1,
-            sticky='w',
-            padx=5,
-            pady=10,
-            columnspan=2,
-        )
-
-        # -----------------------------
         # Prompt (ScrolledText)
         # -----------------------------
         label_prompt = ttk.Label(
@@ -220,482 +128,6 @@ class HomePage(ttk.Frame):
             pady=10,
             columnspan=4,
         )
-        # -----------------------------
-        # Row 7: Job Titles
-        # -----------------------------
-        label_job_titles = ttk.Label(
-            form,
-            text='Job Titles:',
-            font=('Helvetica', 12),
-        )
-        label_job_titles.grid(row=7, column=0, sticky='e', padx=5, pady=10)
-
-        entry_job_titles = ttk.Entry(
-            form,
-            textvariable=self.job_titles_var,
-            width=40,  # Increase width if you prefer
-        )
-        entry_job_titles.grid(
-            row=7,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_job_titles = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_job_titles.grid(
-            row=7,
-            column=4,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-
-        # -----------------------------
-        # Row 8: Locations
-        # -----------------------------
-        label_locations = ttk.Label(
-            form,
-            text='Locations:',
-            font=('Helvetica', 12),
-        )
-        label_locations.grid(row=8, column=0, sticky='e', padx=5, pady=10)
-
-        entry_locations = ttk.Entry(
-            form,
-            textvariable=self.locations_var,
-            width=40,
-        )
-        entry_locations.grid(
-            row=8,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_locations = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_locations.grid(
-            row=8,
-            column=4,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-
-        # -----------------------------
-        # Row 9: Skills and Assessments
-        # -----------------------------
-        label_skills = ttk.Label(
-            form,
-            text='Skills and Assessments:',
-            font=('Helvetica', 12),
-        )
-        label_skills.grid(row=9, column=0, sticky='e', padx=5, pady=10)
-
-        entry_skills = ttk.Entry(
-            form,
-            textvariable=self.skills_assessments_var,
-            width=40,
-        )
-        entry_skills.grid(
-            row=9,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_skills = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_skills.grid(row=9, column=4, sticky='w', padx=5, pady=10)
-
-        # -----------------------------
-        # Row 10: Companies
-        # -----------------------------
-        label_companies = ttk.Label(
-            form,
-            text='Companies:',
-            font=('Helvetica', 12),
-        )
-        label_companies.grid(row=10, column=0, sticky='e', padx=5, pady=10)
-
-        entry_companies = ttk.Entry(
-            form,
-            textvariable=self.companies_var,
-            width=40,
-        )
-        entry_companies.grid(
-            row=10,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_companies = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_companies.grid(
-            row=10,
-            column=4,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-
-        # -----------------------------
-        # Row 11: Schools
-        # -----------------------------
-        label_schools = ttk.Label(
-            form,
-            text='Schools:',
-            font=('Helvetica', 12),
-        )
-        label_schools.grid(row=11, column=0, sticky='e', padx=5, pady=10)
-
-        entry_schools = ttk.Entry(
-            form,
-            textvariable=self.schools_var,
-            width=40,
-        )
-        entry_schools.grid(
-            row=11,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_schools = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_schools.grid(row=11, column=4, sticky='w', padx=5, pady=10)
-
-        # -----------------------------
-        # Row 13: Industries
-        # -----------------------------
-        label_industries = ttk.Label(
-            form,
-            text='Industries:',
-            font=('Helvetica', 12),
-        )
-        label_industries.grid(row=13, column=0, sticky='e', padx=5, pady=10)
-
-        entry_industries = ttk.Entry(
-            form,
-            textvariable=self.industries_var,
-            width=40,
-        )
-        entry_industries.grid(
-            row=13,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_industries = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_industries.grid(
-            row=13,
-            column=4,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-
-        # -----------------------------
-        # Row 14: Keywords
-        # -----------------------------
-        label_keywords = ttk.Label(
-            form,
-            text='Keywords:',
-            font=('Helvetica', 12),
-        )
-        label_keywords.grid(row=14, column=0, sticky='e', padx=5, pady=10)
-
-        entry_keywords = ttk.Entry(
-            form,
-            textvariable=self.keywords_var,
-            width=40,
-        )
-        entry_keywords.grid(
-            row=14,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_keywords = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_keywords.grid(
-            row=14,
-            column=4,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-        # -----------------------------
-        # Row: 15 Past companies
-        # -----------------------------
-        label_past_companies = ttk.Label(
-            form,
-            text='Past companies:',
-            font=('Helvetica', 12),
-        )
-        label_past_companies.grid(
-            row=15,
-            column=0,
-            sticky='e',
-            padx=5,
-            pady=10,
-        )
-
-        entry_past_companies = ttk.Entry(
-            form,
-            textvariable=self.past_companies_var,
-            width=40,
-        )
-        entry_past_companies.grid(
-            row=15,
-            column=1,
-            sticky='ew',
-            padx=5,
-            pady=10,
-            columnspan=3,
-        )
-
-        info_button_past_companies = ttk.Button(
-            form,
-            text='?',
-            command=self.show_field_info,
-            bootstyle='info-outline',
-        )
-        info_button_past_companies.grid(
-            row=15,
-            column=4,
-            sticky='w',
-            padx=5,
-            pady=10,
-        )
-        # -----------------------------
-        # Row 16: Job Functions (Multiselect Listbox)
-        # -----------------------------
-        label_job_functions = ttk.Label(
-            form,
-            text='Job Functions:',
-            font=('Helvetica', 12),
-        )
-        label_job_functions.grid(
-            row=16,
-            column=0,
-            sticky='ne',
-            padx=5,
-            pady=10,
-        )
-
-        job_functions_options = [
-            'Operations',
-            'Business Development',
-            'Sales',
-            'Education',
-            'Engineering',
-            'Healthcare Services',
-            'Administrative',
-            'Information Technology',
-            'Customer Success and Support',
-            'Arts and Design',
-            'Finance',
-            'Community and Social Services',
-            'Media and Communication',
-            'Accounting',
-            'Marketing',
-            'Human Resources',
-            'Research',
-            'Program and Project Management',
-            'Legal',
-            'Military and Protective Services',
-            'Consulting',
-            'Entrepreneurship',
-            'Real Estate',
-            'Quality Assurance',
-            'Purchasing',
-            'Product Management',
-        ]
-
-        frame_job_functions = ttk.Frame(form)
-        frame_job_functions.grid(
-            row=16,
-            column=1,
-            columnspan=3,
-            sticky='ew',
-            padx=5,
-            pady=10,
-        )
-
-        self.listbox_job_functions = tk.Listbox(
-            frame_job_functions,
-            listvariable=self.job_functions_var,
-            selectmode='multiple',
-            height=6,  # Visible items
-            exportselection=False,
-            font=('Helvetica', 11),
-        )
-        self.listbox_job_functions.pack(side='left', fill='both', expand=True)
-
-        scrollbar_job_functions = ttk.Scrollbar(
-            frame_job_functions,
-            orient='vertical',
-            command=self.listbox_job_functions.yview,
-        )
-        scrollbar_job_functions.pack(side='right', fill='y')
-        self.listbox_job_functions.config(
-            yscrollcommand=scrollbar_job_functions.set,
-        )
-
-        for item in job_functions_options:
-            self.listbox_job_functions.insert('end', item)
-
-        # -----------------------------
-        # Row 17: Company Sizes (Multiselect Listbox)
-        # -----------------------------
-        label_company_sizes = ttk.Label(
-            form,
-            text='Company Sizes:',
-            font=('Helvetica', 12),
-        )
-        label_company_sizes.grid(
-            row=17, column=0, sticky='ne', padx=5, pady=10,
-        )
-
-        company_sizes_options = [
-            'Self-employed',
-            '1-10',
-            '11-50',
-            '51-200',
-            '201-500',
-            '501-1000',
-            '1001-5000',
-            '5001-10,000',
-            '10,000+',
-        ]
-
-        frame_company_sizes = ttk.Frame(form)
-        frame_company_sizes.grid(
-            row=17, column=1, columnspan=3, sticky='ew', padx=5, pady=10,
-        )
-
-        self.listbox_company_sizes = tk.Listbox(
-            frame_company_sizes,
-            listvariable=self.company_sizes_var,
-            selectmode='multiple',
-            height=5,
-            exportselection=False,
-            font=('Helvetica', 11),
-        )
-        self.listbox_company_sizes.pack(side='left', fill='both', expand=True)
-
-        scrollbar_company_sizes = ttk.Scrollbar(
-            frame_company_sizes,
-            orient='vertical',
-            command=self.listbox_company_sizes.yview,
-        )
-        scrollbar_company_sizes.pack(side='right', fill='y')
-        self.listbox_company_sizes.config(
-            yscrollcommand=scrollbar_company_sizes.set,
-        )
-
-        for size in company_sizes_options:
-            self.listbox_company_sizes.insert('end', size)
-
-        # -----------------------------
-        # Row 18: Seniority (Multiselect Listbox)
-        # -----------------------------
-        label_seniority = ttk.Label(
-            form,
-            text='Seniority:',
-            font=('Helvetica', 12),
-        )
-        label_seniority.grid(
-            row=18, column=0, sticky='ne', padx=5, pady=10,
-        )
-
-        seniority_options = [
-            'Entry',
-            'Senior',
-            'Manager',
-            'Director',
-            'Owner',
-            'VP',
-            'CXO',
-            'Training',
-            'Unpaid',
-            'Partner',
-        ]
-
-        frame_seniority = ttk.Frame(form)
-        frame_seniority.grid(
-            row=18, column=1, columnspan=3, sticky='ew', padx=5, pady=10,
-        )
-
-        self.listbox_seniority = tk.Listbox(
-            frame_seniority,
-            listvariable=self.seniority_levels_var,
-            selectmode='multiple',
-            height=5,
-            exportselection=False,
-            font=('Helvetica', 11),
-        )
-        self.listbox_seniority.pack(side='left', fill='both', expand=True)
-
-        scrollbar_seniority = ttk.Scrollbar(
-            frame_seniority,
-            orient='vertical',
-            command=self.listbox_seniority.yview,
-        )
-        scrollbar_seniority.pack(side='right', fill='y')
-        self.listbox_seniority.config(yscrollcommand=scrollbar_seniority.set)
-
-        for level in seniority_options:
-            self.listbox_seniority.insert('end', level)
 
         # -----------------------------
         # Start Button
@@ -711,46 +143,6 @@ class HomePage(ttk.Frame):
         # Let the reference email text area expand if the window is resized
         form.rowconfigure(5, weight=1)
 
-    def load_daily_limit(self):
-        """Load the daily limit from the database (settings table)."""
-        connection = sqlite3.connect(DB_PATH)
-        cursor = connection.cursor()
-        cursor.execute("SELECT value FROM settings WHERE key = 'daily_limit'")
-        result = cursor.fetchone()
-        if result:
-            self.daily_limit_var.set(int(result[0]))
-        else:
-            # If not set, default to 100 (or any default you want)
-            self.daily_limit_var.set(100)
-        connection.close()
-
-    def save_daily_limit(self):
-        """Save the daily limit to the database (settings table)."""
-        daily_limit = self.daily_limit_var.get()
-        connection = sqlite3.connect(DB_PATH)
-        cursor = connection.cursor()
-        cursor.execute(
-            'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
-            ('daily_limit', str(daily_limit)),
-        )
-        connection.commit()
-        connection.close()
-
-    def update_emails_sent_today(self):
-        """Get the number of emails sent today from the emails table."""
-        connection = sqlite3.connect(DB_PATH)
-        cursor = connection.cursor()
-        cursor.execute(
-            "SELECT COUNT(*) FROM emails WHERE DATE(timestamp) = DATE('now', 'localtime')",  # noqa: E501
-        )
-        result = cursor.fetchone()
-        emails_sent_today = result[0] if result else 0
-        connection.close()
-        self.emails_sent_today_var.set(emails_sent_today)
-
-    def on_daily_limit_changed(self, *args):
-        self.save_daily_limit()
-
     def disable_start_button(self):
         self.start_button.config(state='disabled')
 
@@ -761,45 +153,14 @@ class HomePage(ttk.Frame):
         """
         print('Started')
         print(f"{self.__dict__=}")
-        print(f"{self.job_titles_var.get()=}")
         # return
 
         # Disable the Start and Upload buttons to prevent multiple clicks
         self.disable_start_button()
 
         # Gather user input
-        visible_mode = self.visible_mode_var.get()
         prompt_text = self.prompt_text.get('1.0', 'end').strip()
         prompt = prompt_text if prompt_text else None
-
-        control_email_sending = self.control_email_sending_var.get()
-        job_titles = proccess_search_variable(self.job_titles_var.get())
-        locations = proccess_search_variable(self.locations_var.get())
-        skills_assessments = proccess_search_variable(
-            self.skills_assessments_var.get(),
-        )
-        companies = proccess_search_variable(self.companies_var.get())
-        schools = proccess_search_variable(self.schools_var.get())
-        industries = proccess_search_variable(self.industries_var.get())
-        keywords = proccess_search_variable(self.keywords_var.get())
-
-        # advanced search vars
-        past_companies = proccess_search_variable(
-            self.past_companies_var.get(),
-        )
-        job_functions = [
-            self.listbox_job_functions.get(i)
-            for i in self.listbox_job_functions.curselection()
-        ]
-        company_sizes = [
-            self.listbox_company_sizes.get(i)
-            for i in self.listbox_company_sizes.curselection()
-        ]
-        seniority = [
-            self.listbox_seniority.get(i)
-            for i in self.listbox_seniority.curselection()
-        ]
-
         reference_email_text = self.reference_email_text.get(
             '1.0',
             'end',
@@ -807,38 +168,13 @@ class HomePage(ttk.Frame):
         reference_email = (
             reference_email_text if reference_email_text else None
         )  # noqa: E501
-
-        print(f"{job_titles=}")
-        print(f"{locations=}")
-        print(f"{skills_assessments=}")
-        print(f"{companies=}")
-        print(f"{schools=}")
-        print(f"{industries=}")
-        print(f"{keywords=}")
-        print(f"{past_companies=}")
-        print(f"{job_functions=}")
-        print(f"{company_sizes=}")
-        print(f"{seniority=}")
         # We run everything in a separate thread
         self.automation_thread = threading.Thread(
             target=self.run_selenium_thread,
             args=(
-                visible_mode,
                 prompt,
-                control_email_sending,
                 self.run_id,
-                job_titles,
-                locations,
-                skills_assessments,
-                companies,
-                schools,
-                industries,
-                keywords,
                 reference_email,
-                past_companies,
-                job_functions,
-                company_sizes,
-                seniority,
             ),
             daemon=True,
         )
@@ -846,22 +182,9 @@ class HomePage(ttk.Frame):
 
     def run_selenium_thread(
         self,
-        visible_mode,
         prompt,
-        control_email_sending,
         run_id,
-        job_titles,
-        locations,
-        skills_assessments,
-        companies,
-        schools,
-        industries,
-        keywords,
         reference_email,
-        past_companies,
-        job_functions,
-        company_sizes,
-        seniority,
     ):
         """
         Process all rows in 'data' chunk by chunk.
@@ -871,18 +194,7 @@ class HomePage(ttk.Frame):
         We do NOT modify run_selenium_automation;
         we just pass in subsets of data.
         """
-        print(f"{job_titles=}")
-        print(f"{locations=}")
-        print(f"{skills_assessments=}")
-        print(f"{companies=}")
-        print(f"{schools=}")
-        print(f"{industries=}")
-        print(f"{keywords=}")
         print(f"{reference_email=}")
-        print(f"{past_companies=}")
-        print(f"{job_functions=}")
-        print(f"{company_sizes=}")
-        print(f"{seniority=}")
         try:
             # We'll define a callback that runs
             # after run_selenium_automation finishes
@@ -893,25 +205,28 @@ class HomePage(ttk.Frame):
                     self.show_error_message('Automation Error', message)
 
             # Pass the chunk to run_selenium_automation
-            run_selenium_automation_with_retries(
-                visible_mode=visible_mode,
-                prompt=prompt,
-                control_email_sending=control_email_sending,
-                run_id=run_id,
-                callback=automation_callback,
-                job_titles=job_titles,
-                locations=locations,
-                skills_assessments=skills_assessments,
-                companies=companies,
-                schools=schools,
-                industries=industries,
-                keywords=keywords,
-                reference_email=reference_email,
-                past_companies=past_companies,
-                job_functions=job_functions,
-                company_sizes=company_sizes,
-                seniority=seniority,
-            )
+            # run_selenium_automation_with_retries(
+            #     visible_mode=visible_mode,
+            #     prompt=prompt,
+            #     control_email_sending=control_email_sending,
+            #     run_id=run_id,
+            #     callback=automation_callback,
+            #     job_titles=job_titles,
+            #     locations=locations,
+            #     skills_assessments=skills_assessments,
+            #     companies=companies,
+            #     schools=schools,
+            #     industries=industries,
+            #     keywords=keywords,
+            #     reference_email=reference_email,
+            #     past_companies=past_companies,
+            #     job_functions=job_functions,
+            #     company_sizes=company_sizes,
+            #     seniority=seniority,
+            # )
+            print(f'{reference_email=}')
+            print(f'{prompt=}')
+            run_agents()
         except Exception as e:
             self.show_error_message('Process Error', str(e))
         finally:
