@@ -21,7 +21,9 @@ browser = Browser(
         # For Linux, typically: '/usr/bin/google-chrome'
     ),
 )
-
+# Define global variables
+REFERENCE_EMAIL = None
+PROMPT = None
 
 initial_action_agent_1 = [
     {
@@ -66,7 +68,9 @@ controller_agent_5 = Controller(output_model=TaskCompleted)
 async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
 
-    email = generate_email(page_summary=profile_experience)
+    email = generate_email(page_summary=profile_experience, 
+                           user_prompt=PROMPT, 
+                           email_instructions=REFERENCE_EMAIL)
     print(f"{email=}")
     return email
 
@@ -98,8 +102,8 @@ async def main():
 
         # Initialize browser agent
         agent1 = Agent(
-            task='''You have search result opened, you must get number of results and click on first name to open profile, and return only number of results
-            If no search, then return 0''',
+            task="""You have search result opened, you must get number of results and click on first name to open profile, and return only number of results
+            If no search, then return 0""",
             llm=model,
             browser_context=context,
             initial_actions=initial_action_agent_1,
@@ -264,5 +268,8 @@ async def main():
     # await browser.close()
 
 
-if __name__ == '__main__':
+def run_agents(reference_email, prompt):
+    global REFERENCE_EMAIL, PROMPT
+    REFERENCE_EMAIL = reference_email
+    PROMPT = prompt
     asyncio.run(main())
