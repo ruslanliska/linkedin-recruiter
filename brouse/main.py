@@ -105,7 +105,7 @@ async def main():
             for i in range(1, profiles):
                 try:
                     agent2 = Agent(
-                        task=f"""You are processing profile number {i}! You must see text {i} of {profiles}, 
+                        task=f"""You are processing profile number {i}! You must see text {i} of {profiles},
                         confirm it is true, if not, navigate to that profile by clicking arrows right or left, if you click and current number doesnt change, reload page and try again.""",
                         llm=model,
                         browser_context=context,
@@ -126,6 +126,18 @@ async def main():
                         controller=controller_agent_3,
                     )
                     await agent3.run()
+                    print('Email input completed')
+                    agent4 = Agent(
+                        task=f"""The task is to click on Send message to candidate, wait for 5 seconds and in new window (Compose Message) which appears, find text Send immediately via InMail,
+                        and click arrow down and Select option for 'Send as' - Email, you must confirm that Email is used as option, then click Save, to save this option,
+                        After this the text 'Send immediately via Email' must appear, if 'Send immediately via InMail' present, then task is completed.
+                        """,
+                        llm=model,
+                        browser_context=context,
+                    )
+                    await agent4.run()
+                    print('Email option Done')
+
                     print('Run completed')
 
                 except Exception as e:
