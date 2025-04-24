@@ -130,7 +130,7 @@ async def main():
                     print('Email input completed')
                     agent4 = Agent(
                         task=f"""The task is to click on Send message to candidate, wait for 5 seconds and in new window (Compose Message) which appears, find text Send immediately via InMail,
-                        and click arrow down and Select option for 'Send as' - Email (Click button with text Email), you must confirm that Email is used as option, then click Save, to save this option,
+                        and click arrow down and Select option for 'Send as' - Email (Click button with text Email, then save changes, by clicking buttorn with text Save in the same container) you must confirm that Email is used as option, then click Save, to save this option,
                         After this the text 'Send immediately via Email' must appear, if 'Send immediately via InMail' present, then task is completed.
                         """,
                         llm=model,
