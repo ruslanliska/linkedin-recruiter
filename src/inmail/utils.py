@@ -335,13 +335,8 @@ def is_within_trading_hours_or_wait(
                 f"Waiting for {wait_duration_seconds:.2f} seconds until the next window starts at {next_start_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')}.",  # noqa: E501
             )
             time.sleep(wait_duration_seconds)
-            print(
-                f"Wait finished. Resuming at {
-                    datetime.now(pytz.utc).astimezone(
-                        tz
-                    ).strftime('%Y-%m-%d %H:%M:%S %Z%z')
-                }",
-            )
+            print(f"Wait finished. Resuming at {datetime.now(pytz.utc).astimezone(tz).strftime('%Y-%m-%d %H:%M:%S %Z%z')}", # noqa: E501
+            ) 
             # After waiting, we have reached the start of the next trading period
             return True
         else:
