@@ -31,10 +31,10 @@ initial_action_agent_1 = [
     {"wait": {"seconds": 30}},
 ]
 
-
+from pydantic import Field
 # Define the output format as a Pydantic model
 class ProfilesCount(BaseModel):
-    number_of_profiles: int
+    number_of_profiles: int = Field(description="Number of profiles found")
 
 
 controller = Controller(output_model=ProfilesCount)
