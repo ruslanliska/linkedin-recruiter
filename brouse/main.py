@@ -98,7 +98,8 @@ async def main():
 
         # Initialize browser agent
         agent1 = Agent(
-            task='You have search result opened, you must get number of results and click on first name to open profile, and return only number of results',
+            task='''You have search result opened, you must get number of results and click on first name to open profile, and return only number of results
+            If no search, then return 0''',
             llm=model,
             browser_context=context,
             initial_actions=initial_action_agent_1,
