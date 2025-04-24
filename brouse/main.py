@@ -117,7 +117,7 @@ async def main():
                 profile_opened = await agent2.run()
                 result_opened = profile_opened.final_result()
                 result_opened: ProfileOpened = ProfileOpened.model_validate_json(
-                    result,
+                    result_opened,
                 )
                 print(f"{result_opened.if_correct_profile_opened=}")
 
