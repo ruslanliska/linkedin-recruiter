@@ -16,7 +16,7 @@ browser = Browser(
     config=BrowserConfig(
         # Specify the path to your Chrome executable
         # browser_binary_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # macOS path
-        browser_binary_path=r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",  # windows path
+        browser_binary_path=r'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',  # windows path
         # For Windows, typically: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
         # For Linux, typically: '/usr/bin/google-chrome'
     ),
@@ -25,37 +25,44 @@ browser = Browser(
 
 initial_action_agent_1 = [
     {
-        "open_tab": {
-            "url": "http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH",
+        'open_tab': {
+            'url': 'http://linkedin.com/talent/hire/1645278338/discover/recruiterSearch?savedSearch=urn%3Ali%3Ats_cap_saved_search%3A1907552162&savedSearchAction=GET&searchContextId=f3acd4d4-469e-4e0a-bf40-76e774eda1fc&searchHistoryId=20619306290&searchRequestId=cce9405e-aab0-4d53-b6cb-97cb19e3b094&start=0&uiOrigin=SAVED_SEARCH',
         },
     },
-    {"wait": {"seconds": 30}},
+    {'wait': {'seconds': 30}},
 ]
 initial_action_agent_2 = [
-    {"wait": {"seconds": 30}},
+    {'wait': {'seconds': 30}},
 ]
 
 # Define the output format as a Pydantic model
 
 
 class ProfilesCount(BaseModel):
-    number_of_profiles: int = Field(description="Number of profiles found")
+    number_of_profiles: int = Field(description='Number of profiles found')
 
 
 class ProfileOpened(BaseModel):
     if_correct_profile_opened: bool = Field(
-        description="If correct profile opened, return True, else False",
+        description='If correct profile opened, return True, else False',
+    )
+
+
+class TaskCompleted(BaseModel):
+    is_task_completed: bool = Field(
+        description='If task completed, return True, else False',
     )
 
 
 controller = Controller()
 controller_agent_1 = Controller(output_model=ProfilesCount)
 controller_agent_2 = Controller(output_model=ProfileOpened)
-controller_agent_3 = Controller()
-controller_agent_5 = Controller()
+controller_agent_3 = Controller(output_model=TaskCompleted)
+controller_agent_4 = Controller(output_model=TaskCompleted)
+controller_agent_5 = Controller(output_model=TaskCompleted)
 
 
-@controller_agent_5.registry.action("Generate email body with profile experience")
+@controller_agent_5.registry.action('Generate email body with profile experience')
 async def generate_email_body(profile_experience: str):
     from src.agents.email_writer import generate_email
 
@@ -64,18 +71,18 @@ async def generate_email_body(profile_experience: str):
     return email
 
 
-@controller_agent_3.registry.action("Guess email if no email provided in contact info")
+@controller_agent_3.registry.action('Guess email if no email provided in contact info')
 async def guess_email(first_name: str, last_name: str, current_company_name: str):
     import re
 
     slug = (
         re.sub(
-            r"[^\w\s-]",
-            "",
+            r'[^\w\s-]',
+            '',
             current_company_name,
         )
         .lower()
-        .replace(" ", "-")
+        .replace(' ', '-')
     )
     return f"{first_name.lower().strip()}.{last_name.lower().strip()}@{slug.strip()}.com"  # noqa: E501
 
@@ -87,11 +94,11 @@ You are recruiter. You must control all steps in task executed properly and in c
 
 async def main():
     async with await browser.new_context() as context:
-        model = ChatOpenAI(model="gpt-4o")
+        model = ChatOpenAI(model='gpt-4o')
 
         # Initialize browser agent
         agent1 = Agent(
-            task="You have search result opened, you must get number of results and click on first name to open profile, and return only number of results",
+            task='You have search result opened, you must get number of results and click on first name to open profile, and return only number of results',
             llm=model,
             browser_context=context,
             initial_actions=initial_action_agent_1,
@@ -112,7 +119,6 @@ async def main():
                         browser_context=context,
                         controller=controller_agent_2,
                     )
-                    print(f"{agent2.final_result=}")
 
                     profile_opened = await agent2.run()
                     result_opened = profile_opened.final_result()
@@ -128,10 +134,14 @@ async def main():
                         browser_context=context,
                         controller=controller_agent_3,
                     )
-                    await agent3.run()
-                    print(f"{agent3.final_result=}")
+                    result_agent_3 = await agent3.run()
+                    result_agent_3 = result_agent_3.final_result()
+                    result_agent_3: TaskCompleted = TaskCompleted.model_validate_json(
+                        result_agent_3,
+                    )
+                    print(f"{result_agent_3.is_task_completed=}")
 
-                    print("Email input completed")
+                    print('Email input completed')
                     agent4 = Agent(
                         task=f"""The task is to click on Send message to candidate, wait for 5 seconds and in new window (Compose Message) which appears, find text Send immediately via InMail,
                         and click arrow down and Select option for 'Send as' - Email (Click button with text Email, then save changes, by clicking buttorn with text Save in the same container) you must confirm that Email is used as option, then click Save, to save this option,
@@ -139,11 +149,16 @@ async def main():
                         """,
                         llm=model,
                         browser_context=context,
-                        max_failures=3
+                        max_failures=3,
+                        controller=controller_agent_4,
                     )
                     result_agent_4 = await agent4.run()
-                    print(f"{result_agent_4.final_result=}")
-                    print("Email option Done")
+                    result_agent_4 = result_agent_4.final_result()
+                    result_agent_4: TaskCompleted = TaskCompleted.model_validate_json(
+                        result_agent_4,
+                    )
+                    print(f"{result_agent_4.is_task_completed=}")
+                    print('Email option Done')
                     agent5 = Agent(
                         task=f"""The task is to input subject and Email to input fields
                         You must input real values, make this message ready to go
@@ -152,18 +167,25 @@ async def main():
                         """,
                         llm=model,
                         browser_context=context,
+                        controller=controller_agent_5,
+                        max_failures=3,
                     )
-                    await agent5.run()
-                    print("Subject and email option Done")
+                    result_agent_5 = await agent5.run()
+                    result_agent_5 = result_agent_5.final_result()
+                    result_agent_5: TaskCompleted = TaskCompleted.model_validate_json(
+                        result_agent_5,
+                    )
+                    print(f"{result_agent_5.is_task_completed=}")
+                    print('Subject and email option Done')
 
-                    print("Run completed")
+                    print('Run completed')
 
                 except Exception as e:
                     print(e)
                     continue
 
         else:
-            print("No result")
+            print('No result')
 
     # Create the agent with your configured browser
     # agent = Agent(
@@ -228,5 +250,5 @@ async def main():
     # await browser.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     asyncio.run(main())
