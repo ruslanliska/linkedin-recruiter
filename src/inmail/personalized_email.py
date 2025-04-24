@@ -60,7 +60,7 @@ def process_chunk_of_rows(
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
-        # options.add_argument(f"--user-data-dir={get_user_data_dir()}")
+        options.add_argument(f"--user-data-dir=C:\Users\RebeccaHannan\AppData\Local\Google\Chrome\User Data")
         options.add_argument('--verbose')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--remote-debugging-port=0')
