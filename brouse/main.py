@@ -181,8 +181,6 @@ async def main():
                         You must input real values, make this message ready to go
                         First generate email body, use generate_email_body (input profile_experience as string), for input get User job experience (Find component with header 'Experience'). (Enter the result to field with placeholder - Compose a message) and wait for 40 seconds
                         Generate subject based on email body and input it (Enter to field with placeholder - Add a subject)
-                        When all fields filled. Click on Send button (Ignore errors if any)
-                        Refresh page
                         """,
                         llm=model,
                         browser_context=context,
@@ -197,7 +195,18 @@ async def main():
                     print(f"{result_agent_5.is_task_completed=}")
                     if not result_agent_5.is_task_completed:
                         continue
-                    print('Subject and email option Done')
+                    print('Subject and email op tion Done')
+                    agent6 = Agent(
+                        task=f"""
+                        When all fields filled. Click on Send button (Ignore errors if any)
+                        Scroll page down and find button with text Send
+                        Refresh page
+                        """,
+                        llm=model,
+                        browser_context=context,
+                        max_failures=2,
+                    )
+                    await agent6.run()
 
                     print('Run completed')
 

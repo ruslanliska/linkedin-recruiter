@@ -51,6 +51,7 @@ If you can't some placeholder data, such as user name - remove placeholders (For
 
 Ensure the final email addresses the recipient directly, based on their name and experience, while maintaining a casual and professional tone.
 MAKE SURE - EMAIL IS READY TO SEND, REMOVE ALL PLACEHOLDERS AND USE GENERIC SENTENCES INSTEAD.
+AVOID ANY BOLD STYLES ETC. JUST TEXT WITHOUT ANY STYLES.
 """
 
 DEFAULT_USER_PROMPT = "Generate email in english."
