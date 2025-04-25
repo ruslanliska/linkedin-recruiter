@@ -3,6 +3,7 @@ import platform
 import re
 import sys
 import time
+import unicodedata
 from datetime import datetime
 from datetime import time as dt_time  # Alias time to avoid conflict
 from datetime import timedelta
@@ -357,3 +358,12 @@ def is_within_trading_hours_or_wait(
             # This could happen due to calculation time or clock skew. Proceed immediately.
             print('Calculated wait time is non-positive. Proceeding immediately.')
             return True
+
+
+def sanitize_for_email(s):
+    # Normalize (e.g. ä -> ä) and encode to ASCII to remove accents
+    s = unicodedata.normalize('NFKD', s)
+    s = s.encode('ascii', 'ignore').decode('ascii')
+    # Remove anything that's not a letter, number, dot, or dash
+    s = re.sub(r'[^a-zA-Z0-9.-]', '', s)
+    return s

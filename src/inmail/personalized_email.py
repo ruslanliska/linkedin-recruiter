@@ -24,6 +24,7 @@ from src.database.handlers import log_run_end
 from src.inmail.utils import get_user_data_dir
 from src.inmail.utils import is_within_trading_hours_or_wait
 from src.inmail.utils import parse_results_count
+from src.inmail.utils import sanitize_for_email
 from src.inmail.utils import slugify_company
 
 socket.setdefaulttimeout(60)  # Set global timeout to 60 seconds
@@ -495,9 +496,9 @@ def process_chunk_of_rows(
                         company_name = company_elem.text.strip()
                         logger.info(f"Company Name: {company_name}")
                         company_slug = slugify_company(company_name)
-                        profile_email_address = f"{
-                            name[0].strip()
-                        }.{name[1].strip()}@{company_slug}.com".lower()
+                        first_name = sanitize_for_email(name[0].strip())
+                        last_name = sanitize_for_email(name[1].strip())
+                        profile_email_address = f"{first_name}.{last_name}@{company_slug}.com".lower()  # noqa: E501
                         logger.info(
                             f"Guessed {profile_email_address=}",
                         )
