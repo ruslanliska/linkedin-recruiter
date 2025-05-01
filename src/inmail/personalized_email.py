@@ -91,17 +91,17 @@ def process_chunk_of_rows(
         logger.info('Driver installed')
 
         # Optional: stealth, if you want to keep it
-        from selenium_stealth import stealth
+        # from selenium_stealth import stealth
 
-        stealth(
-            driver,
-            languages=['en-US', 'en'],
-            vendor='Google Inc.',
-            platform='Win32',
-            webgl_vendor='Intel Inc.',
-            renderer='Intel Iris OpenGL Engine',
-            fix_hairline=True,
-        )
+        # stealth(
+        #     driver,
+        #     languages=['en-US', 'en'],
+        #     vendor='Google Inc.',
+        #     platform='Win32',
+        #     webgl_vendor='Intel Inc.',
+        #     renderer='Intel Iris OpenGL Engine',
+        #     fix_hairline=True,
+        # )
         time.sleep(random.uniform(2, 5))
         logger.info('ChromeDriver initialized successfully for this batch.')
         driver.get(
