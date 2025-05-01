@@ -75,7 +75,8 @@ def process_chunk_of_rows(
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
         options.add_argument(
-            r'--user-data-dir=C:\Users\RebeccaHannan\AppData\Local\Google\Chrome\User Data')
+            r'--user-data-dir=C:\Users\RebeccaHannan\AppData\Local\Google\Chrome\User Data',
+        )
         options.add_argument('--verbose')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--remote-debugging-port=0')
@@ -385,18 +386,12 @@ def process_chunk_of_rows(
                             )
                             # If find_elements was successful (didn't raise an exception),
                             # we have the items, so break out of the retry loop.
-                            logger.info(
-                                f"Attempt {
-                                    attempt + 1
-                                }/{max_retries}: Successfully found profile items.",
-                            )
+                            logger.info(f"Attempt {attempt + 1}/{max_retries}: Successfully found profile items.")  # noqa: E501
                             break  # Exit the retry loop on success
 
                         except Exception as inner_ex:
                             logger.warning(
-                                f"Attempt {
-                                    attempt + 1
-                                }/{max_retries} failed to find profile items. Error: {inner_ex}",
+                                f"Attempt {attempt + 1}/{max_retries} failed to find profile items. Error: {inner_ex}",  # noqa: E501
                             )
                             driver.get(current_link)
                             if attempt < max_retries - 1:
@@ -405,15 +400,7 @@ def process_chunk_of_rows(
                             else:
                                 # This was the last attempt, log the final failure
                                 logger.error(
-                                    f"Failed to find profile items after {
-                                        max_retries
-                                    } attempts. Skipping this container.",
-                                    # You might still want to log container text here, but carefully
-                                    # as container itself might be stale.
-                                    # try:
-                                    #     logger.error(f"Container text at final failure: {container.text}")
-                                    # except Exception as text_ex:
-                                    #     logger.error(f"Could not get container text: {text_ex}")
+                                    f"Failed to find profile items after {max_retries} attempts. Skipping this container.",  # noqa: E501
                                 )
                                 # Let the loop finish naturally to trigger the 'else' block
 
