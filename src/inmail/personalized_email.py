@@ -74,11 +74,18 @@ def process_chunk_of_rows(
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
-        options.add_argument(f"--user-data-dir={get_user_data_dir()}")
+        options.add_argument(
+            r'--user-data-dir=C:\Users\RebeccaHannan\AppData\Local\Google\Chrome\User Data')
+        options.add_argument('--verbose')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--remote-debugging-port=0')
+        options.add_argument('--profile-directory=Default')
+        print(f"{settings.DRIVER_PATH=}")
+        chrome_binary_path = r'C:\Program Files\Google\Chrome\Application\chrome.exe'
+        options.binary_location = chrome_binary_path
         # driver = uc.Chrome(options=options)  # auto-detect
         driver = uc.Chrome(
             options=options,
-            driver_executable_path=r'C:\Users\Robin\linkedin_email_application\linkedin-recruiter\chromedriver.exe',
         )
         logger.info('Driver installed')
 
