@@ -784,11 +784,7 @@ def process_chunk_of_rows(
                     current_scroll = driver.execute_script(
                         'return window.pageYOffset;',
                     )
-                    if (
-                        current_scroll +
-                            driver.execute_script('return window.innerHeight;')
-                        >= last_height - 100
-                    ):
+                    if (current_scroll + driver.execute_script('return window.innerHeight;') >= last_height - 100):
                         break
 
                 print('Finished scrolling.')
