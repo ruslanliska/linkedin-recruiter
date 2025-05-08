@@ -312,7 +312,7 @@ def process_chunk_of_rows(
                     print('Opened search result')
                     try:
                         # Wait until the profile list container is present using the updated class selector
-                        container = WebDriverWait(driver, 15).until(
+                        container = WebDriverWait(driver, 30).until(
                             EC.presence_of_element_located(
                                 (
                                     By.XPATH,
@@ -328,6 +328,8 @@ def process_chunk_of_rows(
                         logger.info(
                             'Profile list container not found within the timeout period.',
                         )
+                        driver.refresh()
+
                     logger.info(f"{profile_index=}")
                     # Locate child profile items; adjust the XPath if needed for your actual HTML structure.
                     # Set the increment and pause duration.
@@ -379,28 +381,24 @@ def process_chunk_of_rows(
                             # If find_elements was successful (didn't raise an exception),
                             # we have the items, so break out of the retry loop.
                             logger.info(
-                                f"Attempt {
-                                    attempt + 1
-                                }/{max_retries}: Successfully found profile items.",
+                                f"Attempt {attempt + 1}/{max_retries}: Successfully found profile items.",  # noqa: E501
                             )
                             break  # Exit the retry loop on success
 
                         except Exception as inner_ex:
                             logger.warning(
-                                f"Attempt {
-                                    attempt + 1
-                                }/{max_retries} failed to find profile items. Error: {inner_ex}",
+                                f"Attempt {attempt + 1}/{max_retries} failed to find profile items. Error: {inner_ex}",  # noqa: E501
                             )
                             driver.get(current_link)
+                            print(f'Not found profiles. Get {current_link=}')
                             if attempt < max_retries - 1:
                                 # Optional: Wait a short period before retrying
-                                time.sleep(2)  # Wait for 1 second
+                                print('Wait for 20 secs')
+                                time.sleep(20)  # Wait for 1 second
                             else:
                                 # This was the last attempt, log the final failure
                                 logger.error(
-                                    f"Failed to find profile items after {
-                                        max_retries
-                                    } attempts. Skipping this container.",
+                                    f"Failed to find profile items after {max_retries} attempts. Skipping this container.",  # noqa: E501
                                     # You might still want to log container text here, but carefully
                                     # as container itself might be stale.
                                     # try:
